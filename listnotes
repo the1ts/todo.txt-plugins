@@ -1,0 +1,18 @@
+#!/bin/bash
+# 2009 Matt Brubeck
+# License:  GPL, http://www.gnu.org/copyleft/gpl.html
+case $1 in
+"usage")
+  echo "$(basename $0) [BASENAME]"
+  echo "  List notes"
+  ;;
+*)
+  # Create file from todo and 'tickled' files
+  cat $TODO_FILE>> $TMP_FILE
+	if [ -n $TICKER_DIR ]; then
+  	find $TICKLER_DIR -mindepth 2 -size 1b -exec cat {} >>$TMP_FILE \;
+	fi
+
+	grep -o '[^ ]*~[^ ]\+' "$TMP_FILE" | grep '^~' | grep "$2$" | sort -u
+  ;;
+esac

@@ -1,0 +1,56 @@
+#! /bin/bash 
+# ======= tickle action plugin for Gina Trapani's todo.sh =======
+# Adapted from (Tanja's tickler patch for todo.sh)[http://tanniespace.com/tickler-files-and-todosh/]
+# Version: 0.1
+# Adapted as plugin by:  Braden Grams
+# License: GPL, http://www.gnu.org/copyleft/gpl.html
+# Release Date: 2009-02-27T13:16:07-0500
+
+#============ And now for some functions =================
+usage()
+{
+    sed -e 's/^    //' <<EndUsage 
+        tickled
+          Show all "tickled" todo items.
+EndUsage
+    exit 1
+}
+
+die()
+{
+    echo "$*"
+    exit 1
+}
+
+case $1 in
+"usage")
+	usage
+	;;
+*)
+	# Head into tickler directory
+	cd $TICKLER_DIR
+	# Find all the files
+	FILES=`find -size 1b ! -name *state.txt`
+	# For each file find its date
+	for i in $FILES ; do
+		TYPE=`echo $i | awk -F '/' '{print $2}'`
+		NUMBER=`echo $i | awk -F '/' '{print $3}'`
+		YEAR=`date +'%Y'`
+		if [ $TYPE = "days" ] ; then
+			MONTH=`date +'%m'`
+			DAY=$NUMBER
+		else
+			MONTH=$NUMBER
+			DAY="01"
+		fi
+		# Add date to start of each line
+		exec < $i
+		while read LINE
+			do
+			echo "$YEAR-$MONTH-$DAY $LINE" >> $TMP_FILE
+		done
+	done
+	# Sort by date
+	sort -n $TMP_FILE
+	;;
+esac

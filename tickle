@@ -1,0 +1,89 @@
+#! /bin/bash
+# ======= tickle action plugin for Gina Trapani's todo.sh =======
+# Adapted from (Tanja's tickler patch for todo.sh)[http://tanniespace.com/tickler-files-and-todosh/]
+# Version: 0.1
+# Adapted as plugin by:  Braden Grams
+# License: GPL, http://www.gnu.org/copyleft/gpl.html
+# Release Date: 2009-02-27T13:16:07-0500
+
+#========= Set up config file ================
+# all of this is lifted from main todo.txt
+# This is one problem of having to use the config file
+# I think that the main script should be passing this stuff, but I'm not sure
+# how to access it.
+
+
+#============ And now for some functions =================
+usage()
+{
+    sed -e 's/^    //' <<EndUsage 
+        tickle NUMBER [dmNUMBER]
+          Move a line from todo.txt to day or month file in $TODODIR/Tickler/.
+          If [dm]<number> is omitted you will be prompted to enter a day or
+          month number.
+EndUsage
+    exit 1
+}
+
+die()
+{
+    echo "$*"
+    exit 1
+}
+
+cleanup()
+{
+    [ -f "$TMP_FILE" ] && rm "$TMP_FILE"
+    exit 0
+}
+
+# === HEAVY LIFTING ===
+shopt -s extglob
+
+#======= Take some actions ===========
+action=$( printf "%s\n" "$1" | tr 'A-Z' 'a-z' )
+case $action in
+    "usage")
+        usage
+        ;;
+"tickle" )
+
+	item=$2;
+	[ -z "$item" ] && die "$errmsg"
+	[[ "$item" = +([0-9]) ]] || die "$errmsg"
+
+	datetype=$3; 
+
+	if [ -z "$datetype" ]; then
+				    echo "Tickle to day or month folder?  (d/m)"
+					read ANSWER
+				    if [ "$ANSWER" = "d" ]; then
+							FOLDER="days"
+						echo "Tickle to which day folder?"
+						read NUMBER
+					elif [ "$ANSWER" = "m" ]; then
+							FOLDER="months"
+					echo "Tickle to which month folder?"
+					read NUMBER
+					fi
+	else
+	if expr "$datetype" : ' *[dD].*' > /dev/null; then
+	FOLDER="days"
+	NUMBER="`echo $datetype | sed 's/d//'`"
+	elif expr "$datetype" : ' *[mM].*' > /dev/null; then
+		FOLDER="months"
+	NUMBER="`echo $datetype | sed 's/m//'`"
+	fi
+	fi
+	LENGTH=`expr "$NUMBER" : ".*"`
+	if [ "$LENGTH" = "1" ]; then
+		NUMBER="0$NUMBER"
+	fi
+	if sed -ne "$item p" "$TODO_FILE" | grep "^."; then
+		DELETEME=$(sed "$item!d" "$TODO_FILE")
+	fi
+	echo $DELETEME >> $TICKLER_DIR/$TYPE/$FOLDER/$NUMBER/$NUMBER.txt
+	sed -i.bak -e $2"s/^.*//" -e '/./!d' "$TODO_FILE"
+	echo "Moved todo $2 to $TICKLER_DIR/$TYPE/$FOLDER/$NUMBER/$NUMBER.txt"
+	cleanup;;
+esac

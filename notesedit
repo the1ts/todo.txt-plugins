@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# License:  GPL, http://www.gnu.org/copyleft/gpl.html
+case $1 in
+"usage")
+  echo "$(basename $0) [NOTESFILE]"
+  echo "  Edit NOTESFILE in \$EDITOR."
+  echo "  Use lsnotes to show all notesfiles."
+  ;;
+*)
+	if [ $# -lt 2 ]; then
+		$0 usage
+		exit 1
+	fi
+	cd $TODO_DIR
+
+	# construct file name
+	NOTE_FILE=`echo $2 | sed 's/^~//g'`
+	PRE=`basename $TODO_FILE | sed 's/.txt$//g'`
+
+  # Create file from todo and 'tickled' files
+  cat $TODO_FILE>> $TMP_FILE
+	if [ -n $TICKER_DIR ]; then
+	  find $TICKLER_DIR -mindepth 2 -size 1b -exec cat {} >>$TMP_FILE \;
+	fi
+
+	# If file exists edit it else check lsnotes for pointer then edit 
+	# and add to git if commit action file exists
+	if [ -e $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt ]; then
+	  editor $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt
+  else
+	# If note link in todo.txt exists then edit
+		if [ `grep -o '[^ ]*~[^ ]\+' "$TMP_FILE" | grep '^~' | grep "$2$" | sort -u| sed "s/^~//g"| grep -c $NOTE_FILE` -ge 1 ] ;then
+	  	editor $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt
+			# If file is written and we are using commit action then add to git
+			if [ -e $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt -a -e $TODOTXT_ACTIONS_DIR/commit ]; then
+				git add $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt
+			fi
+		else
+			echo "No such Notes file, use lsnotes to fine notes files"
+		fi
+	fi
+;;
+esac
+	
