@@ -1,6 +1,10 @@
 #!/bin/bash
 # 2009 Paul Mansfield
 # License:  GPL, http://www.gnu.org/copyleft/gpl.html
+
+# Stop Verbose lines, thanks to Mark Harrison
+TODOTXT_VERBOSE=0
+
 case $1 in
 "usage")
   echo "$(basename $0) [BASENAME]"
@@ -10,16 +14,16 @@ case $1 in
 # Show projects in alphabetical order and todo items in priority  order
 echo -e "===== Projects =====\n"
 # Find all projects and sort
-PROJECTS=`grep -o '[^ ]*+[^ ]\+' "$TODOTXT_TODO_FILE" | grep '^+' | sort -u | sed 's/^+//g'` 
+PROJECTS=`grep -o '[^ ]*+[^ ]\+' "$TODO_FILE" | grep '^+' | sort -u | sed 's/^+//g'` 
 # For each project show header and the list of todo items
 for i in $PROJECTS ; do 
 	echo -e "--- $i ---"
 	# Use core _list function, does numbering and colouring for us
-	_list "$TODOTXT_TODO_FILE" "+$i"
+	_list "$TODO_FILE" "+$i"
  echo -e "\n"
 done
 # Show todo items not associated to a project
 echo -e "--- Not in projects ---"
-_list "$TODOTXT_TODO_FILE" | grep -v "+\w" 
+_list "$TODO_FILE" | grep -v "+\w"
   ;;
 esac
