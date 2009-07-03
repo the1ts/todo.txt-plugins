@@ -19,7 +19,7 @@ PROJECTS=`grep -o '[^ ]*+[^ ]\+' "$TODO_FILE" | grep '^+' | sort -u | sed 's/^+/
 for i in $PROJECTS ; do 
 	echo -e "--- $i ---"
 	# Use core _list function, does numbering and colouring for us
-	_list "$TODO_FILE" "+$i" | sed 's/+[a-zA-Z0-9]*//g'
+	_list "$TODO_FILE" "+$i" | sed 's/+[a-zA-Z0-9\{._-\}]*//g'
  echo -e "\n"
 done
 # Show todo items not associated to a project
