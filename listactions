@@ -1,0 +1,15 @@
+#!/bin/bash
+# 2009 Paul Mansfield <paul.mansfield@mansteck.co.uk>
+# License:  GPL, http://www.gnu.org/copyleft/gpl.html
+case $1 in
+"usage")
+  echo "$(basename $0) [BASENAME]"
+  echo "  list all possible actions"
+  ;;
+*)
+	## list all possible actions
+	echo `$0 -h -d $TODOTXT_CFG_FILE | grep "^    " | awk '{print $1}'| \
+	sed 's/|/ /g' ; ls $TODO_ACTIONS_DIR | sort`
+						
+  ;;
+esac
