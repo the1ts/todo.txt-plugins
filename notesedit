@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# 2009 Paul Mansfield <paul.mansfield@mansteck.co.uk>
 # License:  GPL, http://www.gnu.org/copyleft/gpl.html
 case $1 in
 "usage")
