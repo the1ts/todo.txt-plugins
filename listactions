@@ -8,8 +8,7 @@ case $1 in
   ;;
 *)
 	## list all possible actions
-	echo `$0 -h -d $TODOTXT_CFG_FILE | grep "^    " | awk '{print $1}'| \
-	sed 's/|/ /g' ; ls $TODO_ACTIONS_DIR | sort`
-						
+	echo `$TODO_SH -h | grep "^    " | awk '{print $1}'| \
+		sed 's/|/ /g' ; ls $TODO_ACTIONS_DIR | sort`
   ;;
 esac
