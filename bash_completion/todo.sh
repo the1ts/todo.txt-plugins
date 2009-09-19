@@ -11,8 +11,8 @@ function _todo.sh()
 	word="${COMP_WORDS[COMP_CWORD]}"
 	if ((cmd==1)); then
 		# Help me pick a todo.sh action
-		COMPREPLY=($( compgen -W "`todo.sh  -h| grep "^    "| awk '{print $1}'| sed 's/|/ /g' ; \
-		  ls $HOME/.todo.actions.d/`" -- "$word"));
+		# Relies on a plugin lsac (list all actions) from http://github.com/the1ts/todo.txt-plugins
+    COMPREPLY=($(compgen -W "$(eval $our_cmd lsac)" -- "${word}"));
 	else
 		# help me pick a project
 		case ${COMP_WORDS[1]} in
