@@ -7,23 +7,31 @@ TODOTXT_VERBOSE=0
 
 case $1 in
 "usage")
-  echo "$(basename $0) [BASENAME]"
-  echo "  Show Projects and todo items in priority order"
+  echo "$(basename $0) [BASENAME] [TERM]"
+  echo "  Show todo items containing TERM, grouped by project, and displayed in priority order."
+  echo "  If no TERM provided, displays entire todo.txt."
   ;;
 *)
 # Show projects in alphabetical order and todo items in priority  order
-echo -e "===== Projects =====\n"
+echo "===== Projects ====="
+echo ""
 # Find all projects and sort
 PROJECTS=`grep -o '[^ ]*+[^ ]\+' "$TODO_FILE" | grep '^+' | sort -u | sed 's/^+//g'` 
 # For each project show header and the list of todo items
 for i in $PROJECTS ; do 
-	echo -e "--- $i ---"
 	# Use core _list function, does numbering and colouring for us
-	_list "$TODO_FILE" "+$i" | sed 's/+[a-zA-Z0-9\{._\-\}]*//g'
- echo -e "\n"
+    PROJECT_LIST=`_list "$TODO_FILE" "+$i" $2 | sed 's/+[a-zA-Z0-9\{._\-\}]*//g'`
+    if [[ -n "${PROJECT_LIST}" ]]; then
+        echo "--- $i ---"
+        echo "${PROJECT_LIST}"
+        echo ""
+    fi
 done
 # Show todo items not associated to a project
-echo -e "--- Not in projects ---"
-_list "$TODO_FILE" | grep -v "+\w"
+PROJECT_LIST=`_list "$TODO_FILE" $2 | grep -v "+\w"`
+if [[ -n "${PROJECT_LIST}" ]]; then
+    echo "--- Not in projects ---"
+    echo "${PROJECT_LIST}"
+fi
   ;;
 esac
