@@ -1,10 +1,9 @@
 #! /bin/bash 
 # ======= tickle action plugin for Gina Trapani's todo.sh =======
 # Adapted from (Tanja's tickler patch for todo.sh)[http://tanniespace.com/tickler-files-and-todosh/]
-# Version: 0.1
 # Adapted as plugin by:  Braden Grams
+# Adapted further by: Paul Mansfield <paul.mansfield@mansteck.co.uk>
 # License: GPL, http://www.gnu.org/copyleft/gpl.html
-# Release Date: 2009-02-27T13:16:07-0500
 
 #============ And now for some functions =================
 usage()
@@ -47,7 +46,12 @@ case $1 in
 		exec < $i
 		while read LINE
 			do
+				# Obviously months already gone this year are for next year
+				if [ $MONTH -lt `date +'%m'` ]; then	
+					YEAR=$((YEAR+1))
+				fi
 			echo "$YEAR-$MONTH-$DAY $LINE" >> $TMP_FILE
+			YEAR=`date +'%Y'`
 		done
 	done
 	# Sort by date
