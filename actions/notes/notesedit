@@ -15,7 +15,7 @@ case $1 in
 	cd $TODO_DIR
 
 	# construct file name
-	NOTE_FILE=`echo $2 | sed 's/^~//g'`
+	NOTE_FILE=`echo $2 | sed 's/^%//g'`
 	PRE=`basename $TODO_FILE | sed 's/.txt$//g'`
 
   # Create file from todo and 'tickled' files
@@ -30,7 +30,7 @@ case $1 in
 	  editor $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt
   else
 	# If note link in todo.txt exists then edit
-		if [ `grep -o '[^ ]*~[^ ]\+' "$TMP_FILE" | grep '^~' | grep "$2$" | sort -u| sed "s/^~//g"| grep -c $NOTE_FILE` -ge 1 ] ;then
+		if [ `grep -o '[^ ]*%[^ ]\+' "$TMP_FILE" | grep '^%' | grep "$2$" | sort -u| sed "s/^%//g"| grep -c $NOTE_FILE` -ge 1 ] ;then
 	  	editor $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt
 			# If file is written and we are using commit action then add to git
 			if [ -e $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt -a -e $TODOTXT_ACTIONS_DIR/commit ]; then

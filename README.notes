@@ -1,32 +1,38 @@
 README file for notes actions
 
-These actions are to create a notes ability to todo.txt shell script. It enables you to add notes
-files associated with one or many tasks in your todo file or files. The syntax is ~notesfile.
+These actions are to create a notes ability to todo.txt shell script. It 
+enables you to add notes files associated with one or many tasks in your 
+todo file or files. The syntax is %notesfile.
 
 There are a couple of manual tasks required to use these scripts.
 
-1. Create a notes directory in your .todo directory. See $TODO_DIR in your todo.cfg file.
-2. Create an archive directory within the above directory. (Just like tasks notes are archived not
-   deleted).
+1. Create a notes directory in your .todo directory. See $TODO_DIR in 
+   your todo.cfg file.
+2. Create an archive directory within the above directory. (Just like 
+   tasks notes are archived not deleted).
 
 Editing notes
-To create a notes file create a task with your chosen note file name, i.e. append ~note_name to a
-task. Then run notesedit to create that note, i.e. todo.sh notesedit note_name. This also works for
-existing notes.
+To create a notes file create a task with your chosen note file name, 
+i.e. append %note_name to a task. Then run notesedit to create that note, 
+i.e. todo.sh notesedit note_name. This also works for existing notes.
 
 Listing notes
-To list notes run lsnotes, you will get a list of all notes in your todo.txt file.
+To list notes run lsnotes, you will get a list of all notes in your 
+todo.txt file.
 
 Showing notes
-To show notes, there is a notescat action, to use run todo.sh notescat notes_name
+To show notes, there is a notescat action, to use run todo.sh notescat 
+notes_name
 
 Archiving notes
-When you have completed all tasks associated with a notes file you can archive the note file.
-First we check the note_name isn't used anymore then add to notes/archive/note_name.txt. If this file
-already exists we add the date then the contests of the note to archive. This way you can track notes
-over time.
+When you have completed all tasks associated with a notes file you can 
+archive the note file. First we check the note_name isn't used anymore 
+then add to notes/archive/note_name.txt. If this file already exists we 
+add the date then the contests of the note to archive. This way you can 
+track notes over time.
 
-NB. make sure the note name is a single word (no spaces), this is the same restriction as projects
-and contexts. Notes actions also know about files created with the tickle action.
+NB. make sure the note name is a single word (no spaces), this is the 
+same restriction as projects and contexts. Notes actions also know 
+about files created with the tickle action.
 
 

@@ -25,7 +25,7 @@ case $1 in
 	for i in $NOTES ; do
 		NOTE_FILE=`echo $i  | sed "s/$PRE-//g" | sed  "s/\.txt//g"`
 		# if filename isn't in our todo file, archive in notes/archive/$file
-		if [ `grep -o '[^ ]*~[^ ]\+' "$TMP_FILE" | grep '^~' | sort -u| sed "s/^~//g"| grep -c $NOTE_FILE` -eq 0 ] ;then
+		if [ `grep -o '[^ ]*%[^ ]\+' "$TMP_FILE" | grep '^%' | sort -u| sed "s/^%//g"| grep -c $NOTE_FILE` -eq 0 ] ;then
 			echo ""  >> $TODO_DIR/notes/archive/${PRE}-${NOTE_FILE}.txt
 			echo "=======`date +'%F %T'`======" >> $TODO_DIR/notes/archive/${PRE}-${NOTE_FILE}.txt
 			cat $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt >> $TODO_DIR/notes/archive/${PRE}-${NOTE_FILE}.txt
