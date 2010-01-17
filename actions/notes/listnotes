@@ -1,11 +1,21 @@
 #!/bin/bash
 # 2009 Paul Mansfield <paul.mansfield@mansteck.co.uk>
 # License:  GPL, http://www.gnu.org/copyleft/gpl.html
-case $1 in
-"usage")
+
+usage() {
   echo "$(basename $0) [BASENAME]"
   echo "  List notes"
+}
+
+case $1 in
+"usage")
+  usage
   ;;
+
+"-h")
+  usage
+  ;;
+
 *)
   # Create file from todo and 'tickled' files
   cat $TODO_FILE>> $TMP_FILE

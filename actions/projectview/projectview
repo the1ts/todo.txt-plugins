@@ -4,13 +4,21 @@
 
 # Stop Verbose lines, thanks to Mark Harrison
 TODOTXT_VERBOSE=0
-
-case $1 in
-"usage")
+usage () {
   echo "$(basename $0) [BASENAME] [TERM]"
   echo "  Show todo items containing TERM, grouped by project, and displayed in priority order."
   echo "  If no TERM provided, displays entire todo.txt."
+}
+
+case $1 in
+"usage")
+  usage
   ;;
+
+"-h")
+  usage
+  ;;
+
 *)
   # Show projects in alphabetical order and todo items in priority  order
   echo "===== Projects ====="

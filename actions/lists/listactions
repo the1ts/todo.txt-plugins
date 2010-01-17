@@ -1,12 +1,21 @@
 #!/bin/bash
 # 2009 Paul Mansfield <paul.mansfield@mansteck.co.uk>
 # License:  GPL, http://www.gnu.org/copyleft/gpl.html
-case $1 in
-"usage")
+usage () {
   echo "$(basename $0) [BASENAME]"
   echo "  list all possible actions"
+}
+
+case $1 in
+"usage")
+  usage
   ;;
-*)
+
+"-h")
+  usage
+	;;
+
+	*)
 	## list all possible actions
 	echo `$TODO_SH -h | grep "^    " | awk '{print $1}'| \
 		sed 's/|/ /g' ; ls $TODO_ACTIONS_DIR | sort`
