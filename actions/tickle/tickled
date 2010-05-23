@@ -23,38 +23,38 @@ die()
 
 case $1 in
 "usage")
-	usage
-	;;
+    usage
+    ;;
 *)
-	# Head into tickler directory
-	cd $TICKLER_DIR
-	# Find all the files
-	FILES=`find -size 1b ! -name *state.txt`
-	# For each file find its date
-	for i in $FILES ; do
-		TYPE=`echo $i | awk -F '/' '{print $2}'`
-		NUMBER=`echo $i | awk -F '/' '{print $3}'`
-		YEAR=`date +'%Y'`
-		if [ $TYPE = "days" ] ; then
-			MONTH=`date +'%m'`
-			DAY=$NUMBER
-		else
-			MONTH=$NUMBER
-			DAY="01"
-		fi
-		# Add date to start of each line
-		exec < $i
-		while read LINE
-			do
-				# Obviously months already gone this year are for next year
-				if [ $MONTH -lt `date +'%m'` ]; then	
-					YEAR=$((YEAR+1))
-				fi
-			echo "$YEAR-$MONTH-$DAY $LINE" >> $TMP_FILE
-			YEAR=`date +'%Y'`
-		done
-	done
-	# Sort by date
-	sort -n $TMP_FILE
-	;;
+    # Head into tickler directory
+    cd $TICKLER_DIR
+    # Find all the files
+    FILES=`find -size 1b ! -name *state.txt`
+    # For each file find its date
+    for i in $FILES ; do
+        TYPE=`echo $i | awk -F '/' '{print $2}'`
+        NUMBER=`echo $i | awk -F '/' '{print $3}'`
+        YEAR=`date +'%Y'`
+        if [ $TYPE = "days" ] ; then
+            MONTH=`date +'%m'`
+            DAY=$NUMBER
+        else
+            MONTH=$NUMBER
+            DAY="01"
+        fi
+        # Add date to start of each line
+        exec < $i
+        while read LINE
+            do
+                # Obviously months already gone this year are for next year
+                if [ $MONTH -lt `date +'%m'` ]; then    
+                    YEAR=$((YEAR+1))
+                fi
+            echo "$YEAR-$MONTH-$DAY $LINE" >> $TMP_FILE
+            YEAR=`date +'%Y'`
+        done
+    done
+    # Sort by date
+    sort -n $TMP_FILE
+    ;;
 esac
