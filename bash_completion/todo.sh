@@ -29,12 +29,12 @@ function _todo.sh()
           ;;
           # help me pick a context or project
             "a"|"add"|"addto"|"ls"|"list")
-            COMPREPLY=($(compgen -W "$(eval $our_cmd lsprj | tr -d '\r') $(eval $our_cmd lsc | tr -d '\r')" -- "${word}"));
+            COMPREPLY=($(compgen -W "$(eval $our_cmd lsprj | tr -d '\r') $(eval $our_cmd lsc | tr -d '\r') $(eval $our_cmd lsn | tr -d '\r')" -- "${word}"));
           ;;
             # help me pick a context of project if an item number is already set
       "app"|"append"|"prep"|"prepend"|"replace")
               if [ `echo ${COMP_WORDS[2]} | grep -c "[0-9]"` = 1 ] ; then
-              COMPREPLY=($(compgen -W "$(eval $our_cmd lsprj | tr -d '\r') $(eval $our_cmd lsc | tr -d '\r')" -- "${word}"));
+              COMPREPLY=($(compgen -W "$(eval $our_cmd lsprj | tr -d '\r') $(eval $our_cmd lsc | tr -d '\r') $(eval $our_cmd lsn | tr -d '\r')" -- "${word}"));
         fi
             ;;
     esac
