@@ -1,4 +1,5 @@
 #!/bin/bash
+shift
 
 if [ "$1" = "usage" ]; then
     "$TODO_FULL_SH" projectrename usage
