@@ -72,28 +72,23 @@ case $1 in
 ;;
 
 *)
-    # if we are running across all ITEM#
-    # be careful to change only oldproject
+    # Get the ITEM# to run over
     if [ -z `echo "$*" | sed 's/ //g'` ]; then
-        sed -i.bak "{s|\ $oldproject |\ $newproject |;s|\ $oldproject$|\ $newproject|}" "$TODO_FILE"
-            [ $TODOTXT_VERBOSE -gt 0 ] && {
-                NEWTODO=$(sed "$item!d" "$TODO_FILE")
-                echo "$item: $NEWTODO"
-                echo "TODO: $item prioritized ($newpri)."
-            }
+        items=`grep -n $oldproject $TODO_FILE | sed 's/:.*//g'`
     else
-        # we have ITEM# to change
-        # becareful to change only oldproject
-        # backup todo file first
-        for item in $* ; do
-            sed -i $item"{s|\ $oldproject |\ $newproject |;s|\ $oldproject$|\ $newproject|}" "$TODO_FILE"
-            [ $TODOTXT_VERBOSE -gt 0 ] && {
-                NEWTODO=$(sed "$item!d" "$TODO_FILE")
-                echo "$item: $NEWTODO"
-                echo "TODO: $item prioritized ($newpri)."
-            }
-        done
+        items=$*
     fi
+
+    # Change project
+    for item in $items ; do
+        item=`printf "%02d" $item`
+        sed -i $item"{s|\ $oldproject |\ $newproject |;s|\ $oldproject$|\ $newproject|}" "$TODO_FILE"
+        NEWTODO=`sed -n ${item}p $TODO_FILE`
+        [ $TODOTXT_VERBOSE -gt 0 ] && {
+            echo "$item: $NEWTODO"
+            echo "TODO: $item updated project $oldproject to $newproject."
+        }
+    done
 ;;
 esac
 
