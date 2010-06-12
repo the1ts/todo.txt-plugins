@@ -1,0 +1,100 @@
+#!/bin/bash
+# 2010 Paul Mansfield <paul.mansfield@mansteck.co.uk>
+# License:    GPL, http://www.gnu.org/copyleft/gpl.html
+action=$1
+shift
+
+usage() {
+    echo "$(basename $0) [old project] [new project] [ITEM#]"
+    echo "    Rename old project to new project in ITEM#"
+    echo "    If no ITEM# given the rename all instances of old project"
+}
+
+# Check things look okay.
+tests () {
+    # test number of options
+    if [ $# -lt 2 ]; then
+       echo "   Not enough options"
+       usage
+       exit 1
+    fi
+
+    # do we have that project?
+    if [ `$TODO_FULL_SH lsprj | grep -c "$1"` -ne 1 ]; then
+       echo "Cannot find project $1"
+       echo "We have: `$TODO_FULL_SH lsprj | tr  '\n' ' '`"
+       echo ""
+       usage
+       exit 1
+    fi
+
+    # is new project valid as a project?
+    if [ `echo $2 | grep -c '^+\w'` -ne 1 ]; then
+        echo "New project is not valid"
+        usage
+        exit 1
+    fi
+
+    oldproject=$1;shift
+    newproject=$1;shift
+    # Check our ITEM# are numeric
+    if [ ! -z `echo "$*" | sed 's/ //g'` ]; then
+        if [ `echo "$*" | sed 's/ //g' | grep -c "^[0-9]\{1,\}$"` -ne 1 ]; then
+            echo "ITEM# should be numeric only"
+            usage
+            exit 1
+        fi
+        # Check oldproject is found in those ITEM#
+        for item in $*; do
+            if [ `sed -n ${item}p $TODO_FILE | grep -c "$oldproject"` -ne 1 ]; then
+                echo "    Cannot find project $oldproject in line number $item"
+                usage
+                exit 1
+        fi
+        done
+    fi
+}
+
+# main
+tests $*
+
+# Set some variables
+oldproject=$1;shift
+newproject=$1;shift
+
+case $1 in
+"usage")
+    usage
+;;
+
+"-h")
+    usage
+;;
+
+*)
+    # if we are running across all ITEM#
+    # be careful to change only oldproject
+    if [ -z `echo "$*" | sed 's/ //g'` ]; then
+        sed -i.bak "{s|\ $oldproject |\ $newproject |;s|\ $oldproject$|\ $newproject|}" "$TODO_FILE"
+            [ $TODOTXT_VERBOSE -gt 0 ] && {
+                NEWTODO=$(sed "$item!d" "$TODO_FILE")
+                echo "$item: $NEWTODO"
+                echo "TODO: $item prioritized ($newpri)."
+            }
+    else
+        # we have ITEM# to change
+        # becareful to change only oldproject
+        # backup todo file first
+        for item in $* ; do
+            sed -i $item"{s|\ $oldproject |\ $newproject |;s|\ $oldproject$|\ $newproject|}" "$TODO_FILE"
+            [ $TODOTXT_VERBOSE -gt 0 ] && {
+                NEWTODO=$(sed "$item!d" "$TODO_FILE")
+                echo "$item: $NEWTODO"
+                echo "TODO: $item prioritized ($newpri)."
+            }
+        done
+    fi
+;;
+esac
+
+# vim: tabstop=4 softtabstop=4 shiftwidth=4 noexpandtab 
