@@ -5,7 +5,7 @@ case $1 in
 "usage")
     echo "$(basename $0) [NOTESFILE]"
     echo "  Edit NOTESFILE in \$EDITOR."
-    echo "  Use lsnotes to show all notesfiles."
+    echo "  Use listnotes to show all notesfiles."
 ;;
 
 *)

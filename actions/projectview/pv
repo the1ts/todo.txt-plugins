@@ -1,4 +1,6 @@
 #!/bin/bash
+action=$!
+shift
 
 [ "$1" = "usage" ] && exit 0
 shift
