@@ -1,6 +1,7 @@
 #!/bin/bash
 
-[ "$1" = "usage" ] && exit 0
-shift
-
-"$TODO_SH" notesedit "$@"
+if [ "$1" = "usage" ]; then
+    "$TODO_FULL_SH" notesedit usage
+else
+    "$TODO_FULL_SH" notesedit "$@"
+fi

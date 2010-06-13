@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # 2009 Paul Mansfield <paul.mansfield@mansteck.co.uk>
 # License:  GPL, http://www.gnu.org/copyleft/gpl.html
+action=$1
+shift
 
 case $1 in
 "usage")
@@ -31,10 +33,9 @@ case $1 in
     		cat $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt >> $TODO_DIR/notes/archive/${PRE}-${NOTE_FILE}.txt
     		rm $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt 
     		# If we are using commit action then add to git
-      if [ -e $TODOTXT_ACTIONS_DIR/commit ]; then
-        git add $TODO_DIR/notes/archive/${PRE}-${NOTE_FILE}.txt
-      fi
-
+            if [ -e $TODOTXT_ACTIONS_DIR/commit ]; then
+                git add $TODO_DIR/notes/archive/${PRE}-${NOTE_FILE}.txt
+            fi
     	fi
     done
 ;;

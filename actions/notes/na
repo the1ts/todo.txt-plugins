@@ -1,6 +1,7 @@
 #!/bin/bash
 
-[ "$1" = "usage" ] && exit 0
-shift
-
-"$TODO_SH" notesarchive "$@"
+if [ "$1" = "usage" ]; then
+    "$TODO_FULL_SH" notesarchive usage
+else
+    "$TODO_FULL_SH" notesarchive "$@"
+fi

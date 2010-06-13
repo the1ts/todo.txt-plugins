@@ -1,7 +1,10 @@
-#/bin/bash
+#!/bin/bash
 # 2009 Paul Mansfield <paul.mansfield@mansteck.co.uk>
 # License:  GPL, http://www.gnu.org/copyleft/gpl.html
-usage () {
+action=$1
+shift
+
+usage (){
   echo "$(basename $0) [BASENAME]"
   echo "  list all possible actions"
 }
@@ -17,7 +20,7 @@ case $1 in
 
 *)
     ## list all possible actions
-    echo `$TODO_SH -h | grep "^    " | awk '{print $1}'| \
+    echo `$TODO_FULL_SH -h | grep "^    " | awk '{print $1}'| \
     sed 's/|/ /g' ; ls $TODO_ACTIONS_DIR | sort`
 ;;
 esac

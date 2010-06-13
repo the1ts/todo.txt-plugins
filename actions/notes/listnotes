@@ -1,6 +1,8 @@
 #!/bin/bash
 # 2009 Paul Mansfield <paul.mansfield@mansteck.co.uk>
 # License:    GPL, http://www.gnu.org/copyleft/gpl.html
+action=$1
+shift
 
 usage() {
     echo "$(basename $0) [BASENAME]"
@@ -22,7 +24,6 @@ case $1 in
 	if [ -n $TICKER_DIR ]; then
     	find $TICKLER_DIR -mindepth 2 -size 1b -exec cat {} >>$TMP_FILE \;
 	fi
-
 	grep -o '[^ ]*%[^ ]\+' "$TMP_FILE" | grep '^%' | grep "$2$" | sort -u
 ;;
 esac
