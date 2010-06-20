@@ -3,9 +3,10 @@
 # License:  GPL, http://www.gnu.org/copyleft/gpl.html
 case $1 in
 "usage")
-    echo "$(basename $0) [NOTESFILE]"
-    echo "  Edit NOTESFILE in \$EDITOR."
-    echo "  Use listnotes to show all notesfiles."
+    echo "  $(basename $0) [NOTESFILE]"
+    echo "    Edit NOTESFILE in \$EDITOR."
+    echo "    Use listnotes to show all notesfiles."
+    echo ""
 ;;
 
 *)

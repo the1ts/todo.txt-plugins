@@ -3,8 +3,9 @@
 # License:  GPL, http://www.gnu.org/copyleft/gpl.html
 case $1 in
 "usage")
-    echo "$(basename $0) [NOTESFILE]"
-    echo "  Cat notes file, use lsnotes to get list of notes"
+    echo "  $(basename $0) [NOTESFILE]"
+    echo "    Cat notes file, use lsnotes to get list of notes"
+    echo ""
 ;;
 
 *)

@@ -1,12 +1,14 @@
 #!/bin/bash
 # 2009 Paul Mansfield <paul.mansfield@mansteck.co.uk>
 # License:    GPL, http://www.gnu.org/copyleft/gpl.html
-action=$1
-shift
+if [ $1 != "usage" ]; then
+    action=$1;shift
+fi
 
 usage() {
-    echo "$(basename $0) [BASENAME]"
+    echo "  $(basename $0)"
     echo "    List notes"
+    echo ""
 }
 
 case $1 in

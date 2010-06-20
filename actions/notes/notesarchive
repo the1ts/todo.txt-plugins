@@ -1,14 +1,13 @@
 #!/usr/bin/env bash
 # 2009 Paul Mansfield <paul.mansfield@mansteck.co.uk>
 # License:  GPL, http://www.gnu.org/copyleft/gpl.html
-action=$1
-shift
 
 case $1 in
 "usage")
-    echo "$(basename $0) [BASENAME]"
-    echo "  archive notes file nolonger in todo file."
-    echo "  If BASENAME is not given, defaults to 'todo'."
+    echo "  $(basename $0)"
+    echo "    archive notes file nolonger in todo file."
+    echo "    If BASENAME is not given, defaults to 'todo'."
+    echo ""
 ;;
 *)
     # construct file name

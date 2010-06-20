@@ -1,13 +1,17 @@
 #!/bin/bash
 # 2010 Paul Mansfield <paul.mansfield@mansteck.co.uk>
 # License:    GPL, http://www.gnu.org/copyleft/gpl.html
-action=$1
-shift
+
+if [ $1 != "usage" ]; then
+    action=$1;shift
+fi
 
 usage() {
-    echo "$(basename $0) [old project] [new project] [ITEM#]"
+    echo "  $(basename $0) [old project] [new project] [ITEM#]"
     echo "    Rename old project to new project in ITEM#"
     echo "    If no ITEM# given the rename all instances of old project"
+    echo ""
+    exit 0
 }
 
 # Check things look okay.
@@ -55,13 +59,6 @@ tests () {
     fi
 }
 
-# main
-tests $*
-
-# Set some variables
-oldproject=$1;shift
-newproject=$1;shift
-
 case $1 in
 "usage")
     usage
@@ -72,6 +69,13 @@ case $1 in
 ;;
 
 *)
+    # Tests
+    tests $*
+
+    # Set some variables
+    oldproject=$1;shift
+    newproject=$1;shift
+
     # Get the ITEM# to run over
     if [ -z `echo "$*" | sed 's/ //g'` ]; then
         items=`grep -n $oldproject $TODO_FILE | sed 's/:.*//g'`

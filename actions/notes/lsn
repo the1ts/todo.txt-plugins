@@ -1,6 +1,4 @@
 #!/bin/bash
-action=$1
-shift
 
 if [ "$1" = "usage" ]; then
     "$TODO_FULL_SH" listnotes usage
