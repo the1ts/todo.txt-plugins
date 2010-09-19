@@ -36,7 +36,7 @@ done
 #  Show  todo  items  not  associated  to  a  project
 CONTEXT_LIST=`_list  "$TODO_FILE"  "$@"  |  grep  -v  "\@\w"`
 if  [[  -n  "${CONTEXT_LIST}"  ]];  then
-    echo  "---  Not  in  a context  ---"
+    echo  "---  No context  ---"
     echo  "${CONTEXT_LIST}"
 fi
 
