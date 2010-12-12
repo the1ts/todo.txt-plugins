@@ -1,6 +1,20 @@
 #!/usr/bin/env bash
 # 2009 Paul Mansfield <paul.mansfield@mansteck.co.uk>
 # License:  GPL, http://www.gnu.org/copyleft/gpl.html
+
+# functions
+add () {
+    if [ -e $TODOTXT_ACTIONS_DIR/commit ]; then
+        git add $1 > /dev/null 2>&1
+    fi
+}
+
+commit () {
+    if [ -e $TODOTXT_ACTIONS_DIR/commit ]; then
+        git commit $1 -m "$(date +'%Y-%m-%d %H:%M:%S')" > /dev/null 2>&1
+    fi
+}
+
 case $1 in
 "usage")
     echo "  $(basename $0) [NOTESFILE]"
@@ -20,24 +34,24 @@ case $1 in
     NOTE_FILE=`echo $2 | sed 's/^%//g'`
     PRE=`basename $TODO_FILE | sed 's/.txt$//g'`
 
-  # Create file from todo and 'tickled' files
-  cat $TODO_FILE>> $TMP_FILE
+    # Create file from todo and 'tickled' files
+    cat $TODO_FILE>> $TMP_FILE
     if [ -n $TICKER_DIR ]; then
-      find $TICKLER_DIR -mindepth 2 -size 1b -exec cat {} >>$TMP_FILE \;
+       find $TICKLER_DIR -mindepth 2 -size 1b -exec cat {} >>$TMP_FILE \;
     fi
 
     # If file exists edit it else check lsnotes for pointer then edit 
     # and add to git if commit action file exists
     if [ -e $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt ]; then
         editor $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt
+        add $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt
+        commit $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt
     else
     # If note link in todo.txt exists then edit
         if [ `grep -o '[^ ]*%[^ ]\+' "$TMP_FILE" | grep '^%' | grep "$2$" | sort -u| sed "s/^%//g"| grep -c $NOTE_FILE` -ge 1 ] ;then
             editor $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt
-            # If file is written and we are using commit action then add to git
-            if [ -e $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt -a -e $TODOTXT_ACTIONS_DIR/commit ]; then
-                git add $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt
-            fi
+            add $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt
+            commit $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt
         else
             echo "No such Notes file, use lsnotes to fine notes files"
         fi
