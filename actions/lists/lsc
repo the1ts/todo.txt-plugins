@@ -1,0 +1,7 @@
+#!/bin/bash
+
+if [ "$1" = "usage" ]; then
+    "$TODO_FULL_SH" listcontexts usage
+else
+    "$TODO_FULL_SH" listcontexts "$@"
+fi
