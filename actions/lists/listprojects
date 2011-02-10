@@ -28,5 +28,6 @@ case $1 in
             find $TICKLER_DIR -mindepth 2 -size 1b -exec cat {} >>$TMP_FILE \;
         fi
         grep -o '\+\w*' "$TMP_FILE" | sort -u | sed 's/^\+//'
+        rm -rf $TMP_FILE
 		;;
 esac
