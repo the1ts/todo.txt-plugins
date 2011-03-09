@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # 2009 Paul Mansfield <paul.mansfield@mansteck.co.uk>
 # License:  GPL, http://www.gnu.org/copyleft/gpl.html
-
+set -x
 # functions
 add () {
     if [ -e $TODOTXT_ACTIONS_DIR/commit ]; then
@@ -12,6 +12,14 @@ add () {
 commit () {
     if [ -e $TODOTXT_ACTIONS_DIR/commit ]; then
         git commit $1 -m "$(date +'%Y-%m-%d %H:%M:%S')" > /dev/null 2>&1
+    fi
+}
+
+editor () {
+    if [ -z $EDITOR ]; then
+        echo "set the \$EDITOR variable"
+    else
+       $EDITOR $1 
     fi
 }
 
@@ -35,9 +43,13 @@ case $1 in
     PRE=`basename $TODO_FILE | sed 's/.txt$//g'`
 
     # Create file from todo and 'tickled' files
-    cat $TODO_FILE>> $TMP_FILE
+    cat $TODO_FILE > $TMP_FILE
     if [ -n $TICKER_DIR ]; then
        find $TICKLER_DIR -mindepth 2 -size 1b -exec cat {} >>$TMP_FILE \;
+    fi
+
+    if [ ! -d $TODO_DIR/notes/ ]; then
+        mkdir -p $TODO_DIR/notes/
     fi
 
     # If file exists edit it else check lsnotes for pointer then edit 
