@@ -60,7 +60,7 @@ case $action in
         fi
 	else
         # If we are already given date details, check before using
-        if [ `echo $datetpe | grep -c "^[dDmM][0-9]\{1,2\}$"` -ne 1 ]; then
+        if [ `echo $datetype | grep -c "^[dDmM][0-9]\{1,2\}$"` -ne 1 ]; then
             usage
             die "$errmsg"
         fi
