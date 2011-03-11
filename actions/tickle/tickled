@@ -27,9 +27,9 @@ case $1 in
     ;;
 *)
     # Head into tickler directory
-    cd $TICKLER_DIR
+    cd $TICKLER_DIR || exit
     # Find all the files
-    FILES=`find -size 1b ! -name *state.txt`
+    FILES=`ind -type f -size +1c ! -name *state.txt`
     # For each file find its date
     for i in $FILES ; do
         TYPE=`echo $i | awk -F '/' '{print $2}'`
