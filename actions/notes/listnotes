@@ -27,6 +27,6 @@ case $1 in
         if [ -n $TICKER_DIR ]; then
             find $TICKLER_DIR -mindepth 2 -size 1b -exec cat {} >>$TMP_FILE \;
         fi
-        grep -o '%\w*' "$TMP_FILE" | sort -u
+        grep -o '[^ ]*%[^ ]\+' "$TMP_FILE" | grep ^% | sort -u
 		;;
 esac
