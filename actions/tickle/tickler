@@ -1,0 +1,124 @@
+#!/bin/bash
+
+variables () {
+    TODAY_DIR="$TICKLER_DIR/today/"
+    todayday=$(date '+%d');
+    todaymonth=$(date '+%m');
+    todayyear=$(date '+%Y');
+    now="$today-$month-$year"
+    statefile="$TICKLER_DIR/.tickler_state.txt"
+    if [ -f ${statefile} ]; then
+        statefile_day=`awk -F - '{print $1}' ${statefile}`
+        statefile_month=`awk -F - '{print $2}' ${statefile}`
+        statefile_year=`awk -F - '{print $3}' ${statefile}`
+    else
+        statefile_day=01
+        statefile_month=01
+        statefile_year=1970
+    fi
+}
+
+set_state () {
+    echo "${todayday}-${todaymonth}-${todayyear}" > ${statefile}
+    exit 0
+}
+
+message () {
+    if [ $TODOTXT_VERBOSE -eq 1 ]; then
+        echo $@
+    fi
+}
+
+do_all () {
+    # Treat as first run, so move all to current todo file
+    for file in $TICKLER_DIR/${1}/*/*.txt ; do
+        if [ -f $file ]; then
+            cat $file >> "$TODO_FILE" || exit 1
+            rm -rf $file || exit 1
+            message "Tickle file for `echo ${1} | sed 's/s$//'` `echo $file | awk -F '/' '{print $NF-1+1}'` moved to todo file"
+        fi
+    done
+}
+
+some_days () {
+    # Been completed this month, just run for required days
+    for day in `seq -w ${statefile_day} ${todayday}` ; do
+        if [ -f $TICKLER_DIR/days/${day}/${day}.txt ]; then
+            cat $TICKLER_DIR/days/${day}/${day}.txt >> "$TODO_FILE" || exit 1
+            cat /dev/null > $TICKLER_DIR/days/${day}/*.txt
+            message "Tickle file for day `echo ${day} | awk '{print $NF-1+1}'` moved to todo file"
+        fi
+    done
+}
+
+not_this_month () {
+    # Not run this month, so move required months
+    for month in `seq -w ${statefile_month} ${todaymonth}` ; do
+        if [ -f $TICKLER_DIR/months/${month}/${month}.txt ]; then
+            cat $TICKLER_DIR/months/${month}/${month}.txt >> "$TODO_FILE" || exit 1
+            cat /dev/null > $TICKLER_DIR/months/${month}/*.txt
+            message "Tickle file for month `echo ${month} | awk '{print $NF-1+1}'` moved to todo file"
+        fi
+    done
+}
+
+till_end_of_year () {
+    # Not run this current year, so catch up the rest of the year
+    for month in `seq -w ${statefile_month} 12`; do
+        if [ -f $TICKLER_DIR/months/${month}/${month}.txt ]; then
+            cat $TICKLER_DIR/months/${month}/${month}.txt >> "$TODO_FILE" || exit 1
+            cat /dev/null > $TICKLER_DIR/months/${month}/*.txt
+            message "Tickle file for month `echo ${month} | awk '{print $NF-1+1}'` moved to todo file"
+        fi
+    done
+}
+
+
+from_beginning_of_year () {
+	# Not run since start of year, so catch up required months
+    for month in `seq -w 1 ${todaymonth}`; do
+        if [ -f $TICKLER_DIR/months/${month}/${month}.txt ]; then
+	        cat $TICKLER_DIR/months/${month}/${month}.txt >> "$TODO_FILE" || exit 1
+	        cat /dev/null > $TICKLER_DIR/months/${month}/*.txt
+            message "Tickle file for month `echo ${month} | awk '{print $NF-1+1}'` moved to todo file"
+        fi
+	done
+}
+
+# Main
+variables
+# No state file, treat as new
+if [ ! -f ${statefile} ] ; then
+    do_all days
+    do_all months
+    set_state
+fi
+# Not run for over a year
+if [ ${statefile_year} -ne ${todayyear} -a ${statefile_month} -lt ${todaymonth} ]; then
+    do_all months
+    do_all days
+    set_state
+fi
+# Not run this year, but less than a year.
+if [ ${statefile_year} -ne ${todayyear} -a ${statefile_month} -gt ${todaymonth} ]; then
+    do_all days
+    till_end_of_year
+    from_beginning_of_year
+    set_state
+fi
+# This year, but not this month
+if [ ${statefile_year} -eq ${todayyear} -a ${statefile_month} -ne ${todaymonth} ]; then
+    not_this_month
+    set_state
+fi
+# This year and this month
+if [ ${statefile_year} -eq ${todayyear} -a ${statefile_month} -eq ${todaymonth} -a ${statefile_day} -ne ${todayday} ]; then
+    some_days
+    set_state
+fi
+# Today
+if [ ${statefile_year} -eq ${todayyear} -a ${statefile_month} -eq ${todaymonth} -a ${statefile_day} -eq ${todayday} ]; then
+    exit 0
+fi
+# Something wrong, exit
+exit 1
