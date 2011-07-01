@@ -2,7 +2,11 @@ README file for notes actions
 
 These actions are to create a notes ability to todo.txt shell script. It 
 enables you to add notes files associated with one or many tasks in your 
-todo file or files. The syntax is %notesfile.
+todo file or files. 
+
+The old syntax was %notesfile. This has been changed as per the 
+Add-on File Format Definitions from The todo.txt format page. The new
+syntax is note:notesfile.
 
 There are a couple of manual tasks required to use these scripts.
 
