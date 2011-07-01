@@ -8,4 +8,4 @@ tickled shows a chronological list of all future tasks. So you can move/remove f
 
 tickler handles moving tickled items into your todo file. This can be run from cron on a daily basis, or simply run manually to catch up at any time. The best guess is made when run manually, so anything between the last run and now is pushed to the todo file.
 
-There is only one manual task to be done, adding TICKLER_DIR variable in your config file .cfg.
+There is only one manual task to be done, adding TICKLER_DIR variable in your config file .cfg. Then if this directory structure is not there, the first run of the tickler action will create it.
