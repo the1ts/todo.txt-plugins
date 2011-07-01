@@ -13,7 +13,7 @@ case $1 in
         $0 usage
         exit 1
     fi
-    NOTE_FILE=`echo $2 | sed 's/^%//g'`
+    NOTE_FILE=`echo $2 | sed 's/^note://g'`
     PRE=`basename $TODO_FILE | sed 's/.txt$//g'`
     if [ -e $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt ]; then
         cat $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt

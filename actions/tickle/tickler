@@ -1,4 +1,17 @@
 #!/bin/bash
+# Tickler action script, makes, then processes the tickler files
+# Copyright 2011 Paul Mansfield <paul.mansfield@mansteck.co.uk>
+# License: GPL, http://www.gnu.org/copyleft/gpl.html
+
+usage()
+{
+    sed -e 's/^    //' <<EndUsage 
+        tickler [init]
+          Create and process tickler files in tickler files: $TICKLER_DIR.
+EndUsage
+    exit 1
+}
+
 
 variables () {
     todayday=$(date '+%d');
@@ -102,6 +115,10 @@ from_beginning_of_year () {
 
 # Main
 variables
+# Check if being run for help usage
+if [ "$2" = "usage" ]; then
+    usage
+fi
 # Should we run init
 if [ "$2" = "init" ]; then
     init

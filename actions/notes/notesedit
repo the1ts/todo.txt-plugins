@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # 2009 Paul Mansfield <paul.mansfield@mansteck.co.uk>
 # License:  GPL, http://www.gnu.org/copyleft/gpl.html
-set -x
+
 # functions
 add () {
     if [ -e $TODOTXT_ACTIONS_DIR/commit ]; then
@@ -12,14 +12,6 @@ add () {
 commit () {
     if [ -e $TODOTXT_ACTIONS_DIR/commit ]; then
         git commit $1 -m "$(date +'%Y-%m-%d %H:%M:%S')" > /dev/null 2>&1
-    fi
-}
-
-editor () {
-    if [ -z $EDITOR ]; then
-        echo "set the \$EDITOR variable"
-    else
-       $EDITOR $1 
     fi
 }
 
@@ -39,17 +31,13 @@ case $1 in
     cd $TODO_DIR
 
     # construct file name
-    NOTE_FILE=`echo $2 | sed 's/^%//g'`
+    NOTE_FILE=`echo $2 | sed 's/^note://g'`
     PRE=`basename $TODO_FILE | sed 's/.txt$//g'`
 
     # Create file from todo and 'tickled' files
-    cat $TODO_FILE > $TMP_FILE
+    cat $TODO_FILE>> $TMP_FILE
     if [ -n $TICKER_DIR ]; then
        find $TICKLER_DIR -mindepth 2 -size 1b -exec cat {} >>$TMP_FILE \;
-    fi
-
-    if [ ! -d $TODO_DIR/notes/ ]; then
-        mkdir -p $TODO_DIR/notes/
     fi
 
     # If file exists edit it else check lsnotes for pointer then edit 
@@ -60,7 +48,7 @@ case $1 in
         commit $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt
     else
     # If note link in todo.txt exists then edit
-        if [ `grep -o '[^ ]*%[^ ]\+' "$TMP_FILE" | grep '^%' | grep "$2$" | sort -u| sed "s/^%//g"| grep -c $NOTE_FILE` -ge 1 ] ;then
+        if [ `grep -o '[^ ]*note:[^ ]\+' "$TMP_FILE" | grep '^note:' | grep "$2$" | sort -u| sed "s/^note://g"| grep -c $NOTE_FILE` -ge 1 ] ;then
             editor $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt
             add $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt
             commit $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt
