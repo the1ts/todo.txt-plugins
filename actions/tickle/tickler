@@ -1,7 +1,6 @@
 #!/bin/bash
 
 variables () {
-    TODAY_DIR="$TICKLER_DIR/today/"
     todayday=$(date '+%d');
     todaymonth=$(date '+%m');
     todayyear=$(date '+%Y');
@@ -29,12 +28,28 @@ message () {
     fi
 }
 
+init () {
+    # Check then initialize the directories
+    if [ -e $TICKLER_DIR ]; then
+        if [ ! -d $TICKLER_DIR/days ] ; then
+            for i in `seq -w 1 31` ; do 
+                mkdir -p $TICKLER_DIR/days/$i || exit 1
+            done
+        fi
+        if [ ! -d $TICKLER_DIR/months ] ; then
+            for i in `seq -w 1 12` ; do 
+                mkdir -p $TICKLER_DIR/months/$i || exit 1
+            done
+        fi
+    fi
+}
+
 do_all () {
     # Treat as first run, so move all to current todo file
     for file in $TICKLER_DIR/${1}/*/*.txt ; do
         if [ -f $file ]; then
             cat $file >> "$TODO_FILE" || exit 1
-            rm -rf $file || exit 1
+            cat /dev/null >> $file || exit 1
             message "Tickle file for `echo ${1} | sed 's/s$//'` `echo $file | awk -F '/' '{print $NF-1+1}'` moved to todo file"
         fi
     done
@@ -87,8 +102,14 @@ from_beginning_of_year () {
 
 # Main
 variables
-# No state file, treat as new
+# Should we run init
+if [ "$2" = "init" ]; then
+    init
+    exit 0
+fi
+# No state file, treat as new, so run init, incase we haven't been run
 if [ ! -f ${statefile} ] ; then
+    init
     do_all days
     do_all months
     set_state
