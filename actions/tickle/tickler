@@ -12,7 +12,6 @@ EndUsage
     exit 1
 }
 
-
 variables () {
     todayday=$(date '+%d');
     todaymonth=$(date '+%m');
@@ -57,12 +56,20 @@ init () {
     fi
 }
 
+prepend () {
+    if [ ! -z "${TICKLER_PREPEND}" ]; then
+        sed "s/^/${TICKLER_PREPEND}/" >> "$TODO_FILE"
+    else
+        sed 's///g' >> "$TODO_FILE"
+    fi
+}
+
 do_all () {
     # Treat as first run, so move all to current todo file
     for file in $TICKLER_DIR/${1}/*/*.txt ; do
         if [ -f $file ]; then
-            cat $file >> "$TODO_FILE" || exit 1
-            cat /dev/null >> $file || exit 1
+            cat $file | prepend >> "$TODO_FILE" || exit 1
+            rm -rf $file || exit 1
             message "Tickle file for `echo ${1} | sed 's/s$//'` `echo $file | awk -F '/' '{print $NF-1+1}'` moved to todo file"
         fi
     done
@@ -72,8 +79,30 @@ some_days () {
     # Been completed this month, just run for required days
     for day in `seq -w ${statefile_day} ${todayday}` ; do
         if [ -f $TICKLER_DIR/days/${day}/${day}.txt ]; then
-            cat $TICKLER_DIR/days/${day}/${day}.txt >> "$TODO_FILE" || exit 1
-            cat /dev/null > $TICKLER_DIR/days/${day}/*.txt
+            cat $TICKLER_DIR/days/${day}/${day}.txt | prepend >> "$TODO_FILE" || exit 1
+            rm -rf $TICKLER_DIR/days/${day}/*.txt || exit 1
+            message "Tickle file for day `echo ${day} | awk '{print $NF-1+1}'` moved to todo file"
+        fi
+    done
+}
+
+catchup_to_end_of_month () {
+    # Catch up to the end of the month
+    for day in `seq -w ${statefile_day} 31` ; do
+        if [ -f $TICKLER_DIR/days/${day}/${day}.txt ]; then
+            cat $TICKLER_DIR/days/${day}/${day}.txt | prepend >> "$TODO_FILE" || exit 1
+            rm -rf $TICKLER_DIR/days/${day}/*.txt || exit 1
+            message "Tickle file for day `echo ${day} | awk '{print $NF-1+1}'` moved to todo file"
+        fi
+    done
+}
+
+catchup_from_beginning_of_month () {
+    # Catchup from start of month to now
+    for day in `seq -w 1 ${todayday}` ; do
+        if [ -f $TICKLER_DIR/days/${day}/${day}.txt ]; then
+            cat $TICKLER_DIR/days/${day}/${day}.txt | prepend >> "$TODO_FILE" || exit 1
+            rm -rf $TICKLER_DIR/days/${day}/*.txt || exit 1
             message "Tickle file for day `echo ${day} | awk '{print $NF-1+1}'` moved to todo file"
         fi
     done
@@ -83,8 +112,8 @@ not_this_month () {
     # Not run this month, so move required months
     for month in `seq -w ${statefile_month} ${todaymonth}` ; do
         if [ -f $TICKLER_DIR/months/${month}/${month}.txt ]; then
-            cat $TICKLER_DIR/months/${month}/${month}.txt >> "$TODO_FILE" || exit 1
-            cat /dev/null > $TICKLER_DIR/months/${month}/*.txt
+            cat $TICKLER_DIR/months/${month}/${month}.txt | prepend || exit 1
+            rm -rf  $TICKLER_DIR/months/${month}/${month}.txt || exit 1
             message "Tickle file for month `echo ${month} | awk '{print $NF-1+1}'` moved to todo file"
         fi
     done
@@ -94,8 +123,8 @@ till_end_of_year () {
     # Not run this current year, so catch up the rest of the year
     for month in `seq -w ${statefile_month} 12`; do
         if [ -f $TICKLER_DIR/months/${month}/${month}.txt ]; then
-            cat $TICKLER_DIR/months/${month}/${month}.txt >> "$TODO_FILE" || exit 1
-            cat /dev/null > $TICKLER_DIR/months/${month}/*.txt
+            cat $TICKLER_DIR/months/${month}/${month}.txt | prepend >> "$TODO_FILE" || exit 1
+            rm -rf $TICKLER_DIR/months/${month}/${month}.txt || exit 1
             message "Tickle file for month `echo ${month} | awk '{print $NF-1+1}'` moved to todo file"
         fi
     done
@@ -106,8 +135,8 @@ from_beginning_of_year () {
 	# Not run since start of year, so catch up required months
     for month in `seq -w 1 ${todaymonth}`; do
         if [ -f $TICKLER_DIR/months/${month}/${month}.txt ]; then
-	        cat $TICKLER_DIR/months/${month}/${month}.txt >> "$TODO_FILE" || exit 1
-	        cat /dev/null > $TICKLER_DIR/months/${month}/*.txt
+	        cat $TICKLER_DIR/months/${month}/${month}.txt | prepend >> "$TODO_FILE" || exit 1
+	        rm -rf  $TICKLER_DIR/months/${month}/${month}.txt || exit 1
             message "Tickle file for month `echo ${month} | awk '{print $NF-1+1}'` moved to todo file"
         fi
 	done
@@ -135,6 +164,13 @@ fi
 if [ ${statefile_year} -ne ${todayyear} -a ${statefile_month} -lt ${todaymonth} ]; then
     do_all months
     do_all days
+    set_state
+fi
+# Last run last month
+if [ ${statefile_year} -eq ${todayyear} -a ${statefile_month} -eq $((${todaymonth}-1)) ]; then
+    catchup_to_end_of_month
+    catchup_from_beginning_of_month
+    not_this_month
     set_state
 fi
 # Not run this year, but less than a year.
