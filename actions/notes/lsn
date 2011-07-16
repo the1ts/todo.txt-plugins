@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 if [ "$1" = "usage" ]; then
     "$TODO_FULL_SH" listnotes usage

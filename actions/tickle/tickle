@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/usr/bin/env bash
 # ======= tickle action plugin for Gina Trapani's todo.sh =======
 # Adapted from (Tanja's tickler patch for todo.sh)[http://tanniespace.com/tickler-files-and-todosh/]
 # Version: 0.1
