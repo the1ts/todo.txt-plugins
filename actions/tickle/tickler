@@ -1,17 +1,20 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
 # Tickler action script, makes, then processes the tickler files
 # Copyright 2011 Paul Mansfield <paul.mansfield@mansteck.co.uk>
 # License: GPL, http://www.gnu.org/copyleft/gpl.html
 
-usage()
+useage()
 {
     sed -e 's/^    //' <<EndUsage 
         tickler [init]
           Create and process tickler files in tickler files: $TICKLER_DIR.
+          Set $TICKLE_PREPEND if you want prepend something to the moved lines.
 EndUsage
     exit 1
 }
 
+# Setup some variables
 variables () {
     todayday=$(date '+%d');
     todaymonth=$(date '+%m');
@@ -19,9 +22,9 @@ variables () {
     now="$today-$month-$year"
     statefile="$TICKLER_DIR/.tickler_state.txt"
     if [ -f ${statefile} ]; then
-        statefile_day=`awk -F - '{print $1}' ${statefile}`
-        statefile_month=`awk -F - '{print $2}' ${statefile}`
-        statefile_year=`awk -F - '{print $3}' ${statefile}`
+        statefile_day=$(awk -F - '{print $1}' ${statefile})
+        statefile_month=$(awk -F - '{print $2}' ${statefile})
+        statefile_year=$(awk -F - '{print $3}' ${statefile})
     else
         statefile_day=01
         statefile_month=01
@@ -29,17 +32,20 @@ variables () {
     fi
 }
 
+# Update the state file
 set_state () {
     echo "${todayday}-${todaymonth}-${todayyear}" > ${statefile}
     exit 0
 }
 
+# Turn on messaging if verbose is set
 message () {
     if [ $TODOTXT_VERBOSE -eq 1 ]; then
         echo $@
     fi
 }
 
+# Create the directories etc if needed
 init () {
     # Check then initialize the directories
     if [ -e $TICKLER_DIR ]; then
@@ -56,11 +62,12 @@ init () {
     fi
 }
 
+# Function to prepend some text to moved items if variable set
 prepend () {
     if [ ! -z "${TICKLER_PREPEND}" ]; then
-        sed "s/^/${TICKLER_PREPEND}/" >> "$TODO_FILE"
+        sed "s/^/${TICKLER_PREPEND}/"
     else
-        sed 's///g' >> "$TODO_FILE"
+        sed 's///g'
     fi
 }
 
@@ -69,63 +76,69 @@ do_all () {
     for file in $TICKLER_DIR/${1}/*/*.txt ; do
         if [ -f $file ]; then
             cat $file | prepend >> "$TODO_FILE" || exit 1
-            rm -rf $file || exit 1
             message "Tickle file for `echo ${1} | sed 's/s$//'` `echo $file | awk -F '/' '{print $NF-1+1}'` moved to todo file"
+            message $(cat $file | prepend)
+            rm -rf $file || exit 1
         fi
     done
 }
 
 some_days () {
     # Been completed this month, just run for required days
-    for day in `seq -w ${statefile_day} ${todayday}` ; do
+    for day in $(seq -w ${statefile_day} ${todayday}) ; do
         if [ -f $TICKLER_DIR/days/${day}/${day}.txt ]; then
             cat $TICKLER_DIR/days/${day}/${day}.txt | prepend >> "$TODO_FILE" || exit 1
-            rm -rf $TICKLER_DIR/days/${day}/*.txt || exit 1
             message "Tickle file for day `echo ${day} | awk '{print $NF-1+1}'` moved to todo file"
+            message $(cat $TICKLER_DIR/days/${day}/${day}.txt | prepend)
+            rm -rf $TICKLER_DIR/days/${day}/*.txt || exit 1
         fi
     done
 }
 
 catchup_to_end_of_month () {
     # Catch up to the end of the month
-    for day in `seq -w ${statefile_day} 31` ; do
+    for day in $(seq -w ${statefile_day} 31) ; do
         if [ -f $TICKLER_DIR/days/${day}/${day}.txt ]; then
             cat $TICKLER_DIR/days/${day}/${day}.txt | prepend >> "$TODO_FILE" || exit 1
-            rm -rf $TICKLER_DIR/days/${day}/*.txt || exit 1
             message "Tickle file for day `echo ${day} | awk '{print $NF-1+1}'` moved to todo file"
+            message $(cat $TICKLER_DIR/days/${day}/${day}.txt | prepend)
+            rm -rf $TICKLER_DIR/days/${day}/*.txt || exit 1
         fi
     done
 }
 
 catchup_from_beginning_of_month () {
     # Catchup from start of month to now
-    for day in `seq -w 1 ${todayday}` ; do
+    for day in $(seq -w 1 ${todayday}) ; do
         if [ -f $TICKLER_DIR/days/${day}/${day}.txt ]; then
             cat $TICKLER_DIR/days/${day}/${day}.txt | prepend >> "$TODO_FILE" || exit 1
-            rm -rf $TICKLER_DIR/days/${day}/*.txt || exit 1
             message "Tickle file for day `echo ${day} | awk '{print $NF-1+1}'` moved to todo file"
+            messae $(cat $TICKLER_DIR/days/${day}/${day}.txt | prepend)
+            rm -rf $TICKLER_DIR/days/${day}/*.txt || exit 1
         fi
     done
 }
 
 not_this_month () {
     # Not run this month, so move required months
-    for month in `seq -w ${statefile_month} ${todaymonth}` ; do
+    for month in $(seq -w ${statefile_month} ${todaymonth}) ; do
         if [ -f $TICKLER_DIR/months/${month}/${month}.txt ]; then
             cat $TICKLER_DIR/months/${month}/${month}.txt | prepend || exit 1
-            rm -rf  $TICKLER_DIR/months/${month}/${month}.txt || exit 1
             message "Tickle file for month `echo ${month} | awk '{print $NF-1+1}'` moved to todo file"
+            message $(cat $TICKLER_DIR/months/${month}/${month}.txt | prepend)
+            rm -rf  $TICKLER_DIR/months/${month}/${month}.txt || exit 1
         fi
     done
 }
 
 till_end_of_year () {
     # Not run this current year, so catch up the rest of the year
-    for month in `seq -w ${statefile_month} 12`; do
+    for month in $(seq -w ${statefile_month} 12); do
         if [ -f $TICKLER_DIR/months/${month}/${month}.txt ]; then
             cat $TICKLER_DIR/months/${month}/${month}.txt | prepend >> "$TODO_FILE" || exit 1
-            rm -rf $TICKLER_DIR/months/${month}/${month}.txt || exit 1
             message "Tickle file for month `echo ${month} | awk '{print $NF-1+1}'` moved to todo file"
+            message $(cat $TICKLER_DIR/months/${month}/${month}.txt | prepend)
+            rm -rf $TICKLER_DIR/months/${month}/${month}.txt || exit 1
         fi
     done
 }
@@ -133,20 +146,21 @@ till_end_of_year () {
 
 from_beginning_of_year () {
 	# Not run since start of year, so catch up required months
-    for month in `seq -w 1 ${todaymonth}`; do
+    for month in $(seq -w 1 ${todaymonth}); do
         if [ -f $TICKLER_DIR/months/${month}/${month}.txt ]; then
 	        cat $TICKLER_DIR/months/${month}/${month}.txt | prepend >> "$TODO_FILE" || exit 1
-	        rm -rf  $TICKLER_DIR/months/${month}/${month}.txt || exit 1
             message "Tickle file for month `echo ${month} | awk '{print $NF-1+1}'` moved to todo file"
+            message $(cat $TICKLER_DIR/months/${month}/${month}.txt | prepend)
+	        rm -rf  $TICKLER_DIR/months/${month}/${month}.txt || exit 1
         fi
 	done
 }
 
-# Main
+# Main piece of work
 variables
-# Check if being run for help usage
-if [ "$2" = "usage" ]; then
-    usage
+# Check if being run for help useage
+if [ "$2" = "useage" ]; then
+    useage
 fi
 # Should we run init
 if [ "$2" = "init" ]; then
