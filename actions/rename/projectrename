@@ -1,12 +1,12 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # 2010 Paul Mansfield <paul.mansfield@mansteck.co.uk>
 # License:    GPL, http://www.gnu.org/copyleft/gpl.html
 
-if [ $1 != "usage" ]; then
+if [ $1 != "useage" ]; then
     action=$1;shift
 fi
 
-usage() {
+useage() {
     echo "  $(basename $0) [old project] [new project] [ITEM#]"
     echo "    Rename old project to new project in ITEM#"
     echo "    If no ITEM# given the rename all instances of old project"
@@ -19,40 +19,40 @@ tests () {
     # test number of options
     if [ $# -lt 2 ]; then
        echo "   Not enough options"
-       usage
+       useage
        exit 1
     fi
 
     # do we have that project?
-    if [ `$TODO_FULL_SH lsprj | grep -c "$1"` -ne 1 ]; then
+    if [ $($TODO_FULL_SH lsprj | grep -c "$1") -ne 1 ]; then
        echo "Cannot find project $1"
        echo "We have: `$TODO_FULL_SH lsprj | tr  '\n' ' '`"
        echo ""
-       usage
+       useage
        exit 1
     fi
 
     # is new project valid as a project?
-    if [ `echo $2 | grep -c '^+\w'` -ne 1 ]; then
+    if [ $(echo $2 | grep -c '^+\w') -ne 1 ]; then
         echo "New project is not valid"
-        usage
+        useage
         exit 1
     fi
 
     oldproject=$1;shift
     newproject=$1;shift
     # Check our ITEM# are numeric
-    if [ ! -z `echo "$*" | sed 's/ //g'` ]; then
-        if [ `echo "$*" | sed 's/ //g' | grep -c "^[0-9]\{1,\}$"` -ne 1 ]; then
+    if [ ! -z $(echo "$*" | sed 's/ //g') ]; then
+        if [ $(echo "$*" | sed 's/ //g' | grep -c "^[0-9]\{1,\}$") -ne 1 ]; then
             echo "ITEM# should be numeric only"
-            usage
+            useage
             exit 1
         fi
         # Check oldproject is found in those ITEM#
         for item in $*; do
-            if [ `sed -n ${item}p $TODO_FILE | grep -c "$oldproject"` -ne 1 ]; then
+            if [ $(sed -n ${item}p $TODO_FILE | grep -c "$oldproject") -ne 1 ]; then
                 echo "    Cannot find project $oldproject in line number $item"
-                usage
+                useage
                 exit 1
         fi
         done
@@ -60,12 +60,12 @@ tests () {
 }
 
 case $1 in
-"usage")
-    usage
+"useage")
+    useage
 ;;
 
 "-h")
-    usage
+    useage
 ;;
 
 *)
@@ -77,17 +77,17 @@ case $1 in
     newproject=$1;shift
 
     # Get the ITEM# to run over
-    if [ -z `echo "$*" | sed 's/ //g'` ]; then
-        items=`grep -n $oldproject $TODO_FILE | sed 's/:.*//g'`
+    if [ -z $(echo "$*" | sed 's/ //g') ]; then
+        items=$(grep -n $oldproject $TODO_FILE | sed 's/:.*//g')
     else
         items=$*
     fi
 
     # Change project
     for item in $items ; do
-        item=`printf "%02d" $item`
+        item=$(printf "%02d" $item)
         sed -i $item"{s|\ $oldproject |\ $newproject |;s|\ $oldproject$|\ $newproject|}" "$TODO_FILE"
-        NEWTODO=`sed -n ${item}p $TODO_FILE`
+        NEWTODO=$(sed -n ${item}p $TODO_FILE)
         [ $TODOTXT_VERBOSE -gt 0 ] && {
             echo "$item: $NEWTODO"
             echo "TODO: $item updated project $oldproject to $newproject."

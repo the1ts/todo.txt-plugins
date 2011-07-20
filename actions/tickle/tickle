@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/usr/bin/env bash
 # ======= tickle action plugin for Gina Trapani's todo.sh =======
 # Adapted from (Tanja's tickler patch for todo.sh)[http://tanniespace.com/tickler-files-and-todosh/]
 # Version: 0.1
@@ -6,7 +6,7 @@
 # Tidy up and adapted for newer todo.sh versions
 # License: GPL, http://www.gnu.org/copyleft/gpl.html
 
-usage()
+useage()
 {
     sed -e 's/^    //' <<EndUsage 
         tickle NUMBER [dmNUMBER]
@@ -35,8 +35,8 @@ shopt -s extglob
 
 action=$( printf "%s\n" "$1" | tr 'A-Z' 'a-z' )
 case $action in
-    "usage")
-        usage
+    "useage")
+        useage
         ;;
     "tickle" )
 	item=$2;
@@ -60,29 +60,29 @@ case $action in
         fi
 	else
         # If we are already given date details, check before using
-        if [ `echo $datetype | grep -c "^[dDmM][0-9]\{1,2\}$"` -ne 1 ]; then
-            usage
+        if [ $(echo $datetype | grep -c "^[dDmM][0-9]\{1,2\}$") -ne 1 ]; then
+            useage
             die "$errmsg"
         fi
 
         # Are we going to use a day or month tickle file?
 	    if expr "$datetype" : ' *[dD].*' > /dev/null; then
 	        FOLDER="days"
-	        NUMBER="`echo $datetype | sed 's/d//'`"
+            NUMBER="$(echo $datetype | sed 's/d//')"
 	    elif expr "$datetype" : ' *[mM].*' > /dev/null; then
-		FOLDER="months"
-	    NUMBER="`echo $datetype | sed 's/m//'`"
+		    FOLDER="months"
+	        NUMBER="`echo $datetype | sed 's/m//'`"
 	    fi
 	fi
 	
     # Add leading zeros
-    LENGTH=`expr "$NUMBER" : ".*"`
+    LENGTH=$(expr "$NUMBER" : ".*")
 	if [ "$LENGTH" = "1" ]; then
 		NUMBER="0$NUMBER"
 	fi
 
     # Main work, find the item to be tickled
-	if sed -ne "$item p" "$TODO_FILE" | grep "^."; then
+    if [ $(sed -ne "$item p" "$TODO_FILE" | grep "^.") ]; then
 		DELETEME=$(sed "$item!d" "$TODO_FILE")
 	fi
 

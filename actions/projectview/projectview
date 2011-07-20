@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # 2009 Paul Mansfield
 # License: GPL, http://www.gnu.org/copyleft/gpl.html
 
@@ -8,7 +8,7 @@ TODOTXT_VERBOSE=0
 action=$1
 shift
 
-[ "$action" = "usage" ] && {
+[ "$action" = "useage" ] && {
     echo "    $(basename $0) [TERM...]"
     echo "      Show todo items containing TERM, grouped by project, and displayed in"
     echo "      priority order. If no TERM provided, displays entire todo.txt."
@@ -21,12 +21,12 @@ echo "=====  Projects  ====="
 echo ""
 
 # Find all projects and sort
-PROJECTS=`grep -o '[^ ]*+[^ ]\+' "$TODO_FILE" | grep '^+' | sort -u | sed 's/^+//g'`  
+PROJECTS=$(grep -o '[^ ]*+[^ ]\+' "$TODO_FILE" | grep '^+' | sort -u | sed 's/^+//g' )
 
 # For each project show header and the list of todo items
 for project in $PROJECTS ; do 
     # Use core _list function, does numbering and colouring for us
-    PROJECT_LIST=`_list "$TODO_FILE" "+$project\b" "$@" | sed 's/\ *+[a-zA-Z0-9\{._-\}]*\ */ /g'`
+    PROJECT_LIST=$(_list "$TODO_FILE" "+$project\b" "$@" | sed 's/\ *+[a-zA-Z0-9\{._-\}]*\ */ /g' )
     if [[ -n "${PROJECT_LIST}" ]]; then
         echo  "---  $project  ---"
         echo  "${PROJECT_LIST}"
@@ -35,7 +35,7 @@ for project in $PROJECTS ; do
 done
 
 # Show todo items not associated to a project
-PROJECT_LIST=`_list "$TODO_FILE" "$@" | grep -v "+\w"`
+PROJECT_LIST=$(_list "$TODO_FILE" "$@" | grep -v "+\w" )
 if [[ -n "${PROJECT_LIST}" ]]; then
     echo "--- Not in projects ---"
     echo "${PROJECT_LIST}"

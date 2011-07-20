@@ -1,6 +1,6 @@
-#!/bin/bash
-#  2010  Paul  Mansfield
-#  License:    GPL,  http://www.gnu.org/copyleft/gpl.html
+#!/usr/bin/env bash
+# 2010 Paul Mansfield
+# License:  GPL, http://www.gnu.org/copyleft/gpl.html
 
 # Inspired by andreasw
 TODOTXT_VERBOSE=0
@@ -8,35 +8,35 @@ TODOTXT_VERBOSE=0
 action=$1
 shift
 
-[  "$action"  =  "usage"  ]  &&  {
-    echo  "        $(basename  $0)  [TERM...]"
-    echo  "            Show  todo  items  containing  TERM,  grouped  by  context,  and  displayed  in"
-    echo  "            priority  order.  If  no  TERM  provided,  displays  entire  todo.txt."
-    echo  ""
+[ "$action" = "useage" ] && {
+    echo "    $(basename $0) [TERM...]"
+    echo "      Show todo items containing TERM, grouped by context, and displayed in"
+    echo "      priority order. If no TERM provided, displays entire todo.txt."
+    echo ""
     exit
 }
 
-#  Show  contexts  in  alphabetical  order  and  todo  items  in  priority    order
-echo  "=====  Contexts  ====="
-echo  ""
+# Show contexts in alphabetical order and todo items in priority  order
+echo "===== Contexts ====="
+echo ""
 
-#  Find  all  contexts  and  sort
-CONTEXTS=`grep  -o  '[^  ]*@[^  ]\+'  "$TODO_FILE"  |  grep  '^@'  |  sort  -u  |  sed  's/^@//g'`  
+# Find all contexts and sort
+CONTEXTS=$(grep -o '[^ ]*@[^ ]\+' "$TODO_FILE" | grep '^@' | sort -u | sed 's/^@//g')
 
-#  For  each  project  show  header  and  the  list  of  todo  items
-for  i  in  $CONTEXTS  ;  do  
-    #  Use  core  _list  function,  does  numbering  and  colouring  for  us
-    CONTEXT_LIST=`_list  "$TODO_FILE"  "\@$i" "$@" |  sed  's/\ *\@[a-zA-Z0-9\{._\-\}]*\ */ /g'`
-    if  [[  -n  "${CONTEXT_LIST}"  ]];  then
-        echo  "---  $i  ---"
-        echo  "${CONTEXT_LIST}"
-        echo  ""
+# For each project show header and the list of todo items
+for i in $CONTEXTS ; do 
+    # Use core _list function, does numbering and colouring for us
+    CONTEXT_LIST=$(_list "$TODO_FILE" "\@$i" "$@" | sed 's/\ *\@[a-zA-Z0-9\{._\-\}]*\ */ /g')
+    if [[ -n "${CONTEXT_LIST}" ]]; then
+        echo "--- $i ---"
+        echo "${CONTEXT_LIST}"
+        echo ""
     fi
 done
-#  Show  todo  items  not  associated  to  a  project
-CONTEXT_LIST=`_list  "$TODO_FILE"  "$@"  |  grep  -v  "\@\w"`
-if  [[  -n  "${CONTEXT_LIST}"  ]];  then
-    echo  "---  No context  ---"
-    echo  "${CONTEXT_LIST}"
+# Show todo items not associated to a project
+CONTEXT_LIST=$(_list "$TODO_FILE" "$@" | grep -v "\@\w")
+if [[ -n "${CONTEXT_LIST}" ]]; then
+    echo "--- No context ---"
+    echo "${CONTEXT_LIST}"
 fi
 

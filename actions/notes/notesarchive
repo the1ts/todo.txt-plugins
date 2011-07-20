@@ -3,7 +3,7 @@
 # License:  GPL, http://www.gnu.org/copyleft/gpl.html
 
 case $1 in
-"usage")
+"useage")
     echo "  $(basename $0)"
     echo "    archive notes file nolonger in todo file."
     echo "    If BASENAME is not given, defaults to 'todo'."
@@ -26,7 +26,7 @@ case $1 in
     for i in $NOTES ; do
     	NOTE_FILE=`echo $i  | sed "s/$PRE-//g" | sed  "s/\.txt//g"`
     	# if filename isn't in our todo file, archive in notes/archive/$file
-    	if [ `grep -o '[^ ]*note:[^ ]\+' "$TMP_FILE" | grep '^note:' | sort -u| sed "s/^note://g"| grep -c $NOTE_FILE` -eq 0 ] ;then
+        if [ $(grep -o '[^ ]*note:[^ ]\+' "$TMP_FILE" | grep '^note:' | sort -u| sed "s/^note://g"| grep -c $NOTE_FILE) -eq 0 ] ;then
     		echo ""  >> $TODO_DIR/notes/archive/${PRE}-${NOTE_FILE}.txt
     		echo "=======`date +'%F %T'`======" >> $TODO_DIR/notes/archive/${PRE}-${NOTE_FILE}.txt
     		cat $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt >> $TODO_DIR/notes/archive/${PRE}-${NOTE_FILE}.txt

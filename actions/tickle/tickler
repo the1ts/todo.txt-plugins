@@ -50,12 +50,12 @@ init () {
     # Check then initialize the directories
     if [ -e $TICKLER_DIR ]; then
         if [ ! -d $TICKLER_DIR/days ] ; then
-            for i in `seq -w 1 31` ; do 
+            for i in $(seq -w 1 31) ; do 
                 mkdir -p $TICKLER_DIR/days/$i || exit 1
             done
         fi
         if [ ! -d $TICKLER_DIR/months ] ; then
-            for i in `seq -w 1 12` ; do 
+            for i in $(seq -w 1 12) ; do 
                 mkdir -p $TICKLER_DIR/months/$i || exit 1
             done
         fi

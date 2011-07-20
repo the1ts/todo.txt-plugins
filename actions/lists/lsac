@@ -1,7 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-if [ "$1" = "usage" ]; then
-    "$TODO_FULL_SH" listactions usage
+if [ "$1" = "useage" ]; then
+    "$TODO_FULL_SH" listactions useage
 else
     "$TODO_FULL_SH" listactions "$@"
 fi

@@ -1,6 +1,6 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-[ "$1" = "usage" ] && exit 0
+[ "$1" = "useage" ] && exit 0
 shift
 
 "$TODO_SH" projectview "$@"

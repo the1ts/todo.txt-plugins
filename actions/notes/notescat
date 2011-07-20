@@ -1,8 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # 2009 Paul Mansfield <paul.mansfield@mansteck.co.uk>
 # License:  GPL, http://www.gnu.org/copyleft/gpl.html
 case $1 in
-"usage")
+"useage")
     echo "  $(basename $0) [NOTESFILE]"
     echo "    Cat notes file, use lsnotes to get list of notes"
     echo ""
@@ -10,11 +10,11 @@ case $1 in
 
 *)
     if [ $# -lt 2 ]; then
-        $0 usage
+        $0 useage
         exit 1
     fi
-    NOTE_FILE=`echo $2 | sed 's/^note://g'`
-    PRE=`basename $TODO_FILE | sed 's/.txt$//g'`
+    NOTE_FILE=$(echo $2 | sed 's/^note://g')
+    PRE=$(basename $TODO_FILE | sed 's/.txt$//g')
     if [ -e $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt ]; then
         cat $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt
     else
