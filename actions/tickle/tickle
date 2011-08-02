@@ -5,7 +5,7 @@
 # Adapted as plugin by:  Braden Grams
 # Tidy up and adapted for newer todo.sh versions
 # License: GPL, http://www.gnu.org/copyleft/gpl.html
-
+set -x
 useage()
 {
     sed -e 's/^    //' <<EndUsage 
@@ -33,17 +33,17 @@ cleanup()
 shopt -s extglob
 
 
-action=$( printf "%s\n" "$1" | tr 'A-Z' 'a-z' )
+action=$1
 case $action in
     "useage")
-        useage
-        ;;
+    useage
+    ;;
     "tickle" )
-	item=$2;
-	[ -z "$item" ] && die "$errmsg"
-	[[ "$item" = +([0-9]) ]] || die "$errmsg"
+   	item=$2;
+   	[ -z "$item" ] && useage
+   	[[ "$item" = +([0-9]) ]] || useage
 
-	datetype=$3; 
+    datetype=$3; 
     
     # If we don't have date details ask for them.
     if [ -z "$datetype" ]; then
@@ -58,33 +58,35 @@ case $action in
             echo "Tickle to which month folder?"
             read NUMBER
         fi
-	else
+    else
         # If we are already given date details, check before using
         if [ $(echo $datetype | grep -c "^[dDmM][0-9]\{1,2\}$") -ne 1 ]; then
             useage
-            die "$errmsg"
         fi
 
         # Are we going to use a day or month tickle file?
-	    if expr "$datetype" : ' *[dD].*' > /dev/null; then
-	        FOLDER="days"
+        if expr "$datetype" : ' *[dD].*' > /dev/null; then
+            FOLDER="days"
             NUMBER="$(echo $datetype | sed 's/d//')"
-	    elif expr "$datetype" : ' *[mM].*' > /dev/null; then
-		    FOLDER="months"
-	        NUMBER="`echo $datetype | sed 's/m//'`"
-	    fi
-	fi
-	
+        elif expr "$datetype" : ' *[mM].*' > /dev/null; then
+            FOLDER="months"
+            NUMBER="`echo $datetype | sed 's/m//'`"
+        fi
+    fi
+    
     # Add leading zeros
     LENGTH=$(expr "$NUMBER" : ".*")
-	if [ "$LENGTH" = "1" ]; then
-		NUMBER="0$NUMBER"
-	fi
+    if [ "$LENGTH" = "1" ]; then
+               NUMBER="0$NUMBER"
+    fi
 
     # Main work, find the item to be tickled
-    if [ $(sed -ne "$item p" "$TODO_FILE" | grep "^.") ]; then
-		DELETEME=$(sed "$item!d" "$TODO_FILE")
-	fi
+    if [ $(sed -ne "$item p" "$TODO_FILE" | grep -c "^.") -eq 1 ]; then
+    DELETEME=$(sed "$item!d" "$TODO_FILE")
+    else
+        echo "Item number $item does not exist in todo file."
+        useage
+    fi
 
     # Check we have the required directories, if not create them
     if [ ! -e $TICKLER_DIR/$TYPE/$FOLDER/$NUMBER/ ]; then
@@ -92,9 +94,9 @@ case $action in
     fi
 
     # Write the tickle file, then remove from the todo.txt file
-	echo $DELETEME >> $TICKLER_DIR/$TYPE/$FOLDER/$NUMBER/$NUMBER.txt
-	sed -i.bak -e $2"s/^.*//" -e '/./!d' "$TODO_FILE"
-	echo "Moved todo $2 to $TICKLER_DIR/$TYPE/$FOLDER/$NUMBER/$NUMBER.txt"
-	cleanup
+    echo $DELETEME >> $TICKLER_DIR/$TYPE/$FOLDER/$NUMBER/$NUMBER.txt
+    sed -i.bak -e $2"s/^.*//" -e '/./!d' "$TODO_FILE"
+    echo "Moved todo $2 to $TICKLER_DIR/$TYPE/$FOLDER/$NUMBER/$NUMBER.txt"
+    cleanup
     ;;
 esac
