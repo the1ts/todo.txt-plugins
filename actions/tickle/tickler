@@ -181,7 +181,7 @@ if [ ${statefile_year} -ne ${todayyear} -a ${statefile_month} -lt ${todaymonth} 
     set_state
 fi
 # Last run last month
-if [ ${statefile_year} -eq ${todayyear} -a ${statefile_month} -eq $((${todaymonth}-1)) ]; then
+if [ ${statefile_year} -eq ${todayyear} -a ${statefile_month} -eq $((${todaymonth#0}-1)) ]; then
     catchup_to_end_of_month
     catchup_from_beginning_of_month
     not_this_month
