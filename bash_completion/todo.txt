@@ -41,6 +41,6 @@ function _todo.sh() {
     fi
 }
 # add any aliases for todo.sh after _todo.sh
-complete -F _todo.sh todo.sh t tt tw tp
+complete -F _todo.sh todo.sh 
     
     
