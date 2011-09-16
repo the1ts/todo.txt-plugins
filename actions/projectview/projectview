@@ -8,6 +8,9 @@ TODOTXT_VERBOSE=0
 action=$1
 shift
 
+# Stop filter now and run in a controlled manner after the _list function is run
+TODOTXT_DISABLE_FILTER=1 
+
 [ "$action" = "useage" ] && {
     echo "    $(basename $0) [TERM...]"
     echo "      Show todo items containing TERM, grouped by project, and displayed in"
@@ -29,7 +32,7 @@ for project in $PROJECTS ; do
     PROJECT_LIST=$(_list "$TODO_FILE" "+$project\b" "$@" | sed 's/\ *+[a-zA-Z0-9{._-}]*\ */ /g' )
     if [[ -n "${PROJECT_LIST}" ]]; then
         echo  "---  $project  ---"
-        echo  "${PROJECT_LIST}"
+        echo  "${PROJECT_LIST}" | eval $TODOTXT_FINAL_FILTER 
         echo  ""
     fi
 done
@@ -38,5 +41,5 @@ done
 PROJECT_LIST=$(_list "$TODO_FILE" "$@" | grep -v "+\w" )
 if [[ -n "${PROJECT_LIST}" ]]; then
     echo "--- Not in projects ---"
-    echo "${PROJECT_LIST}"
+    echo "${PROJECT_LIST}" | eval $TODOTXT_FINAL_FILTER
 fi
