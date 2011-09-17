@@ -2,7 +2,7 @@ README file for tickler scripts
 
 This is based off Braden Grams tickle work at http://github.com/bgrams.
 
-tickle has been tidied up somewhat. Now todo.txt exports all variables so the script is simplified only.
+tickle has been tidied up somewhat. Now todo.txt exports all variables so the script is simplified.
 
 tickled shows a chronological list of all future tasks. So you can move/remove future tasks if required.
 
