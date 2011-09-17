@@ -29,7 +29,7 @@ CONTEXTS=$(grep -o '[^ ]*@[^ ]\+' "$TODO_FILE" | grep '^@' | sort -u | sed 's/^@
 # For each project show header and the list of todo items
 for i in $CONTEXTS ; do 
     # Use core _list function, does numbering and colouring for us
-    CONTEXT_LIST=$(_list "$TODO_FILE" "\@$i" "$@" | sed 's/\ *\@[a-zA-Z0-9{._-}]*\ */ /g')
+    CONTEXT_LIST=$(_list "$TODO_FILE" "\@$i" "$@" | sed 's/\ *@[a-zA-Z0-9._\-]*\ */ /g')
     if [[ -n "${CONTEXT_LIST}" ]]; then
         echo "--- $i ---"
         echo "${CONTEXT_LIST}" | eval $TODOTXT_FINAL_FILTER
