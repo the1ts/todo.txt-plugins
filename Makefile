@@ -26,5 +26,5 @@ dist: $(DISTFILES)
 
 .PHONY: clean
 clean:
-	rm -f $(DISTNAME).tar.gz $(DISTNAME).zip
+	rm -f $(DISTNAME).tar.gz $(DISTNAME).zip VERSION-FILE
 
