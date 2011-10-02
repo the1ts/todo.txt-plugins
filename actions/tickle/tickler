@@ -60,8 +60,6 @@ init () {
             done
         fi
     fi
-}
-
 # Function to prepend some text to moved items if variable set
 prepend () {
     if [ ! -z "${TICKLER_PREPEND}" ]; then
@@ -123,7 +121,7 @@ not_this_month () {
     # Not run this month, so move required months
     for month in $(seq -w ${statefile_month} ${todaymonth}) ; do
         if [ -f $TICKLER_DIR/months/${month}/${month}.txt ]; then
-            cat $TICKLER_DIR/months/${month}/${month}.txt | prepend || exit 1
+            cat $TICKLER_DIR/months/${month}/${month}.txt | prepend >> "$TODO_FILE" || exit 1
             message "Tickle file for month `echo ${month} | awk '{print $NF-1+1}'` moved to todo file"
             message $(cat $TICKLER_DIR/months/${month}/${month}.txt | prepend)
             rm -rf  $TICKLER_DIR/months/${month}/${month}.txt || exit 1
