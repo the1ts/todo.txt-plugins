@@ -60,6 +60,8 @@ init () {
             done
         fi
     fi
+}
+
 # Function to prepend some text to moved items if variable set
 prepend () {
     if [ ! -z "${TICKLER_PREPEND}" ]; then
