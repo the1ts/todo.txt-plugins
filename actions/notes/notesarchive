@@ -3,18 +3,19 @@
 # License:  GPL, http://www.gnu.org/copyleft/gpl.html
 
 case $1 in
-"useage")
+    "useage")
     echo "  $(basename $0)"
-    echo "    archive notes file nolonger in todo file."
+    echo "    archive notes files nolonger in todo file."
     echo "    If BASENAME is not given, defaults to 'todo'."
     echo ""
-;;
-*)
+    ;;
+
+    *)
     # construct file name
-    PRE=`basename $TODO_FILE | sed 's/.txt$//g'`
-    PRETICKLER=`basename $TODO_FILE | sed 's/_todo.txt$//g'`
-    cd $TODO_DIR/notes
-    NOTES=`ls $PRE* 2>/dev/null`
+    PRE=$(basename $TODO_FILE | sed 's/.txt$//g')
+    PRETICKLER=$(basename $TODO_FILE | sed 's/_todo.txt$//g')
+    cd $TODO_DIR/notes || exit 1
+    NOTES=$(find . -maxdepth 1 -name "$PRE*" | sed 's/\.\///g')
 
     # Create file from todo and 'tickled' files
     cat $TODO_FILE>> $TMP_FILE
@@ -24,19 +25,18 @@ case $1 in
 
     # for each file, remove $PRE and see if its in todo or 'tickled' files
     for i in $NOTES ; do
-    	NOTE_FILE=`echo $i  | sed "s/$PRE-//g" | sed  "s/\.txt//g"`
-    	# if filename isn't in our todo file, archive in notes/archive/$file
+        NOTE_FILE=$(echo $i  | sed -e "s/$PRE-//g" -e "s/\.txt//g")
+        # if filename isn't in our todo file, archive in notes/archive/$file
         if [ $(grep -o '[^ ]*note:[^ ]\+' "$TMP_FILE" | grep '^note:' | sort -u| sed "s/^note://g"| grep -c $NOTE_FILE) -eq 0 ] ;then
-    		echo ""  >> $TODO_DIR/notes/archive/${PRE}-${NOTE_FILE}.txt
-    		echo "=======`date +'%F %T'`======" >> $TODO_DIR/notes/archive/${PRE}-${NOTE_FILE}.txt
-    		cat $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt >> $TODO_DIR/notes/archive/${PRE}-${NOTE_FILE}.txt
-    		rm $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt 
-    		# If we are using commit action then add to git
+            echo ""  >> $TODO_DIR/notes/archive/${PRE}-${NOTE_FILE}.txt
+            echo "=======`date +'%F %T'`======" >> $TODO_DIR/notes/archive/${PRE}-${NOTE_FILE}.txt
+            cat $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt >> $TODO_DIR/notes/archive/${PRE}-${NOTE_FILE}.txt || exit 1
+            rm $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt 
+            # If we are using commit action then add to git
             if [ -e $TODOTXT_ACTIONS_DIR/commit ]; then
                 git add $TODO_DIR/notes/archive/${PRE}-${NOTE_FILE}.txt
             fi
-    	fi
+        fi
     done
-;;
+    ;;
 esac
-    
