@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# 2011 Paul Mansfield <paul.mansfield@mansteck.co.uk>
+# License:    GPL, http://www.gnu.org/copyleft/gpl.html
+
+if [ $1 != "useage" ]; then
+    action=$1;shift
+fi
+
+useage() {
+    echo "  $(basename $0)"
+    echo "    Prepend something to list command"
+    echo "        useage:"
+    echo "        todo.sh prels prepend text"
+    echo ""
+}
+
+case $1 in
+    "useage")
+        useage
+    ;;
+
+    "-h")
+        useage
+    ;;
+
+    *)
+        # Read in new lines and prepend $1 to usual _list output if a todo item line
+        while read line ; do
+            if [ $(echo $line | grep -c "^--$\|[0-9].* of [0-9].* tasks shown" ) -eq 0 ] ; then 
+                echo $line | sed "s/^/$1/"
+            else
+                echo $line
+            fi
+        done < <(_list "$TODO_FILE")
+		;;
+esac
