@@ -21,6 +21,8 @@ PRI_B=$NONE
 PRI_C=$NONE
 DEFAULT=$NONE
 COLOR_DONE=$NONE
+# Stop Verbose lines
+TODOTXT_VERBOSE=0
 
 case $1 in
     "useage")
@@ -53,6 +55,13 @@ case $1 in
             echo "====================================="
         else
             echo "All projects have priorities set"
+        fi
+        # Show todo items not associated to a project
+        echo "====================================="
+        PROJECTS=$(_list "$TODO_FILE" "$@" | grep -v "+\w")
+        if [[ -n "${PROJECTS}" ]]; then
+            echo "Not in projects"
+            echo "${PROJECTS}"
         fi
 		;;
 esac
