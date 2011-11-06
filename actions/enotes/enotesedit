@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+# 2011 Paul Mansfield <paul.mansfield@mansteck.co.uk>
+# License:  GPL, http://www.gnu.org/copyleft/gpl.html
+
+useage () {
+        echo "  $(basename $0) [NOTESFILE]"
+        echo "    Edit encrypted NOTESFILE in \$EDITOR."
+        echo "    Use listenotes to show all encrypted notesfiles."
+        echo ""
+    }
+
+case $1 in
+    "useage")
+        useage
+    ;;
+
+    *)
+        if [ $# -lt 2 ]; then
+            $0 useage
+            exit 1
+        fi
+        cd $TODO_DIR
+    
+        # construct file name
+        NOTE_FILE=$(echo $2 | sed 's/^enote://g')
+        PRE=$(basename $TODO_FILE | sed 's/.txt$//g')
+    
+        # Create file from todo and 'tickled' files
+        cat $TODO_FILE>> $TMP_FILE
+        if [ -n $TICKER_DIR ]; then
+           find $TICKLER_DIR -mindepth 2 -size 1b -exec cat {} >>$TMP_FILE \;
+        fi
+    
+        # If file exists edit it else check lsenotes for pointer then edit 
+        # and add to git if commit action file exists
+        if [ -e $TODO_DIR/notes/${PRE}-${NOTE_FILE}.enc ]; then
+            # Decrypt, move old aside, edit, encrypt and tidy up
+            gpg -d -o $TMP_FILE.encrypt $TODO_DIR/notes/${PRE}-${NOTE_FILE}.enc
+            mv $TODO_DIR/notes/${PRE}-${NOTE_FILE}.enc $TODO_DIR/notes/${PRE}-${NOTE_FILE}.enc.bak
+            editor $TMP_FILE.encrypt
+            gpg -c --force-mdc -o $TODO_DIR/notes/${PRE}-${NOTE_FILE}.enc $TMP_FILE.encrypt
+            if [ $? -eq 0 ] ; then
+                rm -rf $TODO_DIR/notes/${PRE}-${NOTE_FILE}.enc.bak
+            else
+                mv $TODO_DIR/notes/${PRE}-${NOTE_FILE}.enc.bak $TODO_DIR/notes/${PRE}-${NOTE_FILE}.enc
+            fi
+            rm -rf $TMP_FILE.encrypt
+        else
+            # If note link in todo.enc exists then edit
+            if [ $(grep -o '[^ ]*enote:[^ ]\+' "$TMP_FILE" | grep '^enote:' | grep "$2$" | sort -u| sed "s/^enote://g"| grep -c $NOTE_FILE) -ge 1 ] ; then
+                # edit file, encrypt and tidy up
+                editor $TMP_FILE.encrypt
+                gpg -c --force-mdc -o $TODO_DIR/notes/${PRE}-${NOTE_FILE}.enc $TMP_FILE.encrypt
+                rm -rf $TMP_FILE.encrypt
+            else
+                echo "No such encrypted Notes file, use lsenotes to find notes files"
+            fi
+        fi
+    ;;
+esac
