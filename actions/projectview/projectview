@@ -56,7 +56,7 @@ for project in $PROJECTS ; do
 done
 
 # Show todo items not associated to a project
-PROJECT_LIST=$(_list "$TODO_FILE" "$@" | grep -v "+\w" )
+PROJECT_LIST=$(_list "$TODO_FILE" "$@" | grep -v "+[[:alnum:]]*" )
 if [[ -n "${PROJECT_LIST}" ]]; then
     echo "--- Not in projects ---"
     echo "${PROJECT_LIST}" | eval $TODOTXT_FINAL_FILTER
