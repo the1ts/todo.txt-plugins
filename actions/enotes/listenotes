@@ -27,6 +27,6 @@ case $1 in
         if [ -n $TICKER_DIR ]; then
             find $TICKLER_DIR -mindepth 2 -size 1b -exec cat {} >>$TMP_FILE \;
         fi
-        grep -o '\benote\:\w*' "$TMP_FILE" | sed 's/\benote://g' | sort -u
+        grep -o '\benote\:\w*' "$TMP_FILE" | sort -u
     ;;
 esac
