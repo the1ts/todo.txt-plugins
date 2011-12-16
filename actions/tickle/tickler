@@ -14,6 +14,15 @@ EndUsage
     exit 1
 }
 
+space() 
+{
+    if [ $(df $TODO_DIR | tail -1 | awk '{print $4}') -lt 100 ] ; then
+        echo "Not enough space"
+        exit 1
+    fi
+
+}
+
 # Setup some variables
 variables () {
     todayday=$(date '+%d');
@@ -66,8 +75,6 @@ init () {
 prepend () {
     if [ ! -z "${TICKLER_PREPEND}" ]; then
         sed "s/^/${TICKLER_PREPEND}/"
-    else
-        sed 's///g'
     fi
 }
 
@@ -158,6 +165,8 @@ from_beginning_of_year () {
 
 # Main piece of work
 variables
+# Check for full disks
+space
 # Check if being run for help useage
 if [ "$2" = "useage" ]; then
     useage
