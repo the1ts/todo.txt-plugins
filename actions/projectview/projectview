@@ -8,7 +8,8 @@ TODOTXT_VERBOSE=0
 # Check how we are being run
 HOWRUN=$(basename $0)
 
-# If being run as simplepv then turn off all colours.
+# If being run as simplepv then turn off all colours and
+# wrap at 40 characters
 # Useful for display outside of terminal
 if [ $HOWRUN = "simplepv" ] ; then
     TODOTXT_PLAIN=1
@@ -18,6 +19,11 @@ if [ $HOWRUN = "simplepv" ] ; then
     PRI_C=$NONE
     DEFAULT=$NONE
     COLOR_DONE=$NONE
+    # If we have fmt then use it to wrap long lines
+    $(file /usr/bin/fmt > /dev/null 2>&1) 
+    if [ $? -eq 0 ] ; then
+        TODOTXT_FINAL_FILTER="$TODOTXT_FINAL_FILTER | fmt -t -w 40"
+    fi
 fi
 
 action=$1
