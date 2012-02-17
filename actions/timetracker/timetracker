@@ -195,7 +195,7 @@ ttoff() {
         # if our last line has one field, then add the finish time
         if [ $(tail -1 ${TODO_DIR}/tt/${PRE}/${project}.tt | grep -c :) -eq 0 ] ; then
             echo "$(tail -1 ${TODO_DIR}/tt/${PRE}/${project}.tt | tr -d '\n'):$(date +"%s")" >> ${TODO_DIR}/tt/${PRE}/${project}.tmp
-            sed -i '$d' ${TODO_DIR}/tt/${PRE}/${project}.tt
+            sed -i '' '$d' ${TODO_DIR}/tt/${PRE}/${project}.tt
             cat ${TODO_DIR}/tt/${PRE}/${project}.tmp >> ${TODO_DIR}/tt/${PRE}/${project}.tt
             rm -rf ${TODO_DIR}/tt/${PRE}/${project}.tmp
             echo ""
