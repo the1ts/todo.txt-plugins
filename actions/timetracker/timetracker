@@ -1,0 +1,169 @@
+#!/bin/bash
+
+# Timetracker action for todo.txt
+# Gives timetracker stats for a project
+
+usage() {
+    sed -e 's/^    //' <<EndUsage 
+        $(basename ${0}) on|off|archive|stats [project]
+          Track time spent on a project.
+EndUsage
+    exit 1
+}
+
+# Setup some variables
+PRE=$(basename ${TODO_FILE} | sed 's/.txt$//g')
+shift
+action=$1
+# If we are getting stats, allow blank project
+if [ -z $2 ]; then
+    if [ "${action}" = "stats" ]; then
+        ALL=1
+    fi
+    if [ "${action}" != "stats" ]; then
+        usage
+    fi
+else
+    project=$2
+    ALL=0
+fi
+
+# Make directories that may be needed
+ttprep() {
+    if [ ! -d ${TODODIR}/tt/${PRE}/ ]; then
+        mkdir -p ${TODODIR}/tt/${PRE}
+    fi
+    if [ ! -d ${TODODIR}/tt/${PRE}/archive ]; then
+        mkdir -p ${TODODIR}/tt/${PRE}/archive
+    fi
+}
+
+# Archive the project tt file
+ttarchive() {
+    if [ -f ${TODODIR}/tt/${PRE}/${project}.tt ]; then
+        if [ $(tail -1 ${TODODIR}/tt/${PRE}/${project}.tt | grep -c :) -eq 0 ]; then
+            echo "$(cat ${TODODIR}/tt/${PRE}/${project}.tt):$(date +%s)" >> ${TODODIR}/tt/${PRE}/archive/${project}.tt
+            rm ${TODODIR}/tt/${PRE}/${project}.tt 
+            echo ""
+            echo "Setting ${project} as finished now and archiving"
+            echo ""
+        else
+            mv ${TODODIR}/tt/${PRE}/${project}.tt ${TODODIR}/tt/${PRE}/archive/ 
+            echo ""
+            echo "Archiving ${project}"
+            echo ""
+        fi
+    else
+        echo ""
+        echo "Project ${project} does not exist"
+        echo ""
+    fi
+
+}
+
+tton() {
+    if [ -f ${TODODIR}/tt/${PRE}/${project}.tt ]; then
+        # If project file exists and if our last line has only one field, then add time stamp
+        if [ $(tail -1 ${TODODIR}/tt/${PRE}/${project}.tt | grep -c :) -eq 1 ] ; then
+            echo "$(date +"%s")" >> ${TODODIR}/tt/${PRE}/${project}.tt
+            echo ""
+            echo "Starting clock on ${project}"
+            echo ""
+        else
+            echo ""
+            echo "Project ${project} is still active, cannot turn on the clock"
+            echo ""
+        fi
+    # If project file doesn't exist add initial time stamp
+    else
+        echo "$(date +"%s")" >> ${TODODIR}/tt/${PRE}/${project}.tt
+        echo ""
+        echo "Starting clock on ${project}"
+        echo ""
+    fi
+}
+
+ttoff() {
+    if [ -f ${TODODIR}/tt/${PRE}/${project}.tt ]; then
+        # if our last line has one field, then add the finish time
+        if [ $(tail -1 ${TODODIR}/tt/${PRE}/${project}.tt | grep -c :) -eq 0 ] ; then
+            echo "$(tail -1 ${TODODIR}/tt/${PRE}/${project}.tt | tr -d '\n'):$(date +"%s")" >> ${TODODIR}/tt/${PRE}/${project}.tmp
+            sed -i '$d' ${TODODIR}/tt/${PRE}/${project}.tt
+            cat ${TODODIR}/tt/${PRE}/${project}.tmp >> ${TODODIR}/tt/${PRE}/${project}.tt
+            rm -rf ${TODODIR}/tt/${PRE}/${project}.tmp
+            echo ""
+            echo "Stopping clock on ${project}"
+            echo ""
+        else
+            if [ ! -s ${TODODIR}/tt/${PRE}/${project}.tt ]; then
+                echo "${project} is new, use $(basename $0) on first"
+            else
+                echo "Project ${project} is not active, cannot turn off the clock"
+            fi
+        fi
+    else
+        echo ""
+        echo "Project ${project} does not exist"
+        echo ""
+    fi
+}
+
+# Show the stats for the project
+ttstats() {
+    if [ -f ${TODODIR}/tt/${PRE}/${project}.tt ]; then
+	    if [ $(tail -1 ${TODODIR}/tt/${PRE}/${project}.tt | grep -c :) -eq 0 ]; then
+	        TOTAL=$(echo "$(cat ${TODODIR}/tt/${PRE}/${project}.tt):$(date +%s)" |awk -F ':' '{print $2 - $1}' | awk '{ sum+=$1} END {print sum}')
+	        RUNNING=1
+	    else
+	        TOTAL=$(echo "$(cat ${TODODIR}/tt/${PRE}/${project}.tt)" |awk -F ':' '{print $2 - $1}' | awk '{ sum+=$1} END {print sum}')
+	        RUNNING=0
+	    fi
+	    DAYS=$((${TOTAL}/86400))
+	    REMOVEDAYS=$((${TOTAL}-${DAYS}*86400))
+	    HOURS=$(($REMOVEDAYS/3600))
+	    REMOVEHOURS=$(($REMOVEDAYS-${HOURS}*3600))
+	    MINUTES=$(($REMOVEHOURS/60))
+	    SECONDS=$(($REMOVEHOURS-${MINUTES}*60))
+	    
+	    echo "Stats for Project: ${project}"
+	    if [ ${RUNNING} -eq 1 ]; then
+	        echo "Timer still running for ${project}"
+	    fi
+	    echo ""
+	    echo "$DAYS days, ${HOURS} hours, ${MINUTES} minutes and ${SECONDS} seconds"
+	    echo ""
+    else
+        echo ""
+        echo "Project ${project} does not exist"
+        echo ""
+    fi
+}
+
+# Main
+ttprep
+case "${action}" in
+stats)
+    # If no project was set, show all projects stats
+    if [ ${ALL} -eq 1 ]; then
+        cd ${TODODIR}/tt/${PRE}/
+        for project in *.tt; do
+            project=$(echo ${project} | sed 's/\.tt$//')
+            ttstats ${project}
+        done
+    else
+        ttstats
+    fi
+    ;;
+on)
+    tton
+    ;;
+off)
+    ttoff
+    ;;
+archive)
+    ttarchive
+    ;;
+*)
+    usage
+esac
+

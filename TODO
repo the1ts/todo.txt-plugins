@@ -1,0 +1,5 @@
+Timetracker
+ - Unarchive function
+ - test if project exists and offer to unarchive to continue or ask for new project name
+ - list projects, both current and archived
+ - check that project exists in the todo.txt file before allowing
