@@ -5,8 +5,8 @@
 # Adapted as plugin by:  Braden Grams
 # Tidy up and adapted for newer todo.sh versions
 # License: GPL, http://www.gnu.org/copyleft/gpl.html
-set -x
-useage()
+
+usage()
 {
     sed -e 's/^    //' <<EndUsage 
         tickle NUMBER [dmNUMBER]
@@ -35,13 +35,13 @@ shopt -s extglob
 
 action=$1
 case $action in
-    "useage")
-    useage
+    "usage")
+    usage
     ;;
     "tickle" )
    	item=$2;
-   	[ -z "$item" ] && useage
-   	[[ "$item" = +([0-9]) ]] || useage
+   	[ -z "$item" ] && usage
+   	[[ "$item" = +([0-9]) ]] || usage
 
     datetype=$3; 
     
@@ -61,7 +61,7 @@ case $action in
     else
         # If we are already given date details, check before using
         if [ $(echo $datetype | grep -c "^[dDmM][0-9]\{1,2\}$") -ne 1 ]; then
-            useage
+            usage
         fi
 
         # Are we going to use a day or month tickle file?
@@ -85,7 +85,7 @@ case $action in
     DELETEME=$(sed "$item!d" "$TODO_FILE")
     else
         echo "Item number $item does not exist in todo file."
-        useage
+        usage
     fi
 
     # Check we have the required directories, if not create them
