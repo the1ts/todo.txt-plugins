@@ -31,7 +31,6 @@ else
     ALL=0
 fi
 
-
 # Make directories that may be needed
 ttprep() {
     if [ ! -d ${TODODIR}/tt/${PRE}/ ]; then
@@ -39,6 +38,15 @@ ttprep() {
     fi
     if [ ! -d ${TODODIR}/tt/${PRE}/archive ]; then
         mkdir -p ${TODODIR}/tt/${PRE}/archive
+    fi
+}
+
+tttests () {
+    if [ $(grep -c "\+${project}" "$TODO_FILE") -lt 1 ]; then
+        echo ""
+        echo "Project doesn't appear in the todo.txt file, exiting"
+        echo ""
+        exit 1
     fi
 }
 
@@ -217,7 +225,7 @@ ttstats() {
 
 # Main
 ttprep
-
+tttests
 case "${action}" in
 stats)
     # If no project was set, show all projects stats
