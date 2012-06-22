@@ -8,12 +8,12 @@
 
 usage() {
     sed -e 's/^    //' <<EndUsage 
-        $(basename ${0}) on|off|list|archive|stats [project]
+        $(basename ${0}) on|off|list|archive|unarchive|stats [project]
           Track time spent on a project.
 EndUsage
     exit 1
 }
-
+set -x
 # Setup some variables
 PRE=$(basename ${TODO_FILE} | sed 's/.txt$//g')
 shift
@@ -62,6 +62,21 @@ ttarchive() {
         echo ""
     fi
 
+}
+
+ttunarchive () {
+    echo ""
+    if [ -f ${TODODIR}/tt/${PRE}/archive/${project}.tt ]; then
+        if [ ! -f ${TODODIR}/tt/${PRE}/${project}.tt ]; then
+            mv ${TODODIR}/tt/${PRE}/archive/${project}.tt ${TODODIR}/tt/${PRE}/${project}.tt
+            echo "Project ${project} unarchived"
+        else
+            echo "Project ${project} is current, will not unarchive"
+        fi
+    else
+            echo "Project ${project} not archived, cannot unarchive"
+    fi
+    echo ""
 }
 
 ttlist () {
@@ -213,6 +228,9 @@ list)
     ;;
 archive)
     ttarchive
+    ;;
+unarchive)
+    ttunarchive
     ;;
 *)
     usage

@@ -1,4 +1,3 @@
 Timetracker
- - Unarchive function
- - test if project exists and offer to unarchive to continue or ask for new project name
+ - when adding test if project exists, offer to unarchive to continue or tell to use new project name
  - check that project exists in the todo.txt file before allowing
