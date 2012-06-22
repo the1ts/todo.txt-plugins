@@ -8,7 +8,7 @@
 
 usage() {
     sed -e 's/^    //' <<EndUsage 
-        $(basename ${0}) on|off|archive|stats [project]
+        $(basename ${0}) on|off|list|archive|stats [project]
           Track time spent on a project.
 EndUsage
     exit 1
@@ -20,10 +20,10 @@ shift
 action=$1
 # If we are getting stats, allow blank project
 if [ -z $2 ]; then
-    if [ "${action}" = "stats" ]; then
+    if [ $(echo "${action}" | grep -c 'list\|stats') -eq 1 ]; then
         ALL=1
     fi
-    if [ "${action}" != "stats" ]; then
+    if [ $(echo "${action}" | grep -c 'list\|stats') -eq 0 ]; then
         usage
     fi
 else
@@ -60,6 +60,28 @@ ttarchive() {
         echo ""
         echo "Project ${project} does not exist"
         echo ""
+    fi
+
+}
+
+ttlist () {
+    CURRENT=$(find ${TODODIR}/tt/${PRE}/ -maxdepth 1 -name "*.tt" | awk -F / '{print $NF}' | sed 's/\.tt$//' | sort)
+    ARCHIVED=$(find ${TODODIR}/tt/${PRE}/archive/ -maxdepth 1 -name "*.tt" | awk -F / '{print $NF}' | sed 's/\.tt$//' | sort)
+    if [ ${#CURRENT} -gt 0 -o ${#ARCHIVED} ]; then
+        echo "Projects being time tracked"
+        echo "==========================="
+        if [ ${#CURRENT} -gt 0 ]; then
+            echo "Current"
+            echo "-------"
+            echo $CURRENT
+            echo ""
+        fi
+        if [ ${#ARCHIVED} -gt 0 ]; then
+            echo "Archived"
+            echo "--------"
+            echo $ARCHIVED
+            echo ""
+        fi
     fi
 
 }
@@ -185,6 +207,9 @@ on)
     ;;
 off)
     ttoff
+    ;;
+list)
+    ttlist
     ;;
 archive)
     ttarchive

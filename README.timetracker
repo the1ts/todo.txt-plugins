@@ -24,4 +24,5 @@ When you have completed a project you can archive projects to stop them appearin
 in status requests. If the project is still counting up the project is ended at 
 the time of archiving.
 
-
+Listing timetracker files
+You can list all the timetracker files currently in use and archived
