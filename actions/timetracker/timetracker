@@ -13,7 +13,7 @@ usage() {
 EndUsage
     exit 1
 }
-set -x
+
 # Setup some variables
 PRE=$(basename ${TODO_FILE} | sed 's/.txt$//g')
 shift
@@ -30,6 +30,7 @@ else
     project=$2
     ALL=0
 fi
+
 
 # Make directories that may be needed
 ttprep() {
@@ -116,10 +117,22 @@ tton() {
         fi
     # If project file doesn't exist add initial time stamp
     else
-        echo "$(date +"%s")" >> ${TODODIR}/tt/${PRE}/${project}.tt
-        echo ""
-        echo "Starting clock on ${project}"
-        echo ""
+        # if Project is archived, ask to unarchive, then start clock
+        if [ -f ${TODODIR}/tt/${PRE}/archive/${project}.tt ]; then
+            echo "Project ${project} is archived, unarchive?"
+            read -n1 -p "(y/n)"
+            [[ $REPLY = [yY] ]] && mv ${TODODIR}/tt/${PRE}/archive/${project}.tt ${TODODIR}/tt/${PRE}/${project}.tt || { echo "Okay, exiting"; exit 1; }
+            echo "$(date +"%s")" >> ${TODODIR}/tt/${PRE}/${project}.tt
+            echo ""
+            echo "Unarchiving and starting clock on ${project}"
+            echo ""
+        # Project doesn't exist, create and start project
+        else
+            echo "$(date +"%s")" >> ${TODODIR}/tt/${PRE}/${project}.tt
+            echo ""
+            echo "Starting clock on ${project}"
+            echo ""
+        fi
     fi
 }
 
@@ -204,6 +217,7 @@ ttstats() {
 
 # Main
 ttprep
+
 case "${action}" in
 stats)
     # If no project was set, show all projects stats
