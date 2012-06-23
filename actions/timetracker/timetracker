@@ -27,7 +27,8 @@ if [ -z $2 ]; then
         usage
     fi
 else
-    project=$2
+    # Remove + from project
+    project=$(echo $2 | sed 's/^\+//g')
     ALL=0
 fi
 
