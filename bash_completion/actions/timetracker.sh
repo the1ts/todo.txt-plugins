@@ -48,7 +48,7 @@ if [ ${COMP_WORDS[1]} = "ttunarchive" ]; then
     COMPREPLY=($(compgen -W "$(eval $our_cmd timetracker list | grep -A 2 Archived | tail -1)" -- "${word}"));
 fi
 
-# ttstats, use timetracker list to get current projects only
-if [ ${COMP_WORDS[1]} = "ttstats" ]; then
-    COMPREPLY=($(compgen -W "$(eval $our_cmd timetracker list | grep -A 2 Current | tail -1)" -- "${word}"));
+# ttlist
+if [ ${COMP_WORDS[1]} = "ttlist" ]; then
+    COMPREPLY=($(compgen -W "$(eval $our_cmd timetracker simplelistall)" -- "${word}"));
 fi
