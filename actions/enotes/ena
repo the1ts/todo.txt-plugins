@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+action=$1
+shift
+
+if [ "$1" = "useage" ]; then
+    "$TODO_FULL_SH" enotesarchive useage
+else
+    "$TODO_FULL_SH" enotesarchive "$@"
+fi

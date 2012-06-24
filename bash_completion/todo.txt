@@ -35,10 +35,8 @@ function _todo.sh() {
             ;;
             # Find all  option include files
             *)
-            for action in $(eval $our_cmd listaddons) ; do
-                if [ $(stat /usr/share/todo.txt/bash_completion.d/${action}/${action}.sh > /dev/null 2>&1 ; echo $?) -eq 0 ]; then
-                    . /usr/share/todo.txt/bash_completion.d/${action}/${action}.sh
-                fi
+            for action in /usr/share/todo.txt/bash_completion.d/*.sh; do
+                . /usr/share/todo.txt/bash_completion.d/${action}
             done
             ;;
         esac

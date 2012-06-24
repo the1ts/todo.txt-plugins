@@ -1,13 +1,11 @@
 contextview
 
 enotes  
-- Create bash_completion stub
 
 lists  
 
 
 notes  
-- Create bash_completion stub
 
 projectview  
 
@@ -19,5 +17,3 @@ tickle
 
 
 timetracker
-- Do not allow all as a project to be timed, if project=all run with project=''
-- list to include +
