@@ -17,23 +17,18 @@ function _todo.sh() {
         # Help me pick a todo.sh action
         COMPREPLY=($(compgen -W "$(eval $our_cmd listaddons ; echo $COMMANDS)" -- "${word}"));
     else
-        # help me pick a project
         case ${COMP_WORDS[1]} in
-            # help me pick a note file
-            "na"|"notesarchive"|"nc"|"notescat"|"ne"|"notesedit")
-                COMPREPLY=($(compgen -W "$(eval $our_cmd lsn | tr -d '\r')" -- "${word}"));
-            ;;
-            # help me pick a context or project
+            # help me pick a context or project or notes file
             "a"|"add"|"addto"|"ls"|"list")
                 COMPREPLY=($(compgen -W "$(eval $our_cmd lsp | tr -d '\r' | sed 's/^/+/g') $(eval $our_cmd lsc | tr -d '\r') $(eval $our_cmd lsn | tr -d '\r')" -- "${word}"));
             ;;
-            # help me pick a context of project if an item number is already set
+            # help me pick a context of project or notes file if an item number is already set
             "app"|"append"|"prep"|"prepend"|"replace")
                 if [ `echo ${COMP_WORDS[1]} | grep -c "[0-9]"` = 1 ] ; then
-                    COMPREPLY=($(compgen -W "$(eval $our_cmd lsp | tr -d '\r' | sed 's/^/+/g') $(eval $our_cmd lsc | tr -d '\r')" -- "${word}"));
+                    COMPREPLY=($(compgen -W "$(eval $our_cmd lsp | tr -d '\r' | sed 's/^/+/g') $(eval $our_cmd lsc | tr -d '\r') $(eval $our_cmd lsn | tr -d '\r')" -- "${word}"));
                 fi
             ;;
-            # Find all  option include files
+            # Find all action include files
             *)
             for action in /usr/share/todo.txt/bash_completion.d/*.sh; do
                 . /usr/share/todo.txt/bash_completion.d/${action}
