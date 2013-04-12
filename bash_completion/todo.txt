@@ -30,8 +30,8 @@ function _todo.sh() {
             ;;
             # Find all action include files
             *)
-            for action in /usr/share/todo.txt/bash_completion.d/*.sh; do
-                . /usr/share/todo.txt/bash_completion.d/${action}
+            for action in /usr/share/todo.txt/bash_completion.d/actions/*.sh; do
+                . ${action}
             done
             ;;
         esac
