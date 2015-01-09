@@ -11,7 +11,7 @@ shift
 # Stop filter now and run in a controlled manner after the _list function is run
 TODOTXT_DISABLE_FILTER=1 
 
-[ "$action" = "useage" ] && {
+[ "$action" = "usage" ] && {
     echo "    $(basename $0) [TERM...]"
     echo "      Show todo items containing TERM, grouped by context, and displayed in"
     echo "      priority order. If no TERM provided, displays entire todo.txt."

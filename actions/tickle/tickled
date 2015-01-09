@@ -6,7 +6,7 @@
 # License: GPL, http://www.gnu.org/copyleft/gpl.html
 
 #============ And now for some functions =================
-useage()
+usage()
 {
     sed -e 's/^    //' <<EndUsage 
         tickled
@@ -22,8 +22,8 @@ die()
 }
 
 case $1 in
-"useage")
-    useage
+"usage")
+    usage
     ;;
 *)
     # Head into tickler directory

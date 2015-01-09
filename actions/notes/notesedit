@@ -16,7 +16,7 @@ commit () {
 }
 
 case $1 in
-    "useage")
+    "usage")
         echo "  $(basename $0) [NOTESFILE]"
         echo "    Edit NOTESFILE in \$EDITOR."
         echo "    Use listnotes to show all notesfiles."
@@ -25,7 +25,7 @@ case $1 in
 
     *)
         if [ $# -lt 2 ]; then
-            $0 useage
+            $0 usage
             exit 1
         fi
         cd $TODO_DIR

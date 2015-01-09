@@ -4,7 +4,7 @@
 # Copyright 2011 Paul Mansfield <paul.mansfield@mansteck.co.uk>
 # License: GPL, http://www.gnu.org/copyleft/gpl.html
 
-useage()
+usage()
 {
     sed -e 's/^    //' <<EndUsage 
         tickler [init]
@@ -167,9 +167,9 @@ from_beginning_of_year () {
 variables
 # Check for full disks
 space
-# Check if being run for help useage
-if [ "$2" = "useage" ]; then
-    useage
+# Check if being run for help usage
+if [ "$2" = "usage" ]; then
+    usage
 fi
 # Should we run init
 if [ "$2" = "init" ]; then

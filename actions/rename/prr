@@ -3,8 +3,8 @@
 # Remove short code
 shift
 
-if [ "$1" = "useage" ]; then
-    "$TODO_FULL_SH" projectrename useage
+if [ "$1" = "usage" ]; then
+    "$TODO_FULL_SH" projectrename usage
 else
     "$TODO_FULL_SH" projectrename "$@"
 fi

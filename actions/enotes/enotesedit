@@ -2,7 +2,7 @@
 # 2011 Paul Mansfield <paul.mansfield@mansteck.co.uk>
 # License:  GPL, http://www.gnu.org/copyleft/gpl.html
 
-useage () {
+usage () {
         echo "  $(basename $0) [NOTESFILE]"
         echo "    Edit encrypted NOTESFILE in \$EDITOR."
         echo "    Use listenotes to show all encrypted notesfiles."
@@ -10,13 +10,13 @@ useage () {
     }
 
 case $1 in
-    "useage")
-        useage
+    "usage")
+        usage
     ;;
 
     *)
         if [ $# -lt 2 ]; then
-            $0 useage
+            $0 usage
             exit 1
         fi
         cd $TODO_DIR

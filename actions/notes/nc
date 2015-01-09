@@ -2,8 +2,8 @@
 action=$1
 shift
 
-if [ "$1" = "useage" ]; then
-    "$TODO_FULL_SH" notescat useage
+if [ "$1" = "usage" ]; then
+    "$TODO_FULL_SH" notescat usage
 else
     "$TODO_FULL_SH" notescat "$@"
 fi

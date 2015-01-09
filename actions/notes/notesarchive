@@ -3,7 +3,7 @@
 # License:  GPL, http://www.gnu.org/copyleft/gpl.html
 
 case $1 in
-    "useage")
+    "usage")
     echo "  $(basename $0)"
     echo "    archive notes files nolonger in todo file."
     echo "    If BASENAME is not given, defaults to 'todo'."

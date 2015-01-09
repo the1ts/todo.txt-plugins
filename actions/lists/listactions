@@ -1,24 +1,24 @@
 #!/usr/bin/env bash 
 # 2009 Paul Mansfield <paul.mansfield@mansteck.co.uk>
 # License:  GPL, http://www.gnu.org/copyleft/gpl.html
-if [ $1 != "useage" ]; then
+if [ $1 != "usage" ]; then
     action=$1;shift
 fi
 
-useage (){
+usage (){
     echo "  $(basename $0)"
     echo "    list all possible actions"
     echo ""
 }
 
 case $1 in
-"useage")
-    useage
+"usage")
+    usage
     exit 0
 ;;
 
 "-h")
-    useage
+    usage
 ;;
 
 *)
