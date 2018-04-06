@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# from:
+# http://github.com/fnd/todo.txt-cli/blob/extensions/commit
+# commit: a0f8ce274e01a27ffe6e9a61d005ef11a539219a
+ 
+action=$1
+shift
+ 
+function usage {
+  echo "  $(basename $0)"
+  echo "    Record all changes in Git repository located at $TODO_DIR."
+  echo ""
+  exit
+}
+ 
+[ "$action" = "usage" ] && usage
+ 
+cd $TODO_DIR
+git commit -a -m "Manual commit: $(date +'%Y-%m-%d at %H:%M:%S')"

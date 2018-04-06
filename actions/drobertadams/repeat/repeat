@@ -1,0 +1,59 @@
+#!/bin/bash
+
+action=$1
+shift
+
+function usage {
+  echo " Customized repeat:"
+  echo "   repeat ITEM "
+  echo "     mark an item complete then re-enter it"
+  echo "   repeat ITEM DAYS"
+  echo "     mark an item as complete then re-enter it with a date DAYS from now"
+  echo "   repeat ITEM +DAYS"
+  echo "     mark an item with a date as complete then re-enter it with a date DAYS from the due date"
+  echo ""
+  exit
+}
+
+[ "$action" = "usage" ] && usage
+
+# make sure we have an item number
+ITEM=$1
+if ! [[ "$ITEM" =~ ^[0-9]+$ ]]; then
+echo "Error! Usage:"
+usage
+exit
+fi
+
+# pull the line from the todo file
+LINE=$(sed "$ITEM!d" "$TODO_FILE")
+
+if [[ "$LINE" =~ ^\([A-Z]\) ]]; then
+LINE=$(echo "$LINE" | cut -f2- -d ' ') # cut off the priority
+fi
+
+if [[ "$LINE" =~ ^[0-9][0-9][0-9][0-9] ]]; then
+    DATE=$(echo "$LINE" | cut -f1 -d ' ') # identify the date
+    LINE=$(echo "$LINE" | cut -f2- -d ' ') # cut off the date
+else 
+    DATE=""
+fi
+
+DAYS=$2
+if [[ "$DAYS" != "" ]]; then  
+    if [[ $DAYS == \+* ]]; then
+        if [[ "$DATE" != "" ]]; then  
+            # increase the due date
+            DATE=`date -d $DATE" "$DAYS" days" +%Y-%m-%d`
+	fi
+    elif [[ $DAYS == [0-9]* ]]; then
+        # make new date relative from now
+        DATE=`date -d $DAYS" days" +%Y-%m-%d`
+    fi
+    LINE=$DATE" "$LINE # and append to the line
+fi
+
+if [[ "$LINE" != "" ]] ; then
+    $DO && "$TODO_SH" command do "$ITEM"
+    $DO && "$TODO_SH" command add "$LINE"
+fi

@@ -1,0 +1,20 @@
+#!/bin/bash
+
+priority=A
+action=$1
+shift
+
+function usage {
+  echo "  Customized daily:"
+  echo "    daily "
+  echo "      finds all unprioritized @daily items and prioritizes them"
+  echo ""
+  exit
+}
+
+[ "$action" = "usage" ] && usage
+
+for line in `grep -n -v '(.)' "$TODO_FILE" | grep @daily | awk -F: '{print $1}'` ; do
+    $DO && "$TODO_SH" command p "$line" $priority
+done
+

@@ -1,0 +1,10 @@
+[submodule "gina"]
+	path = actions/gina
+	url = https://github.com/todotxt/todo.txt-cli.git/
+	branch = addons
+[submodule "smajda"]
+	path = actions/smajda
+	url = https://github.com/smajda/todo.actions.d/
+[submodule "drobertadams"]
+	path = actions/drobertadams
+	url = https://github.com/drobertadams/todo.txt-cli-addons.git
