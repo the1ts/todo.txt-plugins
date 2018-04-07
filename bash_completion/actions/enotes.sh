@@ -9,6 +9,6 @@ if [ ${COMP_WORDS[1]} = "enotescat" -o ${COMP_WORDS[1]} = "enc" ]; then
 fi
 
 # notesarchive
-if [ ${COMP_WORDS[1]} = "enotearchive" -o ${COMP_WORDS[1]} = "ena" ]; then
+if [ ${COMP_WORDS[1]} = "enotesarchive" -o ${COMP_WORDS[1]} = "ena" ]; then
     COMPREPLY=($(compgen -W "$(eval $our_cmd listenotes)" -- "${word}"));
 fi

@@ -9,6 +9,6 @@ if [[ ${COMP_WORDS[1]} = "notescat" ]] || [[ ${COMP_WORDS[1]} = "nc" ]]; then
 fi
 
 # notesarchive
-if [[ ${COMP_WORDS[1]} = "notearchive" ]] || [[ ${COMP_WORDS[1]} = "na" ]]; then
+if [[ ${COMP_WORDS[1]} = "notesarchive" ]] || [[ ${COMP_WORDS[1]} = "na" ]]; then
     COMPREPLY=($(compgen -W "$(eval $our_cmd listnotes)" -- "${word}"));
 fi
