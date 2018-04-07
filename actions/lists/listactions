@@ -1,19 +1,14 @@
 #!/usr/bin/env bash 
 # 2009 Paul Mansfield <paul.mansfield@mansteck.co.uk>
 # License:  GPL, http://www.gnu.org/copyleft/gpl.html
-if [ $1 != "usage" ]; then
-    action=$1;shift
-fi
 
-usage (){
-    echo "  $(basename $0)"
-    echo "    list all possible actions"
-    echo ""
-}
+action=$1;shift
 
 case $1 in
 "usage")
-    usage
+    echo "  $(basename $0)"
+    echo "    list all possible actions"
+    echo ""
     exit 0
 ;;
 
@@ -23,7 +18,8 @@ case $1 in
 
 *)
     ## list all possible actions
-    echo $($TODO_FULL_SH -h | grep '^    \w' | grep -v '    command' | awk '{print $1}'| \
-    sed 's/|/ /g' ; ls $TODO_ACTIONS_DIR | sort)
+    echo $($TODO_FULL_SH shorthelp | awk '/Actions:/,/^$/' | \
+        awk '{if($0=="")exit;print}' | grep '    [a-z]' | awk '{print $1}' | \
+        sed 's/|/ /g' ; $TODO_FULL_SH listaddons | sort)
 ;;
 esac

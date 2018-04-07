@@ -168,7 +168,7 @@ variables
 # Check for full disks
 space
 # Check if being run for help usage
-if [ "$2" = "usage" ]; then
+if [ "$2" = "usage" -o "$1" = "usage" ]; then
     usage
 fi
 # Should we run init

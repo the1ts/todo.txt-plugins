@@ -6,15 +6,6 @@
 # License: GPL, http://www.gnu.org/copyleft/gpl.html
 
 #============ And now for some functions =================
-usage()
-{
-    sed -e 's/^    //' <<EndUsage 
-        tickled
-          Show all "tickled" todo items.
-EndUsage
-    exit 1
-}
-
 die()
 {
     echo "$*"
@@ -23,7 +14,10 @@ die()
 
 case $1 in
 "usage")
-    usage
+	echo "    tickled"
+	echo "      list all tickled items"
+	echo ""
+	exit 0
     ;;
 *)
     # Head into tickler directory
