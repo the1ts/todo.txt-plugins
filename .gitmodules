@@ -8,3 +8,7 @@
 [submodule "drobertadams"]
 	path = actions/drobertadams
 	url = https://github.com/drobertadams/todo.txt-cli-addons.git
+[submodule "actions/dhein"]
+	path = actions/dhein
+	url = https://github.com/dhein/todo.txt-cli/
+	branch = pub-addons
