@@ -8,3 +8,7 @@
 [submodule "drobertadams"]
 	path = actions/drobertadams
     url = https://github.com/drobertadams/todo.txt-cli-addons.git
+[submodule "actions/nthorne"]
+	path = actions/nthorne
+	url = git@github.com:nthorne/todo.txt-cli-again-addon.git
+	branch = AgainAsDo
