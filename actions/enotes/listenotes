@@ -5,7 +5,7 @@
 if [ $1 != "usage" ]; then
     action=$1;shift
 fi
-set -x
+
 usage() {
     echo "  $(basename $0)"
     echo "    List notes"
