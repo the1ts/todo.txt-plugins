@@ -5,7 +5,6 @@
 #
 
 action=$1
-shift
 
 function usage() {
     echo "  $(basename $0) [item]"
