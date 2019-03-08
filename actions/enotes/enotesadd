@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+# 2019 Paul Mansfield <paul.mansfield@mansteck.co.uk>
+# License:  GPL, http://www.gnu.org/copyleft/gpl.html
+
+# functions
+usage () {
+	echo "  $(basename "$0") [ITEM] [NOTESFILE]"
+	echo "    add NOTESFILE in ITEM"
+	echo "    eg todo.sh $(basename "$0") 1 enote:test "
+	exit 0
+}
+
+tests () {
+	# Remove the action name from options list
+	shift
+
+	# Test correct number of options
+	if [ $# -lt 2 ]; then
+	 echo "   not enough options"
+	 usage
+	 exit 1
+	fi
+
+	# Test we have an item number (bash specific)
+	if [[  "$1" =~ ^[0-9]+$  ]]; then
+		ITEM="${1}"
+	else
+		echo "	ITEM is not a number"
+		usage
+		exit 1
+	fi
+
+	# Test NOTESFILE is in correct format enote:file
+	# Add enote: if needed
+	if [ "$(echo "${2}" | grep -c "^enote:")" -eq 1 ]; then
+		NOTESFILE="${2}"
+	else
+		NOTESFILE="enote:${2}"
+	fi
+}
+
+## Main
+
+# Run tests - don't quote needs to be space delimited list
+tests $*
+
+# Use built in append action to add notesfile
+${TODO_FULL_SH} append "${ITEM}" "${NOTESFILE}"
