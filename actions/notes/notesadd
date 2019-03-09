@@ -10,15 +10,25 @@ usage () {
 	exit 0
 }
 
-tests () {
-	# Remove the action name from options list
-	shift
+# Usage for todo.sh help
+if [ "$1" = "usage" ]; then
+	usage
+	exit
+fi
 
+# Variables
+action="$1"; shift
+
+tests () {
 	# Test correct number of options
 	if [ $# -lt 2 ]; then
-	 echo "   not enough options"
-	 usage
-	 exit 1
+		if [ "$1" != "usage" ]; then
+			echo "   not enough options"
+			usage
+			exit 1
+		fi
+		usage
+		exit 1
 	fi
 
 	# Test we have an item number (bash specific)
@@ -41,8 +51,17 @@ tests () {
 
 ## Main
 
-# Run tests - don't quote needs to be space delimited list
+# Run tests - don't quote $* needs to be space delimited list
 tests $*
 
-# Use built in append action to add notesfile
-${TODO_FULL_SH} append "${ITEM}" "${NOTESFILE}"
+case $1 in
+	"usage")
+		usage
+		exit
+	;;
+
+	*)
+	# Use built in append action to add notesfile
+	${TODO_FULL_SH} append "${ITEM}" "${NOTESFILE}"
+	;;
+esac

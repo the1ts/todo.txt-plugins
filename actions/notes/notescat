@@ -1,24 +1,40 @@
 #!/usr/bin/env bash
 # 2009 Paul Mansfield <paul.mansfield@mansteck.co.uk>
 # License:  GPL, http://www.gnu.org/copyleft/gpl.html
-case $1 in
-"usage")
-    echo "  $(basename $0) [NOTESFILE]"
-    echo "    Cat notes file, use lsnotes to get list of notes"
-    echo ""
-;;
+# functions
+usage () {
+  echo "  $(basename $0) [NOTESFILE]"
+  echo "    Cat notes file, use lsnotes to get list of notes"
+  echo ""
+	exit 0
+}
 
-*)
-    if [ $# -lt 2 ]; then
-        $0 usage
-        exit 1
+# Usage for todo.sh help
+if [ "$1" = "usage" ]; then
+	usage
+	exit
+fi
+
+# Variables
+action="$1"; shift
+
+case $1 in
+	"usage")
+		usage
+		exit
+	;;
+
+	*)
+		if [ $# -lt 2 ]; then
+			$0 usage
+			exit 1
     fi
     NOTE_FILE=$(echo $2 | sed 's/^note://g')
     PRE=$(basename $TODO_FILE | sed 's/.txt$//g')
     if [ -e $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt ]; then
-        cat $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt
+			cat $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt
     else
-        echo "No such Notes file, use lsnotes to find notes files"
+			echo "No such Notes file, use lsnotes to find notes files"
     fi
-;;
+	;;
 esac
