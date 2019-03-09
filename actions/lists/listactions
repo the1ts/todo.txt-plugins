@@ -2,24 +2,45 @@
 # 2009 Paul Mansfield <paul.mansfield@mansteck.co.uk>
 # License:  GPL, http://www.gnu.org/copyleft/gpl.html
 
-action=$1;shift
+## Functions
+# Usage
+function usage() {
+  echo "  $(basename $0)"
+  echo "    list all possible actions"
+  echo ""
+  exit
+}
+# Function for PAGER to allow todo.sh shorthelp to give correct output
+function scroll {
+  while read -r ; do echo "$REPLY" ; sleep ${1:-0.5} ; done
+}
 
-case $1 in
-"usage")
-    echo "  $(basename $0)"
-    echo "    list all possible actions"
-    echo ""
-    exit 0
-;;
-
-"-h")
+# Usage for todo.sh help
+if [ "$1" = "usage" ]; then
     usage
-;;
+    exit
+fi
 
-*)
-    ## list all possible actions
-    echo $($TODO_FULL_SH shorthelp | awk '/Actions:/,/^$/' | \
-        awk '{if($0=="")exit;print}' | grep '    [a-z]' | awk '{print $1}' | \
-        sed 's/|/ /g' ; $TODO_FULL_SH listaddons | sort)
-;;
+# Variables
+action="$1"; shift
+export PAGER=scroll
+
+# Main
+case $1 in
+	"usage")
+		usage
+		exit
+	;;
+
+	"-h")
+			usage
+			exit
+	;;
+
+	*)
+		## list all possible actions
+		echo $(todo.sh shorthelp | awk '/Actions:/,/^$/' | \
+			awk '{if($0=="")exit;print}' | grep '    [a-z]' | awk '{print $1}' | \
+			sed 's/|/ /g' ; todo.sh listaddons | sort)
+	;;
 esac
