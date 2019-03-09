@@ -2,31 +2,38 @@
 # 2009 Paul Mansfield <paul.mansfield@mansteck.co.uk>
 # License:    GPL, http://www.gnu.org/copyleft/gpl.html
 
-if [ $1 != "usage" ]; then
-    action=$1;shift
-fi
-
+# Functions
 usage() {
-    echo "  $(basename $0)"
-    echo "    List notes"
-    echo ""
+	echo "  $(basename $0)"
+	echo "    List notes"
+	echo ""
 }
 
+# Usage for todo.sh help
+if [ "$1" = "usage" ]; then
+	usage
+	exit
+fi
+
+# Variables
+action="$1"; shift
+
 case $1 in
-    "usage")
-        usage
-    ;;
+	"usage")
+		usage
+		exit
+	;;
 
-    "-h")
-        usage
-    ;;
+	"-h")
+		usage
+	;;
 
-    *)
-        # Create file from todo and 'tickled' files
-        cat $TODO_FILE>> $TMP_FILE
-        if [ -n $TICKLER_DIR ]; then
-            find $TICKLER_DIR -mindepth 2 -size 1b -exec cat {} >>$TMP_FILE \;
-        fi
-        grep -o '\bnote\:\w*' "$TMP_FILE" | sort -u
-    ;;
+	*)
+		# Create file from todo and 'tickled' files
+		cat $TODO_FILE>> $TMP_FILE
+		if [ -n $TICKLER_DIR ]; then
+			find $TICKLER_DIR -mindepth 2 -size 1b -exec cat {} >>$TMP_FILE \;
+		fi
+		grep -o '\bnote\:\w*' "$TMP_FILE" | sort -u
+	;;
 esac
