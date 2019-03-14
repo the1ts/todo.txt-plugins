@@ -10,7 +10,7 @@ usage () {
 }
 
 # Usage for todo.sh help
-if [ "$1" = "usage" ]; then
+if [ "$2" = "usage" ]; then
 	usage
 	exit
 fi
@@ -25,16 +25,23 @@ case $1 in
 	;;
 
 	*)
-		if [ $# -lt 2 ]; then
+		if [ $# -lt 1 ]; then
 			$0 usage
 			exit 1
-    fi
-    NOTE_FILE=$(echo $2 | sed 's/^note://g')
-    PRE=$(basename $TODO_FILE | sed 's/.txt$//g')
-    if [ -e $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt ]; then
-			cat $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt
-    else
-			echo "No such Notes file, use lsnotes to find notes files"
-    fi
+		fi
+		NOTE_FILE=$(echo $1 | sed 's/^note://g')
+		PRE=$(basename "$TODO_FILE" | sed 's/.txt$//g')
+		# If not file exists
+		if [ -e "$TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt" ]; then
+			cat "$TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt"
+		else
+			# If note file is in todo.txt, but empty
+			if [ $(grep -c "\b$1\b"  "$TODO_FILE") -gt 0 ]; then
+				echo "$1 is empty"
+			else
+				echo "Note file $1 not in todo.txt file,"
+				echo "use lsnotes to find notes files"
+			fi
+		fi
 	;;
 esac
