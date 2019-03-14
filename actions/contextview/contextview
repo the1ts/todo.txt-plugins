@@ -5,18 +5,19 @@
 # Inspired by andreasw
 TODOTXT_VERBOSE=0
 
+# Create action variable and move arguments up one
 action=$1
 shift
 
 # Stop filter now and run in a controlled manner after the _list function is run
-TODOTXT_DISABLE_FILTER=1 
+TODOTXT_DISABLE_FILTER=1
 
 [ "$action" = "usage" ] && {
-    echo "    $(basename $0) [TERM...]"
-    echo "      Show todo items containing TERM, grouped by context, and displayed in"
-    echo "      priority order. If no TERM provided, displays entire todo.txt."
-    echo ""
-    exit
+	echo "    $(basename "$0") [TERM...]"
+	echo "      Show todo items containing TERM, grouped by context, and displayed in"
+	echo "      priority order. If no TERM provided, displays entire todo.txt."
+	echo ""
+	exit
 }
 
 # Show contexts in alphabetical order and todo items in priority  order
@@ -27,19 +28,19 @@ echo ""
 CONTEXTS=$(grep -o '[^ ]*@[^ ]\+' "$TODO_FILE" | grep '^@' | sort -u | sed 's/^@//g')
 
 # For each project show header and the list of todo items
-for i in $CONTEXTS ; do 
-    # Use core _list function, does numbering and colouring for us
-    CONTEXT_LIST=$(_list "$TODO_FILE" "\@$i" "$@" | sed 's/\ *@[a-zA-Z0-9._\-]*\ */ /g')
-    if [[ -n "${CONTEXT_LIST}" ]]; then
-        echo "--- $i ---"
-        echo "${CONTEXT_LIST}" | eval $TODOTXT_FINAL_FILTER
-        echo ""
-    fi
+for i in ${CONTEXTS} ; do 
+	# Use core _list function, does numbering and colouring for us
+	CONTEXT_LIST=$(_list "$TODO_FILE" "\@$i" "$@" | sed 's/\ *@[a-zA-Z0-9._\-]*\ */ /g')
+	if [[ -n "${CONTEXT_LIST}" ]]; then
+		echo "--- $i ---"
+		echo "${CONTEXT_LIST}" | eval "${TODOTXT_FINAL_FILTER}"
+		echo ""
+	fi
 done
 # Show todo items not associated to a project
 CONTEXT_LIST=$(_list "$TODO_FILE" "$@" | grep -v "\@[[:alnum:]]*")
 if [[ -n "${CONTEXT_LIST}" ]]; then
-    echo "--- No context ---"
-    echo "${CONTEXT_LIST}" | eval $TODOTXT_FINAL_FILTER
+	echo "--- No context ---"
+	echo "${CONTEXT_LIST}" | eval "${TODOTXT_FINAL_FILTER}"
 fi
 
