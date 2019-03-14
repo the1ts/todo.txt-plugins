@@ -22,14 +22,14 @@ commit () {
 	fi
 }
 
+# Variables
+action="$1"; shift
+
 # Usage for todo.sh help
 if [ "$1" = "usage" ]; then
 	usage
 	exit
 fi
-
-# Variables
-action="$1"; shift
 
 case $1 in
 	"usage")
@@ -38,14 +38,14 @@ case $1 in
 	;;
 
 	*)
-		if [ $# -lt 2 ]; then
+		if [ $# -lt 1 ]; then
 			$0 usage
 			exit 1
 		fi
 		cd $TODO_DIR
 
 		# construct file name
-		NOTE_FILE=$(echo $2 | sed 's/^note://g')
+		NOTE_FILE=$(echo $1 | sed 's/^note://g')
 		PRE=$(basename $TODO_FILE | sed 's/.txt$//g')
 
 		# Create file from todo and 'tickled' files
@@ -62,7 +62,7 @@ case $1 in
 			commit $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt
 		else
 			# If note link in todo.txt exists then edit
-			if [ $(grep -o '[^ ]*note:[^ ]\+' "$TMP_FILE" | grep '^note:' | grep "$2$" | sort -u| \
+			if [ $(grep -o '[^ ]*note:[^ ]\+' "$TMP_FILE" | grep '^note:' | grep "$1$" | sort -u| \
 				sed "s/^note://g"| grep -c $NOTE_FILE) -ge 1 ] ;then
 				editor $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt
 				add $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt
