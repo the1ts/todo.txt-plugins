@@ -1,6 +1,6 @@
 README file for tickler scripts
 
-This is based off Braden Grams tickle work at http://github.com/bgrams.
+This is based off Braden Grams tickle work that used to be at http://github.com/bgrams
 
 tickle has been tidied up somewhat. Now todo.txt exports all variables so the script is simplified.
 
