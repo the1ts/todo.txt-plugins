@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-action=$1
+action="${1}"
 shift
 
 if [ "$1" = "usage" ]; then
-    "$TODO_FULL_SH" timetracker usage
+	"$TODO_FULL_SH" timetracker usage
 else
-    "$TODO_FULL_SH" timetracker "$@"
+	"$TODO_FULL_SH" timetracker "$@"
 fi
 
