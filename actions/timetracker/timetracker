@@ -5,341 +5,335 @@
 # (C) 2012 Paul Mansfield
 # License:  GPL, http://www.gnu.org/copyleft/gpl.html
 
-
 usage() {
-    sed -e 's/^    //' <<EndUsage 
-        $(basename ${0}) on|off|list|archive|unarchive|stats [project]
-          Track time spent on a project.
-EndUsage
-    exit 1
+	echo "$(basename "${0}") on|off|list|archive|unarchive|stats [project]"
+	echo "	Track time spent on a project."
+	exit 1
 }
 
 # Setup some variables
-PRE=$(basename ${TODO_FILE} | sed 's/.txt$//g')
-CURRENT=$(find ${TODO_DIR}/tt/${PRE}/ -maxdepth 1 -name "*.tt" | awk -F / '{print $NF}' | sed 's/\.tt$//' | sort)
-ARCHIVED=$(find ${TODO_DIR}/tt/${PRE}/archive/ -maxdepth 1 -name "*.tt" | awk -F / '{print $NF}' | sed 's/\.tt$//' | sort)
-shift
-action=$1
+PRE=$(basename "${TODO_FILE}" | sed 's/.txt$//g')
+CURRENT=$(find "${TODO_DIR}/tt/${PRE}/" -maxdepth 1 -name "*.tt" | awk -F / '{print $NF}' | sed 's/\.tt$//' | sort)
+ARCHIVED=$(find "${TODO_DIR}/tt/${PRE}/archive/" -maxdepth 1 -name "*.tt" | awk -F / '{print $NF}' | sed 's/\.tt$//' | sort)
+shift; action=$1
 # If we are getting stats, allow blank project
-if [ -z $2 ]; then
-    if [ $(echo "${action}" | grep -c 'list\|stats') -eq 1 ]; then
-        ALL=1
-    fi
-    if [ $(echo "${action}" | grep -c 'list\|stats') -eq 0 ]; then
-        usage
-    fi
+if [ -z "${2}" ]; then
+	if [ $(echo "${action}" | grep -c 'list\|stats') -eq 1 ]; then
+		ALL=1
+	fi
+	if [ "$(echo "${action}" | grep -c 'list\|stats')" -eq 0 ]; then
+		usage
+	fi
 else
-    # Remove + from project
-    project=$(echo $2 | sed 's/^\+//g')
-    ALL=0
+	# Remove + from project
+	project=$(echo "${2}" | sed 's/^\+//g')
+	ALL=0
 fi
 
 # Human style timings
 tthuman () {
-    TOTAL=$1
-    RUNNING=$2
+	TOTAL=$1
+	RUNNING=$2
 	DAYS=$((${TOTAL}/86400))
-    if [ ${DAYS} -gt 0 ]; then
-        TEXTDAYS="${DAYS} days "
-    else
-        TEXTDAYS=""
-    fi
-	    REMOVEDAYS=$((${TOTAL}-${DAYS}*86400))
-	    HOURS=$(($REMOVEDAYS/3600))
-    if [ ${HOURS} -gt 0 ]; then
-        TEXTHOURS="${HOURS} hours "
-    else
-        TEXTHOURS=""
-    fi
-	    REMOVEHOURS=$(($REMOVEDAYS-${HOURS}*3600))
-	    MINUTES=$(($REMOVEHOURS/60))
-    if [ ${MINUTES} -gt 0 ]; then
-        TEXTMINUTES="${MINUTES} minutes "
-    else
-        TEXTMINUTES=""
-    fi
-	    SECONDS=$(($REMOVEHOURS-${MINUTES}*60))
-    if [ ${SECONDS} -gt 0 ]; then
-        TEXTSECONDS="${SECONDS} seconds "
-    else
-        TEXTSECONDS=""
-    fi
+	if [ ${DAYS} -gt 0 ]; then
+		TEXTDAYS="${DAYS} days "
+	else
+		TEXTDAYS=""
+	fi
+	REMOVEDAYS=$((${TOTAL}-${DAYS}*86400))
+	HOURS=$(($REMOVEDAYS/3600))
+	if [ ${HOURS} -gt 0 ]; then
+		TEXTHOURS="${HOURS} hours "
+	else
+		TEXTHOURS=""
+	fi
+	REMOVEHOURS=$(($REMOVEDAYS-${HOURS}*3600))
+	MINUTES=$(($REMOVEHOURS/60))
+	if [ ${MINUTES} -gt 0 ]; then
+		TEXTMINUTES="${MINUTES} minutes "
+	else
+		TEXTMINUTES=""
+	fi
+		SECONDS=$(($REMOVEHOURS-${MINUTES}*60))
+	if [ ${SECONDS} -gt 0 ]; then
+		TEXTSECONDS="${SECONDS} seconds "
+	else
+		TEXTSECONDS=""
+	fi
 }
 
 
 # Make directories that may be needed
 ttprep() {
-    if [ ! -d ${TODO_DIR}/tt/${PRE}/ ]; then
-        mkdir -p ${TODO_DIR}/tt/${PRE}
-    fi
-    if [ ! -d ${TODO_DIR}/tt/${PRE}/archive ]; then
-        mkdir -p ${TODO_DIR}/tt/${PRE}/archive
-    fi
+	if [ ! -d "${TODO_DIR}/tt/${PRE}/" ]; then
+		mkdir -p "${TODO_DIR}/tt/${PRE}"
+	fi
+	if [ ! -d "${TODO_DIR}/tt/${PRE}/archive" ]; then
+		mkdir -p "${TODO_DIR}/tt/${PRE}/archive"
+	fi
 }
 
 tttests () {
-    if [ $(grep -c "\+${project}" "$TODO_FILE") -lt 1 ]; then
-        echo ""
-        echo "Project doesn't appear in the todo.txt file, exiting"
-        echo ""
-        exit 1
-    fi
+	if [ "$(grep -c "\+${project}" "$TODO_FILE")" -lt 1 ]; then
+		echo ""
+		echo "Project doesn't appear in the todo.txt file, exiting"
+		echo ""
+		exit 1
+	fi
 }
 
 # Archive the project tt file
 ttarchive() {
-    if [ -f ${TODO_DIR}/tt/${PRE}/${project}.tt ]; then
-        if [ $(tail -1 ${TODO_DIR}/tt/${PRE}/${project}.tt | grep -c :) -eq 0 ]; then
-            echo "$(cat ${TODO_DIR}/tt/${PRE}/${project}.tt):$(date +%s)" >> ${TODO_DIR}/tt/${PRE}/archive/${project}.tt
-            rm ${TODO_DIR}/tt/${PRE}/${project}.tt 
-            echo ""
-            echo "Setting ${project} as finished now and archiving"
-            echo ""
-        else
-            mv ${TODO_DIR}/tt/${PRE}/${project}.tt ${TODO_DIR}/tt/${PRE}/archive/ 
-            echo ""
-            echo "Archiving ${project}"
-            echo ""
-        fi
-    else
-        echo ""
-        echo "Project ${project} does not exist"
-        echo ""
-    fi
-
+	if [ -f "${TODO_DIR}/tt/${PRE}/${project}.tt" ]; then
+		if [ "$(tail -1 "${TODO_DIR}/tt/${PRE}/${project}.tt" | grep -c :)" -eq 0 ]; then
+			echo "$(cat "${TODO_DIR}/tt/${PRE}/${project}.tt"):$(date +%s)" >> "${TODO_DIR}/tt/${PRE}/archive/${project}.tt"
+			rm "${TODO_DIR}/tt/${PRE}/${project}.tt" 
+			echo ""
+			echo "Setting ${project} as finished now and archiving"
+			echo ""
+		else
+			mv "${TODO_DIR}/tt/${PRE}/${project}.tt" "${TODO_DIR}/tt/${PRE}/archive/"
+			echo ""
+			echo "Archiving ${project}"
+			echo ""
+		fi
+	else
+		echo ""
+		echo "Project ${project} does not exist"
+		echo ""
+	fi
 }
 
 ttunarchive () {
-    echo ""
-    if [ -f ${TODO_DIR}/tt/${PRE}/archive/${project}.tt ]; then
-        if [ ! -f ${TODO_DIR}/tt/${PRE}/${project}.tt ]; then
-            mv ${TODO_DIR}/tt/${PRE}/archive/${project}.tt ${TODO_DIR}/tt/${PRE}/${project}.tt
-            echo "Project ${project} unarchived"
-        else
-            echo "Project ${project} is current, will not unarchive"
-        fi
-    else
-            echo "Project ${project} not archived, cannot unarchive"
-    fi
-    echo ""
+	echo ""
+	if [ -f "${TODO_DIR}/tt/${PRE}/archive/${project}.tt" ]; then
+		if [ ! -f "${TODO_DIR}/tt/${PRE}/${project}.tt" ]; then
+			mv "${TODO_DIR}/tt/${PRE}/archive/${project}.tt" "${TODO_DIR}/tt/${PRE}/${project}.tt"
+			echo "Project ${project} unarchived"
+		else
+			echo "Project ${project} is current, will not unarchive"
+		fi
+	else
+		echo "Project ${project} not archived, cannot unarchive"
+	fi
+	echo ""
 }
 
 ttlist () {
-    if [ ${#CURRENT} -gt 0 -o ${#ARCHIVED} ]; then
-        echo "Projects being time tracked"
-        echo "==========================="
-        if [ ${#CURRENT} -gt 0 ]; then
-            echo "Current"
-            echo "-------"
-            echo $CURRENT
-            echo ""
-        fi
-        if [ ${#ARCHIVED} -gt 0 ]; then
-            echo "Archived"
-            echo "--------"
-            echo $ARCHIVED
-            echo ""
-        fi
-    fi
-
+	if [ "${#CURRENT}" -gt 0 ] || [ "${#ARCHIVED}" -gt 0 ]; then
+		echo "Projects being time tracked"
+		echo "==========================="
+		if [ ${#CURRENT} -gt 0 ]; then
+			echo "Current"
+			echo "-------"
+			echo "$CURRENT"
+			echo ""
+		fi
+		if [ ${#ARCHIVED} -gt 0 ]; then
+			echo "Archived"
+			echo "--------"
+			echo "$ARCHIVED"
+			echo ""
+		fi
+	fi
 }
 
 ttsimplelist () {
-    echo ${CURRENT}
+    echo "${CURRENT}"
 }
 
 ttsimplearchivedlist () {
-    echo ${ARCHIVED}
+    echo "${ARCHIVED}"
 }
 
 ttsimplelistall () {
-    echo ${CURRENT} ${ARCHIVED}
+    echo "${CURRENT} ${ARCHIVED}"
 }
 
 tton() {
-    if [ -f ${TODO_DIR}/tt/${PRE}/${project}.tt ]; then
-        # If project file exists and if our last line has only one field, then add time stamp
-        if [ $(tail -1 ${TODO_DIR}/tt/${PRE}/${project}.tt | grep -c :) -eq 1 ] ; then
-            echo "$(date +"%s")" >> ${TODO_DIR}/tt/${PRE}/${project}.tt
-            echo ""
-            echo "Starting clock on ${project}"
-            echo ""
-        else
-            echo ""
-            echo "Project ${project} is still active, cannot turn on the clock"
-            echo ""
-        fi
-    # If project file doesn't exist add initial time stamp
-    else
-        # if Project is archived, ask to unarchive, then start clock
-        if [ -f ${TODO_DIR}/tt/${PRE}/archive/${project}.tt ]; then
-            echo "Project ${project} is archived, unarchive?"
-            read -n1 -p "(y/n)"
-            [[ $REPLY = [yY] ]] && mv ${TODO_DIR}/tt/${PRE}/archive/${project}.tt ${TODO_DIR}/tt/${PRE}/${project}.tt || { echo "Okay, exiting"; exit 1; }
-            echo "$(date +"%s")" >> ${TODO_DIR}/tt/${PRE}/${project}.tt
-            echo ""
-            echo "Unarchiving and starting clock on ${project}"
-            echo ""
-        # Project doesn't exist, create and start project
-        else
-            echo "$(date +"%s")" >> ${TODO_DIR}/tt/${PRE}/${project}.tt
-            echo ""
-            echo "Starting clock on ${project}"
-            echo ""
-        fi
-    fi
+	if [ -f "${TODO_DIR}/tt/${PRE}/${project}.tt" ]; then
+		# If project file exists and if our last line has only one field, then add time stamp
+		if [ "$(tail -1 "${TODO_DIR}/tt/${PRE}/${project}.tt" | grep -c :)" -eq 1 ] ; then
+			echo "$(date +"%s")" >> "${TODO_DIR}/tt/${PRE}/${project}.tt"
+			echo ""
+			echo "Starting clock on ${project}"
+			echo ""
+		else
+			echo ""
+			echo "Project ${project} is still active, cannot turn on the clock"
+			echo ""
+		fi
+	# If project file doesn't exist add initial time stamp
+	else
+			# if Project is archived, ask to unarchive, then start clock
+			if [ -f "${TODO_DIR}/tt/${PRE}/archive/${project}.tt" ]; then
+					echo "Project ${project} is archived, unarchive?"
+					read -n1 -p "(y/n)"
+					[[ $REPLY = [yY] ]] && mv "${TODO_DIR}/tt/${PRE}/archive/${project}.tt" "${TODO_DIR}/tt/${PRE}/${project}.tt" || { echo "Okay, exiting"; exit 1; }
+					echo "$(date +"%s")" >> "${TODO_DIR}/tt/${PRE}/${project}.tt"
+					echo ""
+					echo "Unarchiving and starting clock on ${project}"
+					echo ""
+			# Project doesn't exist, create and start project
+			else
+					echo "$(date +"%s")" >> "${TODO_DIR}/tt/${PRE}/${project}.tt"
+					echo ""
+					echo "Starting clock on ${project}"
+					echo ""
+			fi
+	fi
 }
 
 ttoff() {
-    if [ -f ${TODO_DIR}/tt/${PRE}/${project}.tt ]; then
-        # if our last line has one field, then add the finish time
-        if [ $(tail -1 ${TODO_DIR}/tt/${PRE}/${project}.tt | grep -c :) -eq 0 ] ; then
-            echo "$(tail -1 ${TODO_DIR}/tt/${PRE}/${project}.tt | tr -d '\n'):$(date +"%s")" >> ${TODO_DIR}/tt/${PRE}/${project}.tmp
-            sed -i '' '$d' ${TODO_DIR}/tt/${PRE}/${project}.tt
-            cat ${TODO_DIR}/tt/${PRE}/${project}.tmp >> ${TODO_DIR}/tt/${PRE}/${project}.tt
-            rm -rf ${TODO_DIR}/tt/${PRE}/${project}.tmp
-            echo ""
-            echo "Stopping clock on ${project}"
-            echo ""
-        else
-            if [ ! -s ${TODO_DIR}/tt/${PRE}/${project}.tt ]; then
-                echo "${project} is new, use $(basename $0) on first"
-            else
-                echo "Project ${project} is not active, cannot turn off the clock"
-            fi
-        fi
-    else
-        echo ""
-        echo "Project ${project} does not exist"
-        echo ""
-    fi
+	if [ -f "${TODO_DIR}/tt/${PRE}/${project}.tt" ]; then
+		# if our last line has one field, then add the finish time
+		if [ "$(tail -1 "${TODO_DIR}/tt/${PRE}/${project}.tt" | grep -c :)" -eq 0 ] ; then
+			echo "$(tail -1 "${TODO_DIR}/tt/${PRE}/${project}.tt" | tr -d '\n'):$(date +"%s")" >> "${TODO_DIR}/tt/${PRE}/${project}.tmp"
+			sed -i '$d' "${TODO_DIR}/tt/${PRE}/${project}.tt"
+			cat "${TODO_DIR}/tt/${PRE}/${project}.tmp" >> "${TODO_DIR}/tt/${PRE}/${project}.tt"
+			rm -rf "${TODO_DIR}/tt/${PRE}/${project}.tmp"
+			echo ""
+			echo "Stopping clock on ${project}"
+			echo ""
+		else
+			if [ ! -s "${TODO_DIR}/tt/${PRE}/${project}.tt" ]; then
+				echo "${project} is new, use $(basename "$0") on first"
+			else
+				echo "Project ${project} is not active, cannot turn off the clock"
+			fi
+		fi
+else
+		echo ""
+		echo "Project ${project} does not exist"
+		echo ""
+	fi
 }
 
 # Show the stats for the project
 ttstats() {
-    if [ -f ${TODO_DIR}/tt/${PRE}/${project}.tt ]; then
-	    if [ $(tail -1 ${TODO_DIR}/tt/${PRE}/${project}.tt | grep -c :) -eq 0 ]; then
-	        TOTAL=$(echo "$(cat ${TODO_DIR}/tt/${PRE}/${project}.tt):$(date +%s)" |awk -F ':' '{print $2 - $1}' | awk '{ sum+=$1} END {print sum}')
-	        RUNNING=1
-	    else
-	        TOTAL=$(echo "$(cat ${TODO_DIR}/tt/${PRE}/${project}.tt)" |awk -F ':' '{print $2 - $1}' | awk '{ sum+=$1} END {print sum}')
-	        RUNNING=0
-	    fi
-	    
-        tthuman ${TOTAL} ${RUNNING}
-
-        echo ""
-	    echo "Stats for Project: ${project}"
-        CHAR=$(echo "Stats for Project: ${project}"| sed 's/./=/g')
-        echo $CHAR
-	    if [ ${RUNNING} -eq 1 ]; then
-	        echo "Timer still running for ${project}"
-	    fi
-	    echo ""
-	    echo "${TEXTDAYS}${TEXTHOURS}${TEXTMINUTES}${TEXTSECONDS}"
-        echo ""
-    else
-        echo ""
-        echo "Project ${project} does not exist"
-        echo ""
-    fi
+	if [ -f "${TODO_DIR}/tt/${PRE}/${project}.tt" ]; then
+		if [ "$(tail -1 "${TODO_DIR}/tt/${PRE}/${project}.tt" | grep -c :)" -eq 0 ]; then
+			TOTAL=$(echo $(cat ${TODO_DIR}/tt/${PRE}/${project}.tt):$(date +%s) |awk -F ':' '{print $2 - $1}' | awk '{ sum+=$1} END {print sum}')
+			RUNNING=1
+		else
+			TOTAL=$(echo "$(cat ${TODO_DIR}/tt/${PRE}/${project}.tt)" |awk -F ':' '{print $2 - $1}' | awk '{ sum+=$1} END {print sum}')
+			RUNNING=0
+		fi
+		tthuman ${TOTAL} ${RUNNING}
+		echo ""
+		echo "Stats for Project: ${project}"
+		CHAR=$(echo "Stats for Project: ${project}"| sed 's/./=/g')
+		echo $CHAR
+		if [ ${RUNNING} -eq 1 ]; then
+			echo "Timer still running for ${project}"
+		fi
+		echo ""
+		echo "${TEXTDAYS}${TEXTHOURS}${TEXTMINUTES}${TEXTSECONDS}"
+			echo ""
+	else
+			echo ""
+			echo "Project ${project} does not exist"
+			echo ""
+	fi
 }
 
 ttarchivedstats () {
-    if [ -f ${TODO_DIR}/tt/${PRE}/archive/${project}.tt ]; then
-	    TOTAL=$(echo "$(cat ${TODO_DIR}/tt/${PRE}/archive/${project}.tt)" |awk -F ':' '{print $2 - $1}' | awk '{ sum+=$1} END {print sum}')
-	    RUNNING=0
-	    
-        tthuman ${TOTAL} ${RUNNING}
+	if [ -f "${TODO_DIR}/tt/${PRE}/archive/${project}.tt" ]; then
+		TOTAL="$(cat "${TODO_DIR}/tt/${PRE}/archive/${project}.tt" |awk -F ':' '{print $2 - $1}' | awk '{ sum+=$1} END {print sum}')"
+		RUNNING=0
+		
+			tthuman "${TOTAL}" "${RUNNING}"
 
-        echo ""
-	    echo "Stats for archived Project: ${project}"
-        CHAR=$(echo "Stats for archived Project: ${project}"| sed 's/./=/g')
-        echo $CHAR
-	    echo ""
-	    echo "${TEXTDAYS}${TEXTHOURS}${TEXTMINUTES}${TEXTSECONDS}"
-        echo ""
-    else
-        echo ""
-        echo "Project ${project} does not exist"
-        echo ""
-    fi
+			echo ""
+		echo "Stats for archived Project: ${project}"
+			CHAR=$(echo "Stats for archived Project: ${project}"| sed 's/./=/g')
+			echo "${CHAR}"
+		echo ""
+		echo "${TEXTDAYS}${TEXTHOURS}${TEXTMINUTES}${TEXTSECONDS}"
+			echo ""
+	else
+			echo ""
+			echo "Project ${project} does not exist"
+			echo ""
+	fi
 }
+
 # Main
 ttprep
 tttests
 case "${action}" in
-stats)
-    # If no project was set, show all projects stats
-    if [ ${ALL} -eq 1 ]; then
-        cd ${TODO_DIR}/tt/${PRE}/
-        for project in *.tt; do
-            project=$(echo ${project} | sed 's/\.tt$//')
-            ttstats ${project}
-        done
-    else
-        ttstats
-    fi
-    ;;
-archivedstats)
-    # If no project was set, show all projects stats
-    if [ ${ALL} -eq 1 ]; then
-        cd ${TODO_DIR}/tt/${PRE}/archive
-        for project in *.tt; do
-            project=$(echo ${project} | sed 's/\.tt$//')
-            ttarchivedstats ${project}
-        done
-    else
-        ttarchivedstats
-    fi
-    ;;
-statsall)
-    # If no project was set, show all projects stats
-    if [ ${ALL} -eq 1 ]; then
-        cd ${TODO_DIR}/tt/${PRE}/
-        for project in *.tt; do
-            project=$(echo ${project} | sed 's/\.tt$//')
-            ttstats ${project}
-        done
-    else
-        ttstats
-    fi
-    # If no project was set, show all projects stats
-    if [ ${ALL} -eq 1 ]; then
-        cd ${TODO_DIR}/tt/${PRE}/archive
-        for project in *.tt; do
-            project=$(echo ${project} | sed 's/\.tt$//')
-            ttarchivedstats ${project}
-        done
-    else
-        ttarchivedstats
-    fi
-    ;;
-on)
-    tton
-    ;;
-off)
-    ttoff
-    ;;
-list)
-    ttlist
-    ;;
-archive)
-    ttarchive
-    ;;
-unarchive)
-    ttunarchive
-    ;;
-simplelist)
-    ttsimplelist
-    ;;
-simplearchivedlist)
-    ttsimplearchivedlist
-    ;;
-simplelistall)
-    ttsimplelistall
-    ;;
-*)
-    usage
+	stats)
+		# If no project was set, show all projects stats
+		if [ ${ALL} -eq 1 ]; then
+			cd "${TODO_DIR}/tt/${PRE}/" || exit 1
+			for project in *.tt; do
+				project="$(echo "${project}" | sed 's/\.tt$//')"
+				ttstats "${project}"
+			done
+		else
+			ttstats
+		fi
+	;;
+	archivedstats)
+		# If no project was set, show all projects stats
+		if [ ${ALL} -eq 1 ]; then
+			cd "${TODO_DIR}/tt/${PRE}/archive"
+			for project in *.tt; do
+				project="$(echo "${project}" | sed 's/\.tt$//')"
+				ttarchivedstats "${project}"
+			done
+		else
+			ttarchivedstats
+		fi
+	;;
+	statsall)
+		# If no project was set, show all projects stats
+		if [ ${ALL} -eq 1 ]; then
+				cd "${TODO_DIR}/tt/${PRE}/"
+				for project in *.tt; do
+						project="$(echo "${project}" | sed 's/\.tt$//')"
+						ttstats "${project}"
+				done
+		else
+				ttstats
+		fi
+		# If no project was set, show all projects stats
+		if [ ${ALL} -eq 1 ]; then
+			cd "${TODO_DIR}/tt/${PRE}/archive"
+			for project in *.tt; do
+				project="$(echo "${project}" | sed 's/\.tt$//')"
+				ttarchivedstats "${project}"
+			done
+		else
+			ttarchivedstats
+		fi
+	;;
+	on)
+		tton
+	;;
+	off)
+		ttoff
+	;;
+	list)
+		ttlist
+	;;
+	archive)
+		ttarchive
+	;;
+	unarchive)
+		ttunarchive
+	;;
+	simplelist)
+		ttsimplelist
+	;;
+	simplearchivedlist)
+		ttsimplearchivedlist
+	;;
+	simplelistall)
+		ttsimplelistall
+	;;
+	*)
+		usage
+	;;
 esac
 
