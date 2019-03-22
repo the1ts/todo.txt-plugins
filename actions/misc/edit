@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+#===============================================================================
+#
+#          FILE: edit
+#
+#         USAGE: todo.sh edit
+#
+#   DESCRIPTION: 
+#
+#       OPTIONS: ---
+#  REQUIREMENTS: ---
+#          BUGS: ---
+#         NOTES: todo.sh action
+#        AUTHOR: Paul Mansfield (paul.mansfield@mansteck.co.uk), 
+#     COPYRIGHT: 2019 Paul Mansfield
+#       LICENSE: GPL, http://www.gnu.org/copyleft/gpl.html
+#       CREATED: 19/09/09 10:52:44
+#      REVISION:  ---
+#===============================================================================
+
+# Functions
+usage () {
+	echo "    $(basename "$0") [todo|done|cfg]"
+	echo "      Allows editing of the todo.txt files."
+	echo "      todo.txt (todo), done.txt (done) or config (cfg)"
+	echo "      files in your default editor or vi"
+	echo ""
+	exit
+}
+
+# Variables
+action=$1;shift
+TODO_EDITOR=${EDITOR:-vi} # If EDITOR set then use, default vi
+
+# Main
+# If first arg is usage then give usage
+if [ "$action" = "usage" ]; then
+	usage
+fi
+
+# Which file used. No file then todo.txt
+if [ "$1"x == x ] ; then
+  EDIT_FILE="$TODO_FILE"
+# todo file then todo.txt
+elif echo "$1" | grep -iq ^todo$ ; then
+  EDIT_FILE="$TODO_FILE"
+# done file then done.txt
+elif echo "$1" | grep -iq ^done$ ; then
+  EDIT_FILE="$DONE_FILE"
+# config file then todo.cfg
+elif echo "$1" | grep -iq ^cfg$ ; then
+  EDIT_FILE="$TODOTXT_CFG_FILE"
+# Not valid, show usage
+else
+	usage
+fi
+
+# edit the file
+"$TODO_EDITOR" "$EDIT_FILE"
+exit
