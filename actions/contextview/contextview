@@ -1,16 +1,29 @@
 #!/usr/bin/env bash
-# 2010 Paul Mansfield
-# License:  GPL, http://www.gnu.org/copyleft/gpl.html
-
-# Inspired by andreasw
-TODOTXT_VERBOSE=0
+#===============================================================================
+#
+#          FILE: contextview
+#
+#         USAGE: todo.sh contextview
+#
+#   DESCRIPTION: 
+#
+#       OPTIONS: ---
+#  REQUIREMENTS: ---
+#          BUGS: ---
+#         NOTES: todo.sh action
+#        AUTHOR: Paul Mansfield (paul.manfield@mansteck.co.uk), 
+#     COPYRIGHT: 2009-2019 Paul Mansfield
+#       LICENSE: GPL, http://www.gnu.org/copyleft/gpl.html
+#       CREATED: 19/09/09 10:42:45
+#      REVISION:  ---
+#===============================================================================
 
 # Create action variable and move arguments up one
 action=$1
 shift
 
 # Stop filter now and run in a controlled manner after the _list function is run
-TODOTXT_DISABLE_FILTER=1
+export TODOTXT_DISABLE_FILTER=1
 
 [ "$action" = "usage" ] && {
 	echo "    $(basename "$0") [TERM...]"
@@ -30,15 +43,16 @@ CONTEXTS=$(grep -o '[^ ]*@[^ ]\+' "$TODO_FILE" | grep '^@' | sort -u | sed 's/^@
 # For each project show header and the list of todo items
 for i in ${CONTEXTS} ; do 
 	# Use core _list function, does numbering and colouring for us
-	CONTEXT_LIST=$(_list "$TODO_FILE" "\@$i" "$@" | sed 's/\ *@[a-zA-Z0-9._\-]*\ */ /g')
+	CONTEXT_LIST=$(_list "$TODO_FILE" "@$i" "$@" | sed 's/\ *@[a-zA-Z0-9._\-]*\ */ /g')
 	if [[ -n "${CONTEXT_LIST}" ]]; then
 		echo "--- $i ---"
 		echo "${CONTEXT_LIST}" | eval "${TODOTXT_FINAL_FILTER}"
 		echo ""
 	fi
 done
+
 # Show todo items not associated to a project
-CONTEXT_LIST=$(_list "$TODO_FILE" "$@" | grep -v "\@[[:alnum:]]*")
+CONTEXT_LIST=$(_list "$TODO_FILE" "$@" | grep -v "@[[:alnum:]]*")
 if [[ -n "${CONTEXT_LIST}" ]]; then
 	echo "--- No context ---"
 	echo "${CONTEXT_LIST}" | eval "${TODOTXT_FINAL_FILTER}"
