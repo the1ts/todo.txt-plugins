@@ -1,7 +1,7 @@
 #!/usr/bin/env bash 
 # 2009 Paul Mansfield <paul.mansfield@mansteck.co.uk>
 # License:  GPL, http://www.gnu.org/copyleft/gpl.html
-
+#set -x
 ## Functions
 # Usage
 function usage() {
@@ -9,10 +9,6 @@ function usage() {
   echo "    list all possible actions"
   echo ""
   exit
-}
-# Function for PAGER to allow todo.sh shorthelp to give correct output
-function scroll {
-  while read -r ; do echo "$REPLY" ; sleep ${1:-0.5} ; done
 }
 
 # Usage for todo.sh help
@@ -23,7 +19,6 @@ fi
 
 # Variables
 action="$1"; shift
-export PAGER=scroll
 
 # Main
 case $1 in
@@ -39,8 +34,13 @@ case $1 in
 
 	*)
 		## list all possible actions
-		echo $(todo.sh shorthelp | awk '/Actions:/,/^$/' | \
-			awk '{if($0=="")exit;print}' | grep '    [a-z]' | awk '{print $1}' | \
-			sed 's/|/ /g' ; todo.sh listaddons | sort)
+		# Built ins are manual below (Shorthelp and pager causes issues grabbing all builtins)
+		BUILTINS="add addm addto append archive command deduplicate del rm depri do help list ls listall lsa listaddons listcon lsc listfile lf listpri lsp listproj lsprj move mv prepend prep pri p replace report shorthelp"
+		# Use builtin to find all external actions
+		ADDONS="$("${TODO_FULL_SH}" listaddons)"
+		# echo each and sort
+		for action in ${BUILTINS} ; do 
+			echo "$action"
+		done; echo "${ADDONS}" | sort | uniq
 	;;
 esac
