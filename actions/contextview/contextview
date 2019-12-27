@@ -40,7 +40,7 @@ echo ""
 # Find all contexts and sort
 CONTEXTS=$(grep -o '[^ ]*@[^ ]\+' "$TODO_FILE" | grep '^@' | sort -u | sed 's/^@//g')
 
-# For each project show header and the list of todo items
+# For each context show header and the list of todo items
 for i in ${CONTEXTS} ; do 
 	# Use core _list function, does numbering and colouring for us
 	CONTEXT_LIST=$(_list "$TODO_FILE" "@$i" "$@" | sed 's/\ *@[a-zA-Z0-9._\-]*\ */ /g')
@@ -51,7 +51,7 @@ for i in ${CONTEXTS} ; do
 	fi
 done
 
-# Show todo items not associated to a project
+# Show todo items not associated to a context
 CONTEXT_LIST=$(_list "$TODO_FILE" "$@" | grep -v "@[[:alnum:]]*")
 if [[ -n "${CONTEXT_LIST}" ]]; then
 	echo "--- No context ---"
