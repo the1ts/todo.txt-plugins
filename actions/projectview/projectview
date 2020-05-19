@@ -69,12 +69,15 @@ echo "=====  Projects  ====="
 echo ""
 
 # Find all projects and sort
-PROJECTS=$(grep -o '[^ ]*+[^ ]\+' "$TODO_FILE" | grep '^+' | sort -u | sed 's/^+//g' )
+PROJECTS=$(grep -o '[^ ]*+[^ ]\+' "$TODO_FILE" | grep '^+' | sort -u \
+	| sed 's/^+//g' )
 
 # For each project show header and the list of todo items
 for project in $PROJECTS ; do 
 	# Use core _list function, does numbering and colouring for us
-	PROJECT_LIST=$(_list "$TODO_FILE" "+$project\\b" "$@" | sed 's/\ *+[a-zA-Z0-9._:\-]*\ */ /g')
+	# Remove the colouring at the start of the project to fix whitespace issue
+	PROJECT_LIST=$(_list "$TODO_FILE" "+$project\\b" "$@" \
+		| sed "s/\ \x1b\[[0-9;]*m+[a-zA-Z0-9._:\-]*\b//g")
 	if [[ -n "${PROJECT_LIST}" ]]; then
 		echo  "---  $project  ---"
 		echo  "${PROJECT_LIST}" | eval "${TODOTXT_FINAL_FILTER}"
