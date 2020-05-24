@@ -55,6 +55,17 @@ else
 	usage
 fi
 
+# Do we have a line to edit as a second arg?
+if [ "$2"x != x ]; then
+	LINE="+$2"
+else
+	LINE=""
+fi
+
 # edit the file
-"$TODO_EDITOR" "$EDIT_FILE"
+if [[ "${TODO_EDITOR}" =~ vi ]] && [[ ! -z "$LINE" ]]; then
+	"$TODO_EDITOR" "$EDIT_FILE" "$LINE"
+else
+	"$TODO_EDITOR" "$EDIT_FILE"
+fi
 exit
