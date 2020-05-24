@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+# 2020 Paul Mansfield <paul.mansfield@mansteck.co.uk>
+# License:  GPL, http://www.gnu.org/copyleft/gpl.html
+
+# functions
+usage () {
+	echo "  $(basename "$0") [ORIGINAL_NOTESFILE] [NEW_NOTESFILE]"
+	echo "    rename ORIGINAL_NOTESFILE to NEW_NOTESFILE"
+	echo "    the note: is not required, but added"
+	echo "    eg todo.sh $(basename "$0") old_file new_file "
+	exit 0
+}
+
+# Usage for todo.sh help
+if [ "$1" = "usage" ]; then
+	usage
+	exit
+fi
+
+# Test correct number of options
+if [ $# -lt 3 ]; then
+	if [ "$1" != "usage" ]; then
+		echo "   not enough options"
+		usage
+		exit 1
+	fi
+	usage
+	exit 1
+fi
+
+# Extract Args to Variables
+action="$1"; shift
+OLD_FILE="$1"; shift
+NEW_FILE="$1"; shift
+
+# Make FILE Variables include note:
+if ! [[ ${OLD_FILE} =~ ^note: ]]; then
+	OLD_FILE="note:${OLD_FILE}"
+fi
+if ! [[ ${NEW_FILE} =~ ^note: ]]; then
+	NEW_FILE="note:${NEW_FILE}"
+fi
+
+# Variables
+PRE=$(basename $TODO_FILE | sed 's/.txt$//g')
+NOTES_DIR="${TODO_DIR}/notes"
+
+# Test the OLD_FILE is in the TODO_FILE or DONE_FILE and rename in 
+# todo.txt and done.txt
+if [[ $(grep -c ${OLD_FILE} ${TODO_FILE}) -ge 1 ]] || [[  $(grep -c ${OLD_FILE} ${DONE_FILE}) -ge 1 ]]; then
+	sed -i "s/${OLD_FILE}\b/${NEW_FILE}/g" "${TODO_FILE}"
+	sed -i "s/${OLD_FILE}\b/${NEW_FILE}/g" "${DONE_FILE}"
+else
+	echo "${OLD_FILE} is not a valid note, use listnotes to find notes."
+	exit 1
+fi
+
+# Test the OLD_FILE exists and RENAME
+# Remove the note: to be used as filename
+FILE_OLD="$(echo ${OLD_FILE} | sed 's/note://g')"
+FILE_NEW="$(echo ${NEW_FILE} | sed 's/note://g')"
+if [[ -f "${NOTES_DIR}/${PRE}-${FILE_OLD}.txt" ]]; then
+	mv ${NOTES_DIR}/${PRE}-${FILE_OLD}.txt ${NOTES_DIR}/${PRE}-${FILE_NEW}.txt
+fi
+
+# Test for OLD_FILE in 'tickled' files and rename
+if [[ -n ${TICKLER_DIR} ]]; then
+	TICKLED="$(find ${TICKLER_DIR} -mindepth 2 -type f -size 1 -exec grep ${OLD_FILE} {} \;)"
+	for FILE in ${TICKLED}; do
+		sed -i "s/${OLD_FILE}\b/${NEW_FILE}" "${FILE}"
+	done
+fi
