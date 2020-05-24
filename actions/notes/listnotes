@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # 2009 Paul Mansfield <paul.mansfield@mansteck.co.uk>
 # License:    GPL, http://www.gnu.org/copyleft/gpl.html
-set -x
+
 # Functions
 usage() {
 	echo "  $(basename $0)"
@@ -31,8 +31,8 @@ case $1 in
 	*)
 		# Create file from todo and 'tickled' files
 		cat $TODO_FILE> $TMP_FILE
-		if [ -n $TICKLER_DIR ]; then
-			find $TICKLER_DIR -mindepth 2 -type f -size 1b -exec cat {} >>$TMP_FILE \;
+		 if [ -n $TICKLER_DIR ]; then
+			find $TICKLER_DIR -mindepth 2 -type f -size 1b -exec cat {} >> $TMP_FILE \;
 		fi
 		grep -o '\bnote\:[a-zA-Z0-9\._-]*' "$TMP_FILE" | sort -u
 	;;
