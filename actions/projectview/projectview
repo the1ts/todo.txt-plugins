@@ -25,8 +25,7 @@ NOWRAP=0
 # Check how we are being run
 HOWRUN=$(basename "$0")
 # move arguments one to left, therefore eating action name
-action=$1
-shift
+action=$1; shift
 
 # If being run as simplepv then turn off all colours and
 # wrap at 40 characters
@@ -58,8 +57,8 @@ export TODOTXT_DISABLE_FILTER=1
 
 [ "$action" = "usage" ] && {
 	echo "    $(basename "$0") [TERM...]"
-	echo "      Show todo items containing TERM, grouped by project, and displayed in"
-	echo "      priority order. If no TERM provided, displays entire todo.txt."
+	echo "      Show todo items containing TERM, grouped by project, and displayed"
+	echo "      in priority order. If no TERM provided, displays entire todo.txt."
 	echo ""
 	exit
 }
@@ -76,7 +75,7 @@ PROJECTS=$(grep -o '[^ ]*+[^ ]\+' "$TODO_FILE" | grep '^+' | sort -u \
 for project in $PROJECTS ; do 
 	# Use core _list function, does numbering and colouring for us
 	# Remove the colouring at the start of the project to fix whitespace issue
-	PROJECT_LIST=$(_list "$TODO_FILE" "+$project\\b" "$@" \
+	PROJECT_LIST=$(_list "$TODO_FILE" "+$project\b" "$@" \
 		| sed "s/\ \x1b\[[0-9;]*m+[a-zA-Z0-9._:\-]*\b//g")
 	if [[ -n "${PROJECT_LIST}" ]]; then
 		echo  "---  $project  ---"

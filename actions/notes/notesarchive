@@ -35,7 +35,7 @@ case $1 in
 	NOTES=$(find . -maxdepth 1 -name "$PRE*" | sed 's/\.\///g')
 
 	# Create file from todo and 'tickled' files
-	cat $TODO_FILE>> $TMP_FILE
+	cat $TODO_FILE > $TMP_FILE
 	if [ -n $TICKLER_DIR -a -d $TICKLER_DIR ]; then
 		find $TICKLER_DIR -mindepth 2 -type f -size 1b -exec cat {} >>$TMP_FILE \;
 	fi
