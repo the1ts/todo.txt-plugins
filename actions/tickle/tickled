@@ -11,7 +11,7 @@ die()
 	echo "$*"
 	exit 1
 }
-
+set -x
 case $1 in
 	"usage")
 		echo "    tickled"
@@ -54,5 +54,6 @@ case $1 in
 		done
 		# Sort by date
 		sort -n "$TMP_FILE"
+		rm -rf $TMP_FILE
 	;;
 esac

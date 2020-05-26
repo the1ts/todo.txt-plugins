@@ -55,6 +55,7 @@ case $1 in
             else
                 echo "No such encrypted Notes file, use lsenotes to find notes files"
             fi
+						rm -rf $TMP_FILE
         fi
     ;;
 esac

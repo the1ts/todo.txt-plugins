@@ -35,5 +35,6 @@ case $1 in
 			find $TICKLER_DIR -mindepth 2 -type f -size 1b -exec cat {} >> $TMP_FILE \;
 		fi
 		grep -o '\bnote\:[a-zA-Z0-9\._-]*' "$TMP_FILE" | sort -u
+		rm -rf $TMP_FILE
 	;;
 esac

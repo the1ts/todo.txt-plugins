@@ -36,5 +36,6 @@ case $1 in
             fi
         fi
     done
+		rm -rf $TMP_FILE
     ;;
 esac

@@ -70,6 +70,7 @@ case $1 in
 			else
 				echo "No such Notes file, use lsnotes to find notes files"
 			fi
+			rm -rf $TMP_FILE
 		fi
 	;;
 esac
