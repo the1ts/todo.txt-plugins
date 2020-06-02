@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+# 2009 Paul Mansfield <paul.mansfield@mansteck.co.uk>
+# License:    GPL, http://www.gnu.org/copyleft/gpl.html
+
+# Chomp Action from args
+action="$1"; shift
+
+# Usage for todo.sh help
+if [[ "$1" = "usage" ]] || [[ "$1" = "-h" ]] || [[ -z "$1" ]]; then
+	echo "  $(basename $0) [-a] [TERM...]"
+	echo "    List notes that match a TERM within them"
+	echo "    -a show archived notes"
+	echo ""
+	exit
+fi
+
+## Variables
+# Prepend for our notes files
+PRE=$(basename $TODO_FILE | sed 's/.txt$//g')
+# Our active notes files
+NOTES="${TODO_DIR}/notes/${PRE}-*.txt"
+# Our archived notes files
+ARCHIVED="${TODO_DIR}/notes/archive/${PRE}-*.txt"
+if [[ $1 = "-a" ]]; then
+	ARCHIVE=1
+fi
+
+## Main
+echo "Notes Files"
+echo "-----------"
+grep -l $* ${NOTES} | sed "s/^.*${PRE}-/note:/g ; s/\.txt$//g"
+if [[ ${ARCHIVE} ]]; then
+	echo ""
+	echo "Archived Notes Files"
+	echo "--------------------"
+	grep -l $* ${ARCHIVED} | sed "s/^.*${PRE}-/note:/g ; s/\.txt$//g"
+fi
