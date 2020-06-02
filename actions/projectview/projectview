@@ -30,7 +30,7 @@ action=$1; shift
 # If being run as simplepv then turn off all colours and
 # wrap at 40 characters
 # Useful for display outside of terminal
-if [ "${HOWRUN}" = "simplepv" ] ; then
+if [[ "${HOWRUN}" = "simplepv" ]] ; then
 export 	TODOTXT_PLAIN=1
 export 	PRI_X=$NONE
 export 	PRI_A=$NONE
@@ -39,21 +39,21 @@ export 	PRI_C=$NONE
 export 	DEFAULT=$NONE
 export 	COLOR_DONE=$NONE
 	# Check if we want to wrap text or not
-	if [ "$1" = "--nowrap" ]; then
+	if [[ "$1" = "--nowrap" ]]; then
 		NOWRAP=1
 		shift
 	fi
 	# Set final filter
-	if [ "$NOWRAP" -eq 1 ] ; then
+	if [[ "$NOWRAP" -eq 1 ]] ; then
 		TODOTXT_FINAL_FILTER="$TODOTXT_FINAL_FILTER "
 	# if we have fmt then wrap
-	elif [ -f /usr/bin/fmt ] ; then
+	elif [[ -f /usr/bin/fmt ]] ; then
 		TODOTXT_FINAL_FILTER="$TODOTXT_FINAL_FILTER | fmt -t -w 40"
 	fi
 fi
 # Check if we have a project in args, using that to limit the Projects displayed
 # of if we have a simple term, use that for _list call
-while [ $# -gt 0 ]; do
+while [[ $# -gt 0 ]]; do
 	if [[ $(echo "$1" | grep -c "+\w") -eq 1 ]]; then
 		PROJECTS="${PROJECTS} $(echo $1 | sed 's/^+//g')"; shift
 		LIMIT=1
@@ -106,7 +106,7 @@ done
 if [[ ${LIMIT} -ne 1 ]]; then
 	PROJECT_LIST=$(_list "$TODO_FILE" "${TERMS}" | grep -v "+[[:alnum:]]*")
 	if [[ -n "${PROJECT_LIST}" ]]; then
-	echo "--- Not in projects ---"
-	echo "${PROJECT_LIST}" | eval "${TODOTXT_FINAL_FILTER}"
+		echo "--- Not in projects ---"
+		echo "${PROJECT_LIST}" | eval "${TODOTXT_FINAL_FILTER}"
 	fi
 fi
