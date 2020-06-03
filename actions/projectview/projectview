@@ -51,6 +51,15 @@ export 	COLOR_DONE=$NONE
 		TODOTXT_FINAL_FILTER="$TODOTXT_FINAL_FILTER | fmt -t -w 40"
 	fi
 fi
+# Show usage if rquired
+if [ "$1" = "usage" ] || [[ "$1" = "-h" ]]; then
+	echo "    $(basename "$0") [TERM...]"
+	echo "      Show todo items containing TERM, grouped by project, and displayed"
+	echo "      in priority order. If no TERM provided, displays entire todo.txt."
+	echo "      TERM can be a +project in which case it shows those projects only"
+	echo ""
+	exit 1
+fi
 # Check if we have a project in args, using that to limit the Projects displayed
 # of if we have a simple term, use that for _list call
 while [[ $# -gt 0 ]]; do
@@ -63,16 +72,6 @@ while [[ $# -gt 0 ]]; do
 done
 # Stop filter now and run in a controlled manner after the _list function is run
 export TODOTXT_DISABLE_FILTER=1
-
-## functions
-[ "$action" = "usage" ] && {
-	echo "    $(basename "$0") [TERM...]"
-	echo "      Show todo items containing TERM, grouped by project, and displayed"
-	echo "      in priority order. If no TERM provided, displays entire todo.txt."
-	echo "      TERM can be a +project in which case it shows those projects only"
-	echo ""
-	exit
-}
 
 ## Main
 # Show projects in alphabetical order and todo items in priority order
