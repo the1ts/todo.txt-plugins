@@ -15,6 +15,9 @@ To create a notes file create a task with your chosen note file name, i.e. appen
 Listing notes
 To list notes run lsnotes, you will get a list of all notes in your todo.txt file.
 
+Grep notes
+To find those notes that contain a word or phrase, they are listed in the note: format
+
 Showing notes
 To show notes, there is a notescat action, to use run todo.sh notescat notes_name
 
