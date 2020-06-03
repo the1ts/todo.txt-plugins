@@ -14,6 +14,17 @@
 #       CREATED: 19/09/09 10:52:44
 #===============================================================================
 
+## Usage
+# Show usage if rquired ($1 is action, $2 is first arg)
+if [[ "$2" = "usage" ]] || [[ "$2" = "-h" ]] || [[ "$2" = "--help" ]]; then
+	echo "    $(basename "$0") [TERM...]"
+	echo "      Show todo items containing TERM, grouped by project, and displayed"
+	echo "      in priority order. If no TERM provided, displays entire todo.txt."
+	echo "      TERM can be a +project in which case it shows those projects only"
+	echo ""
+	exit 1
+fi
+
 ## Variables
 # Stop Verbose lines, thanks to Mark Harrison
 export TODOTXT_VERBOSE=0
@@ -51,17 +62,6 @@ export 	COLOR_DONE=$NONE
 		TODOTXT_FINAL_FILTER="$TODOTXT_FINAL_FILTER | fmt -t -w 40"
 	fi
 fi
-# Show usage if rquired
-if [ "$1" = "usage" ] || [[ "$1" = "-h" ]]; then
-	echo "    $(basename "$0") [TERM...]"
-	echo "      Show todo items containing TERM, grouped by project, and displayed"
-	echo "      in priority order. If no TERM provided, displays entire todo.txt."
-	echo "      TERM can be a +project in which case it shows those projects only"
-	echo ""
-	exit 1
-fi
-# Check if we have a project in args, using that to limit the Projects displayed
-# of if we have a simple term, use that for _list call
 while [[ $# -gt 0 ]]; do
 	if [[ $(echo "$1" | grep -c "+\w") -eq 1 ]]; then
 		PROJECTS="${PROJECTS} $(echo $1 | sed 's/^+//g')"; shift
