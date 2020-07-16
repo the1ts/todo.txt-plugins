@@ -3,7 +3,7 @@ action=$1
 shift
 
 if [ "$1" = "usage" ]; then
-    "$TODO_FULL_SH" notesadd usage
+    "$TODO_FULL_SH" notesgrep usage
 else
-    "$TODO_FULL_SH" notesadd "$@"
+    "$TODO_FULL_SH" notesgrep "$@"
 fi

@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+action=$1
+shift
+
+if [ "$1" = "usage" ]; then
+    "$TODO_FULL_SH" notesrename usage
+else
+    "$TODO_FULL_SH" notesrename "$@"
+fi
