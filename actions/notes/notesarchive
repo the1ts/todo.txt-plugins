@@ -44,10 +44,13 @@ case $1 in
 	for i in $NOTES ; do
 		NOTE_FILE=$(echo $i  | sed -e "s/$PRE-//g" -e "s/\.txt//g")
 		# if filename isn't in our todo file, archive in notes/archive/$file
-		if [ $(grep -o '[^ ]*note:[^ ]\+' "$TMP_FILE" | grep '^note:' | sort -u| sed "s/^note://g"| grep -c $NOTE_FILE) -eq 0 ] ;then
+		if [ $(grep -o '[^ ]*note:[^ ]\+' "$TMP_FILE" | grep '^note:' | sort -u| \
+			sed "s/^note://g"| grep -c $NOTE_FILE) -eq 0 ] ;then
 			echo ""  >> $TODO_DIR/notes/archive/${PRE}-${NOTE_FILE}.txt
-			echo "=======`date +'%F %T'`======" >> $TODO_DIR/notes/archive/${PRE}-${NOTE_FILE}.txt
-			cat $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt >> $TODO_DIR/notes/archive/${PRE}-${NOTE_FILE}.txt || exit 1
+			echo "=======`date +'%F %T'`======" >> \
+				$TODO_DIR/notes/archive/${PRE}-${NOTE_FILE}.txt
+			cat $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt >> \
+				$TODO_DIR/notes/archive/${PRE}-${NOTE_FILE}.txt || exit 1
 			rm $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt 
 			# If we are using commit action then add to git
 			if [ -e $TODOTXT_ACTIONS_DIR/commit ]; then
