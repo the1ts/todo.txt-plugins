@@ -4,7 +4,7 @@
 
 # Functions
 usage() {
-	echo "  $(basename $0)"
+	echo "  $(basename $0) (search term)"
 	echo "    List notes"
 	echo ""
 }
@@ -17,6 +17,7 @@ fi
 
 # Variables
 action="$1"; shift
+FILE=$1
 
 case $1 in
 	"usage")
@@ -34,7 +35,11 @@ case $1 in
 		 if [ -n $TICKLER_DIR ]; then
 			find $TICKLER_DIR -mindepth 2 -type f -size 1b -exec cat {} >> $TMP_FILE \;
 		fi
-		grep -o '\bnote\:[a-zA-Z0-9\._-]*' "$TMP_FILE" | sort -u
+		if [[ "${FILE}x" = "x" ]]; then
+			grep -o '\bnote\:[a-zA-Z0-9\._-]*' "$TMP_FILE" | sort -u
+		else
+			grep -o '\bnote\:[a-zA-Z0-9\._-]*' "$TMP_FILE" | sort -u | grep "${FILE}"
+		fi
 		rm -rf "$TMP_FILE"
 	;;
 esac
