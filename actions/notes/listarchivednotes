@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# 2009 Paul Mansfield <paul.mansfield@mansteck.co.uk>
+# License:    GPL, http://www.gnu.org/copyleft/gpl.html
+set -x
+# Functions
+usage() {
+	echo "  $(basename $0) (search term)"
+	echo "    List archived notes"
+	echo ""
+}
+
+# Usage for todo.sh help
+if [ "$1" = "usage" ]; then
+	usage
+	exit
+fi
+
+# Variables
+PRE=$(basename $TODO_FILE | sed 's/.txt$//g')
+action="$1"; shift
+
+case $1 in
+	"usage")
+		usage
+		exit
+	;;
+
+	"-h")
+		usage
+	;;
+
+	*)
+		# Find a list of files
+		cd ${TODO_DIR}/notes/archive/ || exit 1
+		find * -name "${PRE}-*" ! -name "*.enc.txt" \
+			| sed  -e "s/${PRE}-//" -e 's/.txt$//' > $TMP_FILE
+		# Make the file list
+		if [[ "$1x" = "x" ]]; then
+			cat ${TMP_FILE} | sed 's/^/note:/'
+		else
+			cat ${TMP_FILE} | grep $1 | sed 's/^/note:/'
+		fi
+		rm -rf ${TMP_FILE}
+	;;
+esac
