@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # origin:
 # http://github.com/doegox/todo.txt-cli/blob/extras/todo.actions.d/nav
 # commit: 2bd8c410fa64ee30374eb6002503165d9b646b5e
