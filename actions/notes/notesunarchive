@@ -45,7 +45,7 @@ fi
 	# Create a file from todo and 'tickled' files
 	cat $TODO_FILE > $TMP_FILE
 	if [ -n $TICKLER_DIR -a -d $TICKLER_DIR ]; then
-		find $TICKLER_DIR -mindepth 2 -type f -size 1b -exec cat {} >>$TMP_FILE \;
+		find $TICKLER_DIR -mindepth 2 -type f -size 1-exec cat {} >>$TMP_FILE \;
 	fi
 	if [ $(grep -o '[^ ]*note:[^ ]\+' "$TMP_FILE" | grep '^note:' | sort -u | sed "s/^note://g"| grep -c "${FILE}") -eq 0 ] ;then
 	echo "Note file "${FILE}" not mentioned in todo"

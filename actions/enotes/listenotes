@@ -25,7 +25,7 @@ case $1 in
         # Create file from todo and 'tickled' files
         cat $TODO_FILE > $TMP_FILE
         if [ -n $TICKER_DIR ]; then
-            find $TICKLER_DIR -mindepth 2 -type f -size 1b -exec cat {} >>$TMP_FILE \;
+            find $TICKLER_DIR -mindepth 2 -type f -size 1 -exec cat {} >>$TMP_FILE \;
         fi
         grep -o '\benote\:[a-zA-Z0-9\._-]*' "$TMP_FILE" | sort -u
     ;;

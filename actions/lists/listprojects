@@ -25,7 +25,7 @@ case $1 in
         # Create file from todo, done and 'tickled' files
         cat $TODO_FILE $DONE_FILE > $TMP_FILE
         if [ -n $TICKER_DIR ]; then
-            find $TICKLER_DIR -mindepth 2 -size 1b -exec cat {} >>$TMP_FILE \;
+            find $TICKLER_DIR -mindepth 2 -size 1 -exec cat {} >>$TMP_FILE \;
         fi
         grep -o '\+\w*' "$TMP_FILE" | sort -u | sed 's/^\+//'
         rm -rf $TMP_FILE

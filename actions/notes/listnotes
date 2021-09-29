@@ -33,7 +33,7 @@ case $1 in
 		# Create file from todo and 'tickled' files
 		cat $TODO_FILE> $TMP_FILE
 		 if [ -n $TICKLER_DIR ]; then
-			find $TICKLER_DIR -mindepth 2 -type f -size 1b -exec cat {} >> $TMP_FILE \;
+			find $TICKLER_DIR -mindepth 2 -type f -size 1 -exec cat {} >> $TMP_FILE \;
 		fi
 		if [[ "${FILE}x" = "x" ]]; then
 			grep -o '\bnote\:[a-zA-Z0-9\._-]*' "$TMP_FILE" | sort -u
