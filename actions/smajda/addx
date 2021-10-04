@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # origin:
 # http://github.com/ginatrapani/todo.txt-cli/blob/addons/.todo.actions.d/addx
 # commit: 01a250c702af65b693c8e000ebb5c4f34b2df54f

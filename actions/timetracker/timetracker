@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Timetracker action for todo.txt
 # Gives timetracker stats for a project
