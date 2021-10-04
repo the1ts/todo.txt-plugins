@@ -9,6 +9,19 @@ usage () {
         echo ""
     }
 
+# Function to find editor to use
+# Use debian and derivatives editor (auto set by OS)
+# If EDITOR already set then use, else if EDITOR not set default to vi
+find_editor () {
+	if [[ -x /usr/bin/editor ]]; then
+		EDITOR="/usr/bin/editor"
+	elif [[ "${EDITOR}x" = "x" ]]; then
+		EDITOR="vi"
+	fi
+}
+
+find_editor
+
 case $1 in
     "usage")
         usage

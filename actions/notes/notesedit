@@ -22,6 +22,17 @@ commit () {
 	fi
 }
 
+# Function to find editor to use
+# Use debian and derivatives editor (auto set by OS)
+# If EDITOR already set then use, else if EDITOR not set default to vi
+find_editor () {
+	if [[ -x /usr/bin/editor ]]; then
+		EDITOR="/usr/bin/editor"
+	elif [[ "${EDITOR}x" = "x" ]]; then
+		EDITOR="vi"
+	fi
+}
+
 # Variables
 action="$1"; shift
 
@@ -30,6 +41,8 @@ if [ "$1" = "usage" ]; then
 	usage
 	exit
 fi
+
+find_editor
 
 case $1 in
 	"usage")
@@ -57,14 +70,14 @@ case $1 in
 		# If file exists edit it else check lsnotes for pointer then edit 
 		# and add to git if commit action file exists
 		if [ -e $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt ]; then
-			editor $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt
+			"${EDITOR}" $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt
 			add $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt
 			commit $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt
 		else
 			# If note link in todo.txt exists then edit
 			if [ $(grep -o '[^ ]*note:[^ ]\+' "$TMP_FILE" | grep '^note:' | grep "$1$" | sort -u| \
 				sed "s/^note://g"| grep -c $NOTE_FILE) -ge 1 ] ;then
-				editor $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt
+				"${EDITOR}" $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt
 				add $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt
 				commit $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt
 			else
