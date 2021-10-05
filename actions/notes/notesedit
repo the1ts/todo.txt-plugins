@@ -4,21 +4,23 @@
 
 # functions
 usage () {
-  echo "  $(basename $0) [NOTESFILE]"
+  echo "  $(basename "$0") [NOTESFILE]"
   echo "    Cat notes file, use lsnotes to get list of notes"
   echo ""
 	exit 0
 }
 
+# Git add, will error on not in got WD or git not installed
 add () {
-	if [ -e $TODOTXT_ACTIONS_DIR/commit ]; then
-		git add $1 > /dev/null 2>&1
+	if [ -e "${TODOTXT_ACTIONS_DIR}/commit" ]; then
+		git add "$1" > /dev/null 2>&1
 	fi
 }
 
+# Git add, will error on not in got WD or git not installed
 commit () {
-	if [ -e $TODOTXT_ACTIONS_DIR/commit ]; then
-		git commit $1 -m "$(date +'%Y-%m-%d %H:%M:%S')" > /dev/null 2>&1
+	if [ -e "${TODOTXT_ACTIONS_DIR}/commit" ]; then
+		git commit "$1" -m "$(date +'%Y-%m-%d %H:%M:%S')" > /dev/null 2>&1
 	fi
 }
 
@@ -34,6 +36,7 @@ find_editor () {
 }
 
 # Variables
+# shellcheck disable=SC2034
 action="$1"; shift
 
 # Usage for todo.sh help
@@ -55,35 +58,37 @@ case $1 in
 			$0 usage
 			exit 1
 		fi
-		cd $TODO_DIR
+		cd "${TODO_DIR}" || exit 1
 
 		# construct file name
-		NOTE_FILE=$(echo $1 | sed 's/^note://g')
-		PRE=$(basename $TODO_FILE | sed 's/.txt$//g')
+		# shellcheck disable=2001
+		NOTE_FILE="$(echo "$1" | sed 's/^note://g')"
+		PRE="$(basename "${TODO_FILE}" | sed 's/.txt$//g')"
 
 		# Create file from todo and 'tickled' files
-		cat $TODO_FILE > $TMP_FILE
-		if [ -n $TICKLER_DIR ]; then
-			find $TICKLER_DIR -mindepth 2 -type f -size 1 -exec cat {} >>$TMP_FILE \;
+		cat "${TODO_FILE}" > "${TMP_FILE}"
+		if [ -n "${TICKLER_DIR}" ]; then
+			find "${TICKLER_DIR}" -mindepth 2 -type f -size 1 -exec cat {} \; >>"${TMP_FILE}"
 		fi
 
 		# If file exists edit it else check lsnotes for pointer then edit 
 		# and add to git if commit action file exists
-		if [ -e $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt ]; then
-			"${EDITOR}" $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt
-			add $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt
-			commit $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt
+		if [ -e "${TODO_DIR}/notes/${PRE}-${NOTE_FILE}.txt" ]; then
+			"${EDITOR}" "${TODO_DIR}/notes/${PRE}-${NOTE_FILE}.txt"
+			add "${TODO_DIR}/notes/${PRE}-${NOTE_FILE}.txt"
+			commit "${TODO_DIR}/notes/${PRE}-${NOTE_FILE}.txt"
 		else
 			# If note link in todo.txt exists then edit
-			if [ $(grep -o '[^ ]*note:[^ ]\+' "$TMP_FILE" | grep '^note:' | grep "$1$" | sort -u| \
+			# shellcheck disable=SC2046,SC2027,SC2086
+			if [ $(grep -o '[^ ]*note:[^ ]\+' ""${TMP_FILE}"" | grep '^note:' | grep "$1$" | sort -u| \
 				sed "s/^note://g"| grep -c $NOTE_FILE) -ge 1 ] ;then
-				"${EDITOR}" $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt
-				add $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt
-				commit $TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt
+				"${EDITOR}" "${TODO_DIR}/notes/${PRE}-${NOTE_FILE}.txt"
+				add "${TODO_DIR}/notes/${PRE}-${NOTE_FILE}.txt"
+				commit "${TODO_DIR}/notes/${PRE}-${NOTE_FILE}.txt"
 			else
 				echo "No such Notes file, use lsnotes to find notes files"
 			fi
-			rm -rf $TMP_FILE
+			rm -rf "${TMP_FILE}"
 		fi
 	;;
 esac
