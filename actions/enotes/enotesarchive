@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # 2009 Paul Mansfield <paul.mansfield@mansteck.co.uk>
 # License:  GPL, http://www.gnu.org/copyleft/gpl.html
-
+set -x 
 case $1 in
     "usage")
-    echo "  $(basename $0)"
+    echo "  $(basename "$0")"
     echo "    archive encrypted notes files nolonger in todo file."
     echo "    If BASENAME is not given, defaults to 'todo'."
     echo ""
@@ -12,30 +12,31 @@ case $1 in
 
     *)
     # construct file name
-    PRE=$(basename $TODO_FILE | sed 's/.txt$//g')
-    PRETICKLER=$(basename $TODO_FILE | sed 's/_todo.txt$//g')
-    cd $TODO_DIR/notes || exit 1
-    NOTES=$(find . -maxdepth 1 -name "$PRE*" | sed 's/\.\///g')
+    PRE="$(basename "${TODO_FILE}" | sed 's/.txt$//g')"
+    cd "${TODO_DIR}/notes" || exit 1
+    NOTES=$(find . -maxdepth 1 -name "$PRE*enc" | sed 's/\.\///g' | sed 's/\.enc$//')
 
     # Create file from todo and 'tickled' files
-    cat $TODO_FILE > $TMP_FILE
-    if [ -n $TICKLER_DIR ]; then
-        find $TICKLER_DIR -mindepth 2 -type f -size 1 -exec cat {} >>$TMP_FILE \;
+    cat "${TODO_FILE}" > "${TMP_FILE}"
+    if [ -n "${TICKLER_DIR}" ]; then
+        find "${TICKLER_DIR}" -mindepth 2 -type f -size 1 -exec cat {} \; >> "${TMP_FILE}"
     fi
 
     # for each file, remove $PRE and see if its in todo or 'tickled' files
     for i in $NOTES ; do
-        NOTE_FILE=$(echo $i  | sed -e "s/$PRE-//g" -e "s/\.txt//g")
+        NOTE_FILE="$(echo "$i"  | sed -e "s/$PRE-//g" -e "s/[.]txt//g")"
         # if filename isn't in our todo file, archive in notes/archive/$file
-        if [ $(grep -o '[^ ]*enote:[^ ]\+' "$TMP_FILE" | grep '^enote:' | sort -u| sed "s/^enote://g"| grep -c $NOTE_FILE) -eq 0 ] ;then
-            cat $TODO_DIR/notes/${PRE}-${NOTE_FILE}.enc >> $TODO_DIR/notes/archive/${PRE}-${NOTE_FILE}.$(date +%s).txt || exit 1
-            rm $TODO_DIR/notes/${PRE}-${NOTE_FILE}.enc
+        if [ "$(grep -o '[^ ]*enote:[^ ]\+' "${TMP_FILE}" | grep '^enote:' | \
+					sort -u| sed "s/^enote://g"| grep -c "${NOTE_FILE}")" -eq 0 ] ;then
+            cat "${TODO_DIR}/notes/${PRE}-${NOTE_FILE}.enc" >> \
+							"${TODO_DIR}/notes/archive/${PRE}-${NOTE_FILE}.$(date +%s).txt" || exit 1
+            rm "${TODO_DIR}/notes/${PRE}-${NOTE_FILE}.enc"
             # If we are using commit action then add to git
-            if [ -e $TODOTXT_ACTIONS_DIR/commit ]; then
-                git add $TODO_DIR/notes/archive/${PRE}-${NOTE_FILE}.$(date +%s).enc
+            if [ -e "${TODOTXT_ACTIONS_DIR}/commit" ]; then
+                git add "${TODO_DIR}/notes/archive/${PRE}-${NOTE_FILE}.$(date +%s).enc"
             fi
         fi
     done
-		rm -rf $TMP_FILE
+		rm -rf "${TMP_FILE}"
     ;;
 esac
