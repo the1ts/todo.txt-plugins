@@ -50,7 +50,7 @@ case $1 in
             # Decrypt, move old aside, edit, encrypt and tidy up
             gpg -d -o $TMP_FILE.encrypt $TODO_DIR/notes/${PRE}-${NOTE_FILE}.enc
             mv $TODO_DIR/notes/${PRE}-${NOTE_FILE}.enc $TODO_DIR/notes/${PRE}-${NOTE_FILE}.enc.bak
-            editor $TMP_FILE.encrypt
+            "${EDITOR}" $TMP_FILE.encrypt
             gpg -c --force-mdc -o $TODO_DIR/notes/${PRE}-${NOTE_FILE}.enc $TMP_FILE.encrypt
             if [ $? -eq 0 ] ; then
                 rm -rf $TODO_DIR/notes/${PRE}-${NOTE_FILE}.enc.bak
@@ -62,7 +62,7 @@ case $1 in
             # If note link in todo.enc exists then edit
             if [ $(grep -o '[^ ]*enote:[^ ]\+' "$TMP_FILE" | grep '^enote:' | grep "$2$" | sort -u| sed "s/^enote://g"| grep -c $NOTE_FILE) -ge 1 ] ; then
                 # edit file, encrypt and tidy up
-                editor $TMP_FILE.encrypt
+                "${EDITOR}" $TMP_FILE.encrypt
                 gpg -c --force-mdc -o $TODO_DIR/notes/${PRE}-${NOTE_FILE}.enc $TMP_FILE.encrypt
                 rm -rf $TMP_FILE.encrypt
             else
