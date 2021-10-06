@@ -5,7 +5,7 @@
 ## Functions
 # Usage
 function usage() {
-  echo "  $(basename $0) note_file_name"
+  echo "  $(basename "$0") note_file_name"
   echo "    unarchive notes files, this brings back the last"
   echo "    version of the note file"
   echo ""
@@ -27,28 +27,28 @@ if [[ -z "${FILE}" ]]; then
 	usage
 	exit 1
 fi
-PRE=$(basename $TODO_FILE | sed 's/.txt$//g')
+PRE=$(basename "${TODO_FILE}" | sed 's/.txt$//g')
 # Archive and notes file from arg
-ARC_FILE="$TODO_DIR/notes/archive/${PRE}-"${FILE}".txt"
-NOTES_FILE="$TODO_DIR/notes/${PRE}-"${FILE}".txt"
-LAST=$(grep "=======[0-9][0-9][0-9][0-9]-[09][0-9]-[0-9][0-9].*" ${ARC_FILE} | tail -n 1)
+ARC_FILE="${TODO_DIR}/notes/archive/${PRE}-${FILE}.txt"
+NOTES_FILE="${TODO_DIR}/notes/${PRE}-${FILE}.txt"
+LAST="$(grep "=======[0-9][0-9][0-9][0-9]-[09][0-9]-[0-9][0-9].*" "${ARC_FILE}" | tail -n 1)"
 
 # Test
 # Does the archive file exist 
 if [[ ! -f "${ARC_FILE}" ]]; then
-	echo "No archived notes file named "${FILE}""
+	echo "No archived notes file named ${FILE}"
 	echo "Use listarchivednotes to find them"
 	usage
 	exit 1
 fi
 # Does the notes file exist? i.e  mentioned in todo/tickled file?
 	# Create a file from todo and 'tickled' files
-	cat $TODO_FILE > $TMP_FILE
-	if [ -n $TICKLER_DIR -a -d $TICKLER_DIR ]; then
-		find $TICKLER_DIR -mindepth 2 -type f -size 1-exec cat {} >>$TMP_FILE \;
+	cat "${TODO_FILE}" > "${TMP_FILE}"
+	if [[ -n $TICKLER_DIR ]] && [[ -d $TICKLER_DIR ]]; then
+		find "${TICKLER_DIR}" -mindepth 2 -type f -size 1-exec cat {} \; >> "${TMP_FILE}"
 	fi
-	if [ $(grep -o '[^ ]*note:[^ ]\+' "$TMP_FILE" | grep '^note:' | sort -u | sed "s/^note://g"| grep -c "${FILE}") -eq 0 ] ;then
-	echo "Note file "${FILE}" not mentioned in todo"
+	if [ "$(grep -o '[^ ]*note:[^ ]\+' "$TMP_FILE" | grep '^note:' | sort -u | sed "s/^note://g"| grep -c "${FILE}")" -eq 0 ] ;then
+	echo "Note file ${FILE} not mentioned in todo"
 	echo "use listnotes to find them"
 	usage
 	exit 1
@@ -63,7 +63,7 @@ case $action in
 	;;
 	*)
 		# Grab from last date line to end of file an put in note file
-		sed -n "/${LAST}/,\$p" ${ARC_FILE} | sed '1d' > "${NOTES_FILE}" || exit 1
+		sed -n "/${LAST}/,\$p" "${ARC_FILE}" | sed '1d' > "${NOTES_FILE}" || exit 1
 		echo "Notes file ${PRE}-${FILE}.txt restored from archive"
 	;;
 esac

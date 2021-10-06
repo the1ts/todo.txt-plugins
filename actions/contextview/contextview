@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck shell=bash
 #===============================================================================
 #
 #          FILE: contextview
@@ -38,7 +39,7 @@ echo "===== Contexts ====="
 echo ""
 
 # Find all contexts and sort
-CONTEXTS=$(grep -o '[^ ]*@[^ ]\+' "$TODO_FILE" | grep '^@' | sort -u | sed 's/^@//g')
+CONTEXTS=$(grep -o '[^ ]*@[^ ]\+' "${TODO_FILE}" | grep '^@' | sort -u | sed 's/^@//g')
 
 # For each context show header and the list of todo items
 for i in ${CONTEXTS} ; do 
