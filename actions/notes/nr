@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-action=$1
+
+# shellcheck disable=SC2034
+action="$1"
 shift
 
 if [ "$1" = "usage" ]; then
