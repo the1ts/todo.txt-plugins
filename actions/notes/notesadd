@@ -17,6 +17,7 @@ if [ "$1" = "usage" ]; then
 fi
 
 # Variables
+# shellcheck disable=SC2034
 action="$1"; shift
 
 tests () {
@@ -52,6 +53,7 @@ tests () {
 ## Main
 
 # Run tests - don't quote $* needs to be space delimited list
+# shellcheck disable=SC2048,SC2086
 tests $*
 
 case $1 in
