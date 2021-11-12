@@ -1,46 +1,41 @@
 #!/usr/bin/env bash
+# shellcheck shell=bash
 #===============================================================================
 #
 #          FILE: projectview
 #
-#         USAGE: todo.sh projectview
+#         USAGE: todo.sh projectview [TERM]
 #
-#   DESCRIPTION: Action to display todo.txt by project
-#
-#         NOTES: todo.sh action
 #        AUTHOR: Paul Mansfield (paul.mansfield@mansteck.co.uk), 
-#     COPYRIGHT: 2009-2020 Paul Mansfield
+#     COPYRIGHT: 2009-2021 Paul Mansfield
 #       LICENSE: GPL, http://www.gnu.org/copyleft/gpl.html
-#       CREATED: 19/09/09 10:52:44
 #===============================================================================
 
-## Usage
-# Show usage if rquired ($1 is action, $2 is first arg)
-if [[ "$2" = "usage" ]] || [[ "$2" = "-h" ]] || [[ "$2" = "--help" ]]; then
+usage () {
 	echo "    $(basename "$0") [TERM...]"
 	echo "      Show todo items containing TERM, grouped by project, and displayed"
 	echo "      in priority order. If no TERM provided, displays entire todo.txt."
-	echo "      TERM can be a +project in which case it shows those projects only"
-	echo ""
-	exit 1
+	echo "      If any TERMs are a project it uses the non-project terms"
+  echo "      to search within these projects"
+}
+
+# Remove action
+shift
+
+# Show usage if rquired ($1 is action, $1 is first arg)
+if [[ "${1}" = "usage" ]] || [[ "${1}" = "-h" ]]; then
+  usage
+	exit
 fi
 
 ## Variables
-# Stop Verbose lines, thanks to Mark Harrison
-export TODOTXT_VERBOSE=0
-# What projects to show
-PROJECTS=""
 # Limit to show requested projects
-LIMIT=0
-# Allow control of wrapping if using as simplepv action
-NOWRAP=0
+PROJECT_LIMIT=0
 # Check how we are being run
 HOWRUN=$(basename "$0")
-# move arguments one to left, therefore eating action name
-action=$1; shift
 # If being run as simplepv then turn off all colours and
-# wrap at 40 characters
-# Useful for display outside of terminal
+# try to wrap at 40 characters
+# Useful for display outside of terminal for example in window manager
 if [[ "${HOWRUN}" = "simplepv" ]] ; then
 	export 	TODOTXT_PLAIN=1
 	export 	PRI_X=$NONE
@@ -50,39 +45,64 @@ if [[ "${HOWRUN}" = "simplepv" ]] ; then
 	export 	DEFAULT=$NONE
 	export 	COLOR_DONE=$NONE
 
-# Check if we want to wrap text or not
+  # Check if we want to wrap text or not
 	if [[ "$1" = "--nowrap" ]]; then
-		NOWRAP=1
 		shift
-	fi
-	# Set final filter
-	if [[ "$NOWRAP" -eq 1 ]] ; then
-		TODOTXT_FINAL_FILTER="$TODOTXT_FINAL_FILTER "
-	# if we have fmt then wrap
-	elif [[ -f /usr/bin/fmt ]] ; then
-		TODOTXT_FINAL_FILTER="$TODOTXT_FINAL_FILTER | fmt -t -w 40"
+    # Set final filter
+    if [[ -f /usr/bin/fmt ]] ; then
+      TODOTXT_FINAL_FILTER="$TODOTXT_FINAL_FILTER | fmt -t -w 40"
+    fi
 	fi
 fi
 
 # Stop filter now and run in a controlled manner after the _list function is run
 export TODOTXT_DISABLE_FILTER=1
-# Check if we have PROJECTS in args, using those to limit the Projects
-# displayed, if we have simple TERMs, use those for _list call to further limit
+
+# Eat the remaining arguments putting them into context or terms variables
 while [[ $# -gt 0 ]]; do
 	if [[ $(echo "$1" | grep -c "+\w") -eq 1 ]]; then
-		PROJECTS="${PROJECTS} $(echo $1 | sed 's/^+//g')"; shift
-		LIMIT=1
+    # shellcheck disable=SC2001
+		PROJECTS="${PROJECTS} $(echo "$1" | sed 's/^+//g')"; shift
+    # shellcheck disable=SC2001
+    PROJECTS="$(echo "${PROJECTS}" | sed 's/^ //g')"
+		PROJECT_LIMIT=1
 	else
-		TERMS="${TERMS} $(echo $1 | cut -d ' ' -f 1)"; shift
+		TERMS="${TERMS} $(echo "$1" | cut -d ' ' -f 1)"; shift
+    # shellcheck disable=SC2001
+    TERMS="$(echo "${TERMS}" | sed 's/^ //g')"
 	fi
 done
-# If PROJECTS not set from args find them all
-if [[ -z ${PROJECTS} ]]; then
-	PROJECTS=$(grep -o '[^ ]*+[^ ]\+' "$TODO_FILE" | grep '^+' | sort -u \
-	| sed 's/^+//g' )
+
+# If we have no valid terms or projects error out
+for project in ${PROJECTS}; do
+  OLD_TODOTXT_VERBOSE=${TODOTXT_VERBOSE:-1}
+  TODOTXT_VERBOSE=0 VALID_PROJECT=$(_list "${TODO_FILE}" "+${project}" "${TERMS}" | wc -l)
+  TODOTXT_VERBOSE=${OLD_TODOTXT_VERBOSE}
+  if [[ "${VALID_PROJECT}" -eq 0 ]]; then
+    echo "      \"${TERMS} \" not found in project +${project} in todo.txt"
+    usage
+    exit 1
+  fi
+done
+
+# if we have no projects and terms not in todo.txt error
+if [[ -z "${PROJECTS}" ]] && [[ -n "${TERMS}" ]]; then
+  OLD_TODOTXT_VERBOSE=${TODOTXT_VERBOSE:-1}
+  TODOTXT_VERBOSE=0 VALID_TERM=$(_list "${TODO_FILE}" "" "${TERMS}" | wc -l)
+  TODOTXT_VERBOSE=${OLD_TODOTXT_VERBOSE}
+  if [[ "${VALID_TERM}" -eq 0 ]]; then
+    echo "      \"${TERMS}\" not found in todo.txt"
+    usage
+    exit 1
+  fi
 fi
 
-## Main
+# If we have no valid projects
+if [[ -z "${PROJECTS}" ]] && [[ -z "${TERMS}" ]]; then
+  PROJECTS=$(grep -o '[^ ]*+[^ ]\+' "$TODO_FILE" | sort -u | sed 's/^+//g' )
+  ((FOUND+=1))
+fi
+
 # Show projects in alphabetical order and todo items in priority order
 echo "=====  Projects  ====="
 echo ""
@@ -90,11 +110,10 @@ echo ""
 # For each project show header and the list of todo items
 for project in $PROJECTS ; do 
 	# Use core _list function, does numbering and colouring for us
-	# Remove the colouring at the start of the project to fix whitespace issue
-	PROJECT_LIST=$(_list "$TODO_FILE" "+$project\b" "${TERMS}" \
-		| sed "s/\ \x1b\[[0-9;]*m+[a-zA-Z0-9._:\-]*\b//g")
+	  PROJECT_LIST=$(_list "${TODO_FILE}" "+${project}\b" "${TERMS}" \
+	 	| sed "s/\ \x1b\[[0-9;]*m+[a-zA-Z0-9._:\-]*\b//g")
 	if [[ -n "${PROJECT_LIST}" ]]; then
-		echo  "---  $project  ---"
+		echo  "---  ${project}  ---"
 		echo  "${PROJECT_LIST}" | eval "${TODOTXT_FINAL_FILTER}"
 		# If run as simplepv don't add newlines
 		if [ "${HOWRUN}" != "simplepv" ] ; then
@@ -105,8 +124,8 @@ done
 
 # Show todo items not associated to a project and we haven't limited to certain
 # projects 
-if [[ ${LIMIT} -ne 1 ]]; then
-	PROJECT_LIST=$(_list "$TODO_FILE" "${TERMS}" | grep -v "+[[:alnum:]]*")
+if [[ "${PROJECT_LIMIT}" -ne 1 ]]; then
+	PROJECT_LIST=$(_list "${TODO_FILE}" "-+[a-zA-Z0-9._:\-]*\b" "${TERMS}" )
 	if [[ -n "${PROJECT_LIST}" ]]; then
 		echo "--- Not in projects ---"
 		echo "${PROJECT_LIST}" | eval "${TODOTXT_FINAL_FILTER}"

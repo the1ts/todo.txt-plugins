@@ -4,58 +4,94 @@
 #
 #          FILE: contextview
 #
-#         USAGE: todo.sh contextview
+#         USAGE: todo.sh contextview [TERM]
 #
-#   DESCRIPTION: 
-#
-#       OPTIONS: ---
-#  REQUIREMENTS: ---
-#          BUGS: ---
-#         NOTES: todo.sh action
-#        AUTHOR: Paul Mansfield (paul.manfield@mansteck.co.uk), 
-#     COPYRIGHT: 2009-2019 Paul Mansfield
+#        AUTHOR: Paul Mansfield (paul.mansfield@mansteck.co.uk), 
+#     COPYRIGHT: 2009-2021 Paul Mansfield
 #       LICENSE: GPL, http://www.gnu.org/copyleft/gpl.html
-#       CREATED: 19/09/09 10:42:45
-#      REVISION:  ---
 #===============================================================================
 
-# Create action variable and move arguments up one
-action=$1
-shift
-
-# Stop filter now and run in a controlled manner after the _list function is run
-export TODOTXT_DISABLE_FILTER=1
-
-[ "$action" = "usage" ] && {
+usage (){
 	echo "    $(basename "$0") [TERM...]"
 	echo "      Show todo items containing TERM, grouped by context, and displayed in"
 	echo "      priority order. If no TERM provided, displays entire todo.txt."
-	echo ""
-	exit
+  echo "      If any TERMS are a context it uses the non-context terms"
+  echo "      to search within those contexts."
 }
 
-# Show contexts in alphabetical order and todo items in priority  order
+# Remove action
+shift
+
+# Usage for todo.sh help
+if [[ "${1}" = "usage" ]] || [[ "${1}" = "-h" ]]; then
+	usage
+	exit
+fi
+
+# Eat the remaining arguments putting them into context or terms variables
+while [[ $# -gt 0 ]]; do
+	if [[ $(echo "$1" | grep -c "^@\w") -eq 1 ]]; then
+      # shellcheck disable=SC2001
+      CONTEXTS="$(echo "$1" | sed 's/^@//g')"; shift
+      CONTEXT_LIMIT=1
+  else
+    ((FOUND+=1))
+    TERMS="$(echo "$1" | cut -d ' ' -f 1)"; shift
+  fi
+done
+
+# If we have no valid terms or contexts error out
+for context in ${CONTEXTS}; do
+  OLD_TODOTXT_VERBOSE=${TODOTXT_VERBOSE:-1}
+  TODOTXT_VERBOSE=0 VALID_CONTEXT=$(_list "${TODO_FILE}" "@${context}" "${TERMS}" | wc -l)
+  TODOTXT_VERBOSE=${OLD_TODOTXT_VERBOSE}
+  if [[ "${VALID_CONTEXT}" -eq 0 ]]; then
+    echo "      \"${TERMS}\" not found in context @${context} in todo.txt"
+    usage
+    exit 1
+  fi
+done
+
+# if we have no contexts and terms not in todo.txt error
+if [[ -z "${CONTEXTS}" ]] && [[ -n "${TERMS}" ]]; then
+  OLD_TODOTXT_VERBOSE=${TODOTXT_VERBOSE:-1}
+  TODOTXT_VERBOSE=0 VALID_TERM=$(_list "${TODO_FILE}" "" "${TERMS}" | wc -l)
+  TODOTXT_VERBOSE=${OLD_TODOTXT_VERBOSE}
+  if [[ "${VALID_TERM}" -eq 0 ]]; then
+    echo "      \"${TERMS}\" not found in todo.txt"
+    usage
+    exit 1
+  fi
+fi
+
+# If we have no valid contexts
+if [[ -z "${CONTEXTS}" ]] && [[ -z "${TERMS}" ]]; then
+  CONTEXTS=$(grep -o '[^ ]*@[^ ]\+' "$TODO_FILE" | grep '^@' | sort -u \
+  | sed 's/^@//g' )
+  ((FOUND+=1))
+fi
+
+# Show contexts in alphabetical order and todo items in priority order
 echo "===== Contexts ====="
 echo ""
 
-# Find all contexts and sort
-CONTEXTS=$(grep -o '[^ ]*@[^ ]\+' "${TODO_FILE}" | grep '^@' | sort -u | sed 's/^@//g')
-
+for context in $CONTEXTS; do
 # For each context show header and the list of todo items
-for i in ${CONTEXTS} ; do 
 	# Use core _list function, does numbering and colouring for us
-	CONTEXT_LIST=$(_list "$TODO_FILE" "@$i" "$@" | sed 's/\ *@[a-zA-Z0-9._\-]*\ */ /g')
+	CONTEXT_LIST=$(_list "${TODO_FILE}" "@${context}\b" "${TERMS}" \
+  | sed "s/\ \x1b\[[0-9;]*m@[a-zA-Z0-9._:\-]*\b//g")
 	if [[ -n "${CONTEXT_LIST}" ]]; then
-		echo "--- $i ---"
-		echo "${CONTEXT_LIST}" | eval "${TODOTXT_FINAL_FILTER}"
+		echo "--- ${context} ---"
+    echo "${CONTEXT_LIST}" | eval "${TODOTXT_FINAL_FILTER}"
 		echo ""
 	fi
 done
 
 # Show todo items not associated to a context
-CONTEXT_LIST=$(_list "$TODO_FILE" "$@" | grep -v "@[[:alnum:]]*")
-if [[ -n "${CONTEXT_LIST}" ]]; then
-	echo "--- No context ---"
-	echo "${CONTEXT_LIST}" | eval "${TODOTXT_FINAL_FILTER}"
+if [[ "${CONTEXT_LIMIT}" -ne 1 ]]; then
+  CONTEXT_LIST=$(_list "${TODO_FILE}" "-@[a-zA-Z0-9._:\-]*\b" "${TERMS}")
+  if [[ -n "${CONTEXT_LIST}" ]]; then
+    echo "--- No context ---"
+    echo "${CONTEXT_LIST}" | eval "${TODOTXT_FINAL_FILTER}"
+  fi
 fi
-
