@@ -1,64 +1,68 @@
 #!/usr/bin/env bash
-# 2009 Paul Mansfield <paul.mansfield@mansteck.co.uk>
-# License:  GPL, http://www.gnu.org/copyleft/gpl.html
+# shellcheck shell=bash
+#===============================================================================
+#
+#          FILE: notesarchive
+#
+#         USAGE: todo.sh notesarchive
+#
+#        AUTHOR: Paul Mansfield (paul.mansfield@mansteck.co.uk), 
+#     COPYRIGHT: 2009-2021 Paul Mansfield
+#       LICENSE: GPL, http://www.gnu.org/copyleft/gpl.html
+#===============================================================================
 
-## Functions
-# Usage
-function usage() {
-  echo "  $(basename "$0")"
-  echo "    archive notes files nolonger in todo file."
-	echo "    If BASENAME is not given, defaults to 'todo'."
-  echo ""
+usage() {
+  echo "    $(basename "$0")"
+  echo "      archive notes files nolonger in todo file."
 }
 
+# Remove action
+shift
+
 # Usage for todo.sh help
-if [ "$1" = "usage" ]; then
+if [[ "${1}" = "usage" ]] || [[ "${1}" = "-h" ]]; then
 	usage
 	exit
 fi
 
-# Variables
-# shellcheck disable=SC2034
-action="$1"; shift
+# Check notes and archive exist
+mkdir -p "${TODO_DIR}/notes/archive" || exit 1
+cd "${TODO_DIR}/notes" || exit 1
+TODO_TMP_FILE="${TODO_TMP_FILE:-${TODO_DIR}/todo.tmp}"
 
-# Main
-case $1 in
-	"usage")
-		usage
-		exit
-	;;
+# construct file name
+PRE="$(basename "${TODO_FILE}" | sed 's/.txt$//g')"
+NOTES=$(find . -maxdepth 1 -name "${PRE}*txt" -printf '%P\n')
 
-	*)
-	# construct file name
-	PRE="$(basename "${TODO_FILE}" | sed 's/.txt$//g')"
-	cd "${TODO_DIR}/notes" || exit 1
-	NOTES=$(find . -maxdepth 1 -name "$PRE*txt$" | sed 's/\.\///g')
+# Create file from todo and 'tickled' files
+cat "${TODO_FILE}" > "${TODO_TMP_FILE}"
+if [[ -n "${TICKLER_DIR}" ]] && [[ -d "${TICKLER_DIR}" ]]; then
+	find "${TICKLER_DIR}" -mindepth 2 -type f -size 1 -exec cat {} \; >> "${TODO_TMP_FILE}"
+fi
 
-	# Create file from todo and 'tickled' files
-	cat "${TODO_FILE}" > "${TMP_FILE}"
-	if [[ -n "${TICKLER_DIR}" ]] && [[ -d "${TICKLER_DIR}" ]]; then
-		find "${TICKLER_DIR}" -mindepth 2 -type f -size 1 -exec cat {} \; >> "${TMP_FILE}"
-	fi
-
-	# for each file, remove $PRE and see if its in todo or 'tickled' files
-	for i in ${NOTES} ; do
-		NOTE_FILE="$(echo "$i"  | sed -e "s/$PRE-//g" -e "s/[.]txt//g")"
-		# if filename isn't in our todo file, archive in notes/archive/$file
-		# shellcheck disable=SC2046,SC2086
-		if [ $(grep -o '[^ ]*note:[^ ]\+' "$TMP_FILE" | grep '^note:' | sort -u| \
-			sed "s/^note://g"| grep -c "${NOTE_FILE}") -eq 0 ] ;then
-			echo ""  >> "${TODO_DIR}/notes/archive/${PRE}-${NOTE_FILE}.txt"
-			echo "=======$(date +'%F %T')======" >> \
-				"${TODO_DIR}/notes/archive/${PRE}-${NOTE_FILE}.txt"
-			cat "${TODO_DIR}/notes/${PRE}-${NOTE_FILE}.txt" >> \
-				"${TODO_DIR}/notes/archive/${PRE}-${NOTE_FILE}.txt" || exit 1
-			rm "${TODO_DIR}/notes/${PRE}-${NOTE_FILE}.txt"
-			# If we are using commit action then add to git
-			if [ -e "${TODOTXT_ACTIONS_DIR}/commit" ]; then
-				git add "${TODO_DIR}/notes/archive/${PRE}-${NOTE_FILE}.txt"
-			fi
+RETURN=0
+# for each file, remove $PRE and see if its in todo or 'tickled' files
+for i in ${NOTES} ; do
+	NOTE_FILE="$(echo "$i"  | sed -e "s/${PRE}-//g" -e "s/[.]txt//g")"
+	# if filename isn't in our todo file, archive in notes/archive/$file
+	# shellcheck disable=SC2046,SC2086
+	if [[ $(grep -oc "\bnote:${NOTE_FILE}\b" "${TODO_TMP_FILE}") -eq 0 ]] ;then
+		cat "${TODO_DIR}/notes/${PRE}-${NOTE_FILE}.txt" >> \
+			"${TODO_DIR}/notes/archive/${PRE}-${NOTE_FILE}.$(date +%s).txt" || exit 1
+		rm "${TODO_DIR}/notes/${PRE}-${NOTE_FILE}.txt"
+    echo "$(getPrefix): Archived note:${NOTE_FILE}"
+    ((RETURN+=1)) 
+		# If we are using commit action then add to git
+		if [ -e "${TODOTXT_ACTIONS_DIR}/commit" ]; then
+			git add "${TODO_DIR}/notes/archive/${PRE}-${NOTE_FILE}.$(date +%s).txt"
 		fi
-	done
-	rm -rf "${TMP_FILE}"
-	;;
-esac
+	fi
+done
+
+[[ -f "${TODO_TMP_FILE}" ]] && rm -rf "${TODO_TMP_FILE}"
+
+# if we have not archived anything, then report
+if [[ "${RETURN}" -eq 0 ]]; then
+  echo "$(getPrefix): Nothing to archive"
+  exit 1
+fi
