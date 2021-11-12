@@ -1,48 +1,97 @@
 #!/usr/bin/env bash
-# 2019 Paul Mansfield <paul.mansfield@mansteck.co.uk>
-# License:  GPL, http://www.gnu.org/copyleft/gpl.html
+# shellcheck shell=bash
+#===============================================================================
+#
+#          FILE: enotesadd
+#
+#         USAGE: todo.sh enotesadd [ITEM] [ENOTESFILE]
+#
+#        AUTHOR: Paul Mansfield (paul.mansfield@mansteck.co.uk), 
+#     COPYRIGHT: 2009-2021 Paul Mansfield
+#       LICENSE: GPL, http://www.gnu.org/copyleft/gpl.html
+#===============================================================================
 
-# functions
 usage () {
-	echo "  $(basename "$0") [ITEM] [NOTESFILE]"
-	echo "    add NOTESFILE in ITEM"
-	echo "    eg todo.sh $(basename "$0") 1 enote:test "
-	exit 0
+	echo "    $(basename "$0") [ITEMS] [ENOTESFILE]"
+	echo "      add ENOTESFILE in ITEMS"
 }
 
-tests () {
-	# Remove the action name from options list
-	shift
-
-	# Test correct number of options
-	if [ $# -lt 2 ]; then
-	 echo "   not enough options"
-	 usage
-	 exit 1
-	fi
-
-	# Test we have an item number (bash specific)
-	if [[  "$1" =~ ^[0-9]+$  ]]; then
-		ITEM="${1}"
-	else
-		echo "	ITEM is not a number"
-		usage
-		exit 1
-	fi
-
-	# Test NOTESFILE is in correct format enote:file
-	# Add enote: if needed
-	if [ "$(echo "${2}" | grep -c "^enote:")" -eq 1 ]; then
-		NOTESFILE="${2}"
-	else
-		NOTESFILE="enote:${2}"
-	fi
+# Function to take NOTEFILE and standardize on no note:
+_enote_fix () {
+  INPUT="$1"
+  if [[ ${INPUT} =~ 'enote:' ]]; then
+    ENOTE="${INPUT##enote:}"
+  else
+    ENOTE="${INPUT}"
+  fi
+  echo "${ENOTE}"
 }
 
-## Main
+# Check notes and archive exist
+mkdir -p "${TODO_DIR}/notes/archive" || exit 1
+cd "${TODO_DIR}/notes" || exit 1
 
-# Run tests - don't quote needs to be space delimited list
-tests $*
+# Remove action
+shift
+# Usage for todo.sh help
+if [[ "${1}" = "usage" ]] || [[ "${1}" = "-h" ]]; then
+  usage
+  exit
+elif [ "$#" -lt 2 ]; then
+  echo "      Not enough options"
+	usage
+	exit 1
+fi
+# Set enotes file from last argument and remove last argument
+# this leaves items which we test later
+ENOTES_FILE=${!#};
+ENOTES_FILE=$(_enote_fix "${ENOTES_FILE}")
+set -- "${@:1:$(($#-1))}"
+PRE="$(basename "${TODO_FILE}" | sed 's/.enc$//g')"
+ENOTES=$(find . -maxdepth 1 -name "${PRE}*enc" -printf '%P\n')
 
-# Use built in append action to add notesfile
-${TODO_FULL_SH} append "${ITEM}" "${NOTESFILE}"
+# If our enotes file is just numbers we didn't get given one
+if [[ "${ENOTES_FILE}" =~ ^[0-9]+$ ]]; then
+  echo "      No enotesfile given"
+  usage
+  exit 1
+fi
+
+# Can we edit after addition?
+# Only set if file new to todo.txt and note doesn't exist
+# Also check we have notesedit addon installed
+if [[ "${NOTE_ADD_EDIT}" = "OFF" ]]; then
+  if [[ $(grep -c "${ENOTES_FILE}" "${TODO_FILE}") -eq 0 ]] && \
+    ! [[ -f "${TODOTXT_DIR}/notes/${PRE}-${ENOTES}.txt" ]] && \
+    [[ $(${TODO_FULL_SH} listaddons | grep -c ^notesedit$) -eq 1 ]]; then
+    EDIT_FILE=1
+  fi
+fi
+
+# Are items in the file?
+# shellcheck disable=SC2048
+for item in $*; do
+  if [[ ${item} -gt $(wc -l "${TODO_FILE}" | cut -f 1 -d " ") ]]; then
+    echo "$(getPrefix "${TODO_FILE}"): No task ${item}"
+    exit 1
+  fi
+done
+
+# Are items  in the file?
+# shellcheck disable=SC2048
+for item in $*; do
+  # Test we have an item number
+  if ! [[ "${item}" =~ ^[0-9]+$ ]]; then
+  en
+    echo "	ITEM is not a number"
+    usage
+    exit 1
+  fi
+  "${TODO_FULL_SH}" append "${item}" "enote:${ENOTES_FILE}"
+  echo "$(getPrefix "${TODO_FILE}"): enote:${ENOTES_FILE} added to item ${item}"
+done
+
+# If our tests allow open file for editing
+if [[ "${EDIT_FILE}" = 1 ]]; then
+  "${TODO_FULL_SH}" enotesedit "enote:${ENOTES_FILE}"
+fi
