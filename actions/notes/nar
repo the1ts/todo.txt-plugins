@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
-action=$1
+
+# Remove action
 shift
 
-if [ "$1" = "usage" ]; then
-    "$TODO_FULL_SH" notesarchive usage
-else
-    "$TODO_FULL_SH" notesarchive "$@"
-fi
+"$TODO_FULL_SH" notesarchive "$@"

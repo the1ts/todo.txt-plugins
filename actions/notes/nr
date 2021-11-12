@@ -1,11 +1,6 @@
 #!/usr/bin/env bash
 
-# shellcheck disable=SC2034
-action="$1"
+# Remove action
 shift
 
-if [ "$1" = "usage" ]; then
-    "$TODO_FULL_SH" notesrename usage
-else
-    "$TODO_FULL_SH" notesrename "$@"
-fi
+"$TODO_FULL_SH" notesrename "$@"
