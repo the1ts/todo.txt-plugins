@@ -1,45 +1,43 @@
 #!/usr/bin/env bash
-# 2009 Paul Mansfield <paul.mansfield@mansteck.co.uk>
-# License:    GPL, http://www.gnu.org/copyleft/gpl.html
+# shellcheck shell=bash
+#===============================================================================
+#
+#          FILE: listnotes 
+#
+#         USAGE: todo.sh listnotes
+#
+#        AUTHOR: Paul Mansfield (paul.mansfield@mansteck.co.uk), 
+#     COPYRIGHT: 2009-2021 Paul Mansfield
+#       LICENSE: GPL, http://www.gnu.org/copyleft/gpl.html
+#===============================================================================
 
-# Functions
 usage() {
-	echo "  $(basename $0) (search term)"
-	echo "    List notes"
-	echo ""
+	echo "    $(basename "$0") [TERM]"
+	echo "      List notes"
 }
 
+# Remove action
+shift
+TODO_TMP_FILE="${TODO_TMP_FILE:-${TODO_DIR}/todo.tmp}"
+
 # Usage for todo.sh help
-if [ "$1" = "usage" ]; then
+if [[ "${1}" = "usage" ]] || [[ "${1}" = "-h" ]]; then
 	usage
 	exit
 fi
 
-# Variables
-action="$1"; shift
-FILE=$1
+# Create file from todo and 'tickled' files
+cat "${TODO_FILE}" > "${TODO_TMP_FILE}"
+  if [ -n "${TICKLER_DIR}" ]; then
+  find "${TICKLER_DIR}" -mindepth 2 -type f -size 1 -exec cat {} \; >> "${TODO_TMP_FILE}"
+fi
 
-case $1 in
-	"usage")
-		usage
-		exit
-	;;
-
-	"-h")
-		usage
-	;;
-
-	*)
-		# Create file from todo and 'tickled' files
-		cat $TODO_FILE> $TMP_FILE
-		 if [ -n $TICKLER_DIR ]; then
-			find $TICKLER_DIR -mindepth 2 -type f -size 1 -exec cat {} >> $TMP_FILE \;
-		fi
-		if [[ "${FILE}x" = "x" ]]; then
-			grep -o '\bnote\:[a-zA-Z0-9\._-]*' "$TMP_FILE" | sort -u
-		else
-			grep -o '\bnote\:[a-zA-Z0-9\._-]*' "$TMP_FILE" | sort -u | grep "${FILE}"
-		fi
-		rm -rf "$TMP_FILE"
-	;;
-esac
+if [[ $(grep -o '\bnote\:[a-zA-Z0-9\._-]*' "${TODO_TMP_FILE}" | grep -c "$*") -gt 0 ]]; then
+  grep -o '\bnote\:[a-zA-Z0-9\._-]*' "${TODO_TMP_FILE}" | grep "$*" | sort -u
+  [[ -f "${TODO_TMP_FILE}" ]] && rm -rf "${TODO_TMP_FILE}"
+else
+  echo "No notes with the term \"$*\""
+  [[ -f "${TODO_TMP_FILE}" ]] && rm -rf "${TODO_TMP_FILE}"
+  usage
+  exit 1
+fi
