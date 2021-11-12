@@ -1,77 +1,118 @@
 #!/usr/bin/env bash
-# 2011 Paul Mansfield <paul.mansfield@mansteck.co.uk>
-# License:  GPL, http://www.gnu.org/copyleft/gpl.html
+# shellcheck shell=bash
+#===============================================================================
+#
+#          FILE: enotesedit
+#
+#         USAGE: todo.sh enotesedit [ENOTESFILE]
+#
+#        AUTHOR: Paul Mansfield (paul.manfield@mansteck.co.uk), 
+#     COPYRIGHT: 2009-2021 Paul Mansfield
+#       LICENSE: GPL, http://www.gnu.org/copyleft/gpl.html
+#===============================================================================
 
 usage () {
-        echo "  $(basename "$0") [NOTESFILE]"
-        echo "    Edit encrypted NOTESFILE in \$EDITOR."
-        echo "    Use listenotes to show all encrypted notesfiles."
-        echo ""
-    }
+	echo "    $(basename "$0") [ENOTESFILE]"
+	echo "      Edit encrypted ENOTESFILE in \$EDITOR."
+	echo "      Use listenotes to show all encrypted notes files."
+}
 
-# Function to find editor to use
-# Use debian and derivatives editor (auto set by OS)
-# If EDITOR already set then use, else if EDITOR not set default to vi
+# Git add, will error on not in git WD or git not installed 
+# so send to dev null
+add () {
+	if [ -e "${TODOTXT_ACTIONS_DIR}/commit" ]; then
+		git add "$1" > /dev/null 2>&1
+	fi
+}
+
+# Git add, will error on not in gitt WD or git not installed
+# so send to dev null
+commit () {
+	if [ -e "${TODOTXT_ACTIONS_DIR}/commit" ]; then
+		git commit "$1" -m "$(date +'%Y-%m-%d %H:%M:%S')" > /dev/null 2>&1
+	fi
+}
+
+# Find editor to use
+# Use debian and derivatives editor (alternatives auto set by OS), then
+# if EDITOR already set use, else if EDITOR not set default to vi
 find_editor () {
-	if [[ -x /usr/bin/editor ]]; then
+  if [[ -n ${EDITOR} ]]; then
+    true
+	elif [[ -L /usr/bin/editor ]]; then
 		EDITOR="/usr/bin/editor"
 	elif [[ "${EDITOR}x" = "x" ]]; then
 		EDITOR="vi"
 	fi
+  echo "${EDITOR}"
 }
 
-find_editor
+# Remove action
+shift
+if [[ "${1}" = "usage" ]] || [[ "${1}" = "-h" ]]; then
+	usage
+	exit
+fi
+# shellcheck disable=SC2001
+ENOTE_FILE="$(echo "$1" | sed 's/^enote://g')"; shift
+# shellcheck disable=SC2001
+PRE="$(basename "${TODO_FILE}" | sed 's/.txt$//g')"
+TODO_TMP_FILE="${TODO_TMP_FILE:-${TODO_DIR}/todo.tmp}"
 
-case $1 in
-    "usage")
-        usage
-    ;;
+if [[ -z "${ENOTE_FILE}" ]]; then
+  echo "      No encryted notes file"
+  usage
+  exit 1
+elif  [[ $(grep -c "${ENOTE_FILE}" "${TODO_FILE}") -eq 0 ]]; then
+  echo "      Encrypted notes file $1 not in todo.txt file,"
+  echo "      use listenotes to find encrypted notes files"
+  usage
+  exit 1
+elif [[ -z "${GPG_USER}" ]]; then
+  echo "      Please set a variable GPT_USER in your todo.cfg"
+  usage
+  exit 1
+fi
 
-    *)
-        if [ $# -lt 2 ]; then
-            $0 usage
-            exit 1
-        fi
-        cd "${TODO_DIR}" || exit 1
-    
-        # construct file name
-				# shellcheck disable=SC2001
-        NOTE_FILE="$(echo "$2" | sed 's/^enote://g')"
-        PRE="$(basename "${TODO_FILE}" | sed 's/.txt$//g')"
-    
-        # Create file from todo and 'tickled' files
-        cat "${TODO_FILE}" > "${TMP_FILE}"
-        if [ -n "${TICKER_DIR}" ]; then
-           find "${TICKLER_DIR}" -mindepth 2 -type f -size 1 -exec cat {} \; >> "${TMP_FILE}"
-        fi
-    
-        # If file exists edit it else check lsenotes for pointer then edit 
-        # and add to git if commit action file exists
-        if [ -e "${TODO_DIR}/notes/${PRE}-${NOTE_FILE}.enc" ]; then
-            # Decrypt, move old aside, edit, encrypt and tidy up
-            gpg -d -o "${TMP_FILE}.encrypt" "${TODO_DIR}/notes/${PRE}-${NOTE_FILE}.enc"
-            mv "$TODO_DIR/notes/${PRE}-${NOTE_FILE}.enc" "${TODO_DIR}/notes/${PRE}-${NOTE_FILE}.enc.bak"
-            "${EDITOR}" "${TMP_FILE}.encrypt"
-            gpg -c --force-mdc -o "${TODO_DIR}/notes/${PRE}-${NOTE_FILE}.enc" "${TMP_FILE}.encrypt"
-						# shellcheck disable=SC2181
-            if [ "$?" -eq 0 ] ; then
-                rm -rf "${TODO_DIR}/notes/${PRE}-${NOTE_FILE}.enc.bak"
-            else
-                mv "${TODO_DIR}/notes/${PRE}-${NOTE_FILE}.enc.bak" "${TODO_DIR}/notes/${PRE}-${NOTE_FILE}.enc"
-            fi
-            rm -rf "${TMP_FILE}.encrypt"
-        else
-            # If note link in todo.enc exists then edit
-						# shellcheck disable=SC2046,SC2086
-            if [ $(grep -o '[^ ]*enote:[^ ]\+' "$TMP_FILE" | grep '^enote:' | grep "$2$" | sort -u| sed "s/^enote://g"| grep -c $NOTE_FILE) -ge 1 ] ; then
-                # edit file, encrypt and tidy up
-                "${EDITOR}" "${TMP_FILE}.encrypt"
-                gpg -c --force-mdc -o "${TODO_DIR}/notes/${PRE}-${NOTE_FILE}.enc" "${TMP_FILE}.encrypt"
-                rm -rf "${TMP_FILE}.encrypt"
-            else
-                echo "No such encrypted Notes file, use lsenotes to find notes files"
-            fi
-						rm -rf "${TMP_FILE}"
-        fi
-    ;;
-esac
+EDITOR=$(find_editor)
+
+# Create file from todo and 'tickled' files since enotes could be in tickled file
+cat "${TODO_FILE}" > "${TODO_TMP_FILE}"
+if [ -n "${TICKLER_DIR}" ]; then
+	find "${TICKLER_DIR}" -mindepth 2 -type f -size 1 -exec cat {} \; >> "${TODO_TMP_FILE}"
+fi
+
+# If file exists edit it else check listenotes for pointer then edit 
+if [ -e "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc" ]; then
+	# Decrypt, move old aside, edit, encrypt and tidy up
+	gpg -dq -o "${TODO_TMP_FILE}.encrypt" "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc"
+	mv "$TODO_DIR/notes/${PRE}-${ENOTE_FILE}.enc" "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc.bak"
+	"${EDITOR}" "${TODO_TMP_FILE}.encrypt"
+	gpg -eq --batch -r "${GPG_USER}" -o "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc" "${TODO_TMP_FILE}.encrypt"
+  add "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc"
+  commit "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc"
+	# shellcheck disable=SC2181
+	if [ "$?" -eq 0 ] ; then
+		rm -rf "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc.bak"
+	else
+		mv "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc.bak" "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc"
+	fi
+	rm -rf "${TODO_TMP_FILE}.encrypt"
+else
+	# If note link in todo.txt exists then edit
+	# shellcheck disable=SC2046,SC2086
+  NUM_ENOTE=$(grep -c "[^ ]*enote:${ENOTE_FILE}[^ ]\+" "${TODO_TMP_FILE}")
+	if [ "${NUM_ENOTE}" -ge 1 ] ; then
+		# edit file, encrypt and tidy up
+		"${EDITOR}" "${TODO_TMP_FILE}.encrypt"
+		gpg -eq --batch -r "${GPG_USER}" -o "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc" "${TODO_TMP_FILE}.encrypt"
+    add "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc"
+    commit "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc"
+		rm -rf "${TODO_TMP_FILE}.encrypt"
+	else
+		echo "    No such encrypted Notes file, use lsenotes to find notes files"
+    usage
+    rm -rf "${TODO_TMP_FILE}"
+    exit
+	fi
+fi

@@ -1,42 +1,69 @@
 #!/usr/bin/env bash
-# 2009 Paul Mansfield <paul.mansfield@mansteck.co.uk>
-# License:  GPL, http://www.gnu.org/copyleft/gpl.html
-set -x 
-case $1 in
-    "usage")
-    echo "  $(basename "$0")"
-    echo "    archive encrypted notes files nolonger in todo file."
-    echo "    If BASENAME is not given, defaults to 'todo'."
-    echo ""
-    ;;
+# shellcheck shell=bash
+#===============================================================================
+#
+#          FILE: enotesarchive
+#
+#         USAGE: todo.sh enotesarchive
+#
+#        AUTHOR: Paul Mansfield (paul.mansfield@mansteck.co.uk), 
+#     COPYRIGHT: 2009-2021 Paul Mansfield
+#       LICENSE: GPL, http://www.gnu.org/copyleft/gpl.html
+#===============================================================================
 
-    *)
-    # construct file name
-    PRE="$(basename "${TODO_FILE}" | sed 's/.txt$//g')"
-    cd "${TODO_DIR}/notes" || exit 1
-    NOTES=$(find . -maxdepth 1 -name "$PRE*enc" | sed 's/\.\///g' | sed 's/\.enc$//')
+usage () {
+	echo "    $(basename "$0")"
+	echo "      archive encrypted notes files nolonger in todo file."
+}
 
-    # Create file from todo and 'tickled' files
-    cat "${TODO_FILE}" > "${TMP_FILE}"
-    if [ -n "${TICKLER_DIR}" ]; then
-        find "${TICKLER_DIR}" -mindepth 2 -type f -size 1 -exec cat {} \; >> "${TMP_FILE}"
+# Remove action
+shift
+
+# Usage for todo.sh help
+if [[ "${1}" = "usage" ]] || [[ "${1}" = "-h" ]]; then
+	usage
+	exit
+fi
+
+# Check notes and archive exist
+mkdir -p "${TODO_DIR}/notes/archive" || exit 1
+cd "${TODO_DIR}/notes" || exit 1
+TODO_TMP_FILE="${TODO_TMP_FILE:-${TODO_DIR}/todo.tmp}"
+
+# construct file name
+PRE="$(basename "${TODO_FILE}" | sed 's/.txt$//g')"
+ENOTES=$(find . -maxdepth 1 -name "${PRE}*enc" -printf '%P\n')
+
+# Create file from todo and 'tickled' files
+cat "${TODO_FILE}" > "${TODO_TMP_FILE}"
+if [[ -n "${TICKLER_DIR}" ]]; then
+	find "${TICKLER_DIR}" -mindepth 2 -type f -size 1 -exec cat {} \; >> "${TODO_TMP_FILE}"
+fi
+
+RETURN=0
+# for each file, remove $PRE and see if its in todo or 'tickled' files
+for i in ${ENOTES} ; do
+	ENOTE_FILE="$(echo "$i"  | sed -e "s/${PRE}-//g" -e "s/[.]enc//g")"
+  # Number of times enote appears in todo.txt
+  NUM_ENOTE=$(grep -c "[^ ]*enote:${ENOTE_FILE}[^ ]\+" "${TODO_TMP_FILE}")
+	# if enote isn't in our todo file, archive in notes/archive/
+	if [[ "${NUM_ENOTE}" -eq 0 ]] ;then
+    cat "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc" >> \
+      "${TODO_DIR}/notes/archive/${PRE}-${ENOTE_FILE}.$(date +%s).enc" || exit 1
+    rm "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc"
+    echo "$(getPrefix): Archived enote:${ENOTE_FILE}"
+    ((RETURN+=1)) 
+    # If we are using commit action then add to git
+    if [ -e "${TODOTXT_ACTIONS_DIR}/commit" ]; then
+        git add "${TODO_DIR}/notes/archive/${PRE}-${ENOTE_FILE}.$(date +%s).enc"
     fi
+	fi
+done
 
-    # for each file, remove $PRE and see if its in todo or 'tickled' files
-    for i in $NOTES ; do
-        NOTE_FILE="$(echo "$i"  | sed -e "s/$PRE-//g" -e "s/[.]txt//g")"
-        # if filename isn't in our todo file, archive in notes/archive/$file
-        if [ "$(grep -o '[^ ]*enote:[^ ]\+' "${TMP_FILE}" | grep '^enote:' | \
-					sort -u| sed "s/^enote://g"| grep -c "${NOTE_FILE}")" -eq 0 ] ;then
-            cat "${TODO_DIR}/notes/${PRE}-${NOTE_FILE}.enc" >> \
-							"${TODO_DIR}/notes/archive/${PRE}-${NOTE_FILE}.$(date +%s).txt" || exit 1
-            rm "${TODO_DIR}/notes/${PRE}-${NOTE_FILE}.enc"
-            # If we are using commit action then add to git
-            if [ -e "${TODOTXT_ACTIONS_DIR}/commit" ]; then
-                git add "${TODO_DIR}/notes/archive/${PRE}-${NOTE_FILE}.$(date +%s).enc"
-            fi
-        fi
-    done
-		rm -rf "${TMP_FILE}"
-    ;;
-esac
+[[ -f "${TODO_TMP_FILE}" ]] && rm -rf "${TODO_TMP_FILE}"
+
+# if we have not archived anything, then report
+if [[ "${RETURN}" -eq 0 ]]; then
+  echo "$(getPrefix): Nothing to archive"
+  exit 1
+fi
