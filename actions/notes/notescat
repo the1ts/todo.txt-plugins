@@ -1,47 +1,49 @@
 #!/usr/bin/env bash
-# 2009 Paul Mansfield <paul.mansfield@mansteck.co.uk>
-# License:  GPL, http://www.gnu.org/copyleft/gpl.html
-# functions
+# shellcheck shell=bash
+#===============================================================================
+#
+#          FILE: notescat
+#
+#         USAGE: todo.sh notescat [NOTESFILE]
+#
+#        AUTHOR: Paul Mansfield (paul.mansfield@mansteck.co.uk), 
+#     COPYRIGHT: 2009-2021 Paul Mansfield
+#       LICENSE: GPL, http://www.gnu.org/copyleft/gpl.html
+#===============================================================================
+
 usage () {
-  echo "  $(basename $0) [NOTESFILE]"
-  echo "    Cat notes file, use lsnotes to get list of notes"
-  echo ""
-	exit 0
+  echo "    $(basename "$0") [NOTESFILE]"
+  echo "      Cat notes file, use listnotes to get list of notes"
 }
 
+# Remove action
+shift
 # Usage for todo.sh help
-if [ "$2" = "usage" ]; then
+if [[ "${1}" = "usage" ]] || [[ "${1}" = "-h" ]]; then
 	usage
 	exit
+elif [[ $# -lt 1 ]]; then
+  echo "      not enough options"
+  usage
+  exit 1
 fi
+NOTE_FILE="$1"; shift
 
-# Variables
-action="$1"; shift
-
-case $1 in
-	"usage")
-		usage
-		exit
-	;;
-
-	*)
-		if [ $# -lt 1 ]; then
-			$0 usage
-			exit 1
-		fi
-		NOTE_FILE=$(echo $1 | sed 's/^note://g')
-		PRE=$(basename "$TODO_FILE" | sed 's/.txt$//g')
-		# If not file exists
-		if [ -e "$TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt" ]; then
-			cat "$TODO_DIR/notes/${PRE}-${NOTE_FILE}.txt"
-		else
-			# If note file is in todo.txt, but empty
-			if [ $(grep -c "\b$1\b"  "$TODO_FILE") -gt 0 ]; then
-				echo "$1 is empty"
-			else
-				echo "Note file $1 not in todo.txt file,"
-				echo "use lsnotes to find notes files"
-			fi
-		fi
-	;;
-esac
+# shellcheck disable=SC2001
+NOTE_FILE="$(echo "${NOTE_FILE}" | sed 's/^note://g')"
+PRE=$(basename "${TODO_FILE}" | sed 's/.txt$//g')
+# If note file exists
+if [ -e "${TODO_DIR}/notes/${PRE}-${NOTE_FILE}.txt" ]; then
+	cat "${TODO_DIR}/notes/${PRE}-${NOTE_FILE}.txt"
+else
+	# If note file is in todo.txt, but empty
+	# shellcheck disable=SC2046,SC1117
+	if [ $(grep -c "\b${NOTE_FILE}\b"  "${TODO_FILE}") -gt 0 ]; then
+		echo "${NOTE_FILE} is empty"
+    exit 1
+	else
+		echo "Note file ${NOTE_FILE} not in todo.txt file,"
+		echo "use listnotes to find notes files"
+    exit 1
+	fi
+fi

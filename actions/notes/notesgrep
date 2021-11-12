@@ -1,37 +1,87 @@
 #!/usr/bin/env bash
-# 2009 Paul Mansfield <paul.mansfield@mansteck.co.uk>
-# License:    GPL, http://www.gnu.org/copyleft/gpl.html
+# shellcheck shell=bash
+#===============================================================================
+#
+#          FILE: notesgrep
+#
+#         USAGE: todo.sh notesgrep TERM
+#
+#        AUTHOR: Paul Mansfield (paul.mansfield@mansteck.co.uk), 
+#     COPYRIGHT: 2009-2021 Paul Mansfield
+#       LICENSE: GPL, http://www.gnu.org/copyleft/gpl.html
+#===============================================================================
 
-# Chomp Action from args
-action="$1"; shift
+usage () {
+	echo "    $(basename "$0") [-a] [TERM...]"
+	echo "      List notes that contain a TERM within them"
+	echo "      -a show archived notes"
+}
+
+# Remove action
+shift
 
 # Usage for todo.sh help
-if [[ "$1" = "usage" ]] || [[ "$1" = "-h" ]] || [[ -z "$1" ]]; then
-	echo "  $(basename $0) [-a] [TERM...]"
-	echo "    List notes that match a TERM within them"
-	echo "    -a show archived notes"
-	echo ""
-	exit
+if [[ "${1}" = "usage" ]] || [[ "${1}" = "-h" ]]; then
+  usage
+  exit
+elif [[ -z "$1" ]]; then
+  echo "    No TERM"
+	usage
+	exit 1
 fi
 
-## Variables
+cd "${TODO_DIR}/notes/" || exit 1
 # Prepend for our notes files
-PRE=$(basename $TODO_FILE | sed 's/.txt$//g')
+PRE="$(basename "${TODO_FILE}" | sed 's/.txt$//g')"
 # Our active notes files
-NOTES="${TODO_DIR}/notes/${PRE}-*.txt"
+  # shellcheck disable=SC2086
+NOTES="$(find ${PRE}-*.txt)"
 # Our archived notes files
-ARCHIVED="${TODO_DIR}/notes/archive/${PRE}-*.txt"
-if [[ $1 = "-a" ]]; then
-	ARCHIVE=1
+  # shellcheck disable=SC2086
+ARCHIVED="$(find archive/${PRE}-*.txt)"
+if [[ "$1" = "-a" ]]; then
+	ARCHIVE=1; shift
 fi
 
 ## Main
-echo "Notes Files"
-echo "-----------"
-grep -l $* ${NOTES} | sed "s/^.*${PRE}-/note:/g ; s/\.txt$//g"
-if [[ ${ARCHIVE} ]]; then
-	echo ""
-	echo "Archived Notes Files"
-	echo "--------------------"
-	grep -l $* ${ARCHIVED} | sed "s/^.*${PRE}-/note:/g ; s/\.txt$//g"
+TOTAL_NOTES=0
+for item in ${NOTES}; do
+  # shellcheck disable=SC2086
+  if [[ "$(grep -oc "$*" ${item})" -gt 0 ]]; then
+  ((TOTAL_NOTES=+1))
+  fi
+done
+TOTAL_ARCHIVED=0
+for item in ${ARCHIVED}; do
+  # shellcheck disable=SC2086
+  if [[ "${ARCHIVE}" -eq 1 ]] && [[ "$(grep -oc "$*" ${item})" -gt 0 ]]; then
+    ((TOTAL_ARCHIVED=+1))
+  fi
+done
+
+if [[ "${TOTAL_NOTES}" -gt 0 ]]; then
+  echo "Notes Files containing \"$*\""
+  echo "-----------"
+  # shellcheck disable=SC2086
+  grep -l "$*" ${NOTES} | sed "s/^.*${PRE}-/note:/g ; s/[.]txt$//g"
+else
+  echo "No current Notes containing \"$*\""
+  ((RETURN+=1))
+fi
+if [[ ${ARCHIVE} -eq 1 ]]; then
+  # shellcheck disable=SC2086
+  # if [ "$(grep -o "$*" ${ARCHIVED} | wc -l)" -gt 0 ]; then
+  if [ ${TOTAL_ARCHIVED} -gt 0 ]; then
+    echo ""
+    echo "Archived Notes Files containing \"$*\""
+    echo "--------------------"
+    # shellcheck disable=SC2086
+    grep -l "$*" ${ARCHIVED} | sed "s/^.*${PRE}-/note:/g ; s/[.]txt$//g"
+  else
+    echo "No current archived Notes containing \"$*\""
+    ((RETURN+=1))
+  fi
+fi
+if [[ ${RETURN} -gt 0 ]]; then
+  exit 1
 fi
