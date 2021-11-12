@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
-action=$1
+
+# Remove action
 shift
 
-if [ "$1" = "usage" ]; then
-    "$TODO_FULL_SH" enotesarchive usage
-else
-    "$TODO_FULL_SH" enotesarchive "$@"
-fi
+"$TODO_FULL_SH" enotesadd "$@"

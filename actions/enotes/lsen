@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
-if [ "$1" = "usage" ]; then
-    "$TODO_FULL_SH" listenotes usage
-else
-    "$TODO_FULL_SH" listenotes "$@"
-fi
+# shellcheck disable=SC2034
+action="$1"; shift
+
+"$TODO_FULL_SH" listenotes "$@"
