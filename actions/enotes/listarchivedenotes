@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# shellcheck shell=bash
+#===============================================================================
+#
+#          FILE: listarchivedenotes 
+#
+#         USAGE: todo.sh listarchivedenotes [TERM]
+#
+#        AUTHOR: Paul Mansfield (paul.mansfield@mansteck.co.uk), 
+#     COPYRIGHT: 2009-2021 Paul Mansfield
+#       LICENSE: GPL, http://www.gnu.org/copyleft/gpl.html
+#===============================================================================
+
+# Functions
+usage() {
+	echo "    $(basename "$0") [TERM]" 
+	echo "      List archived encrypted notes"
+}
+
+# Remove action
+shift
+PRE=$(basename "${TODO_FILE}" | sed 's/.txt$//g')
+TODO_TMP_FILE="${TODO_TMP_FILE:-${TODO_DIR}/todo.tmp}"
+
+# Usage for todo.sh help
+if [[ "${1}" = "usage" ]] || [[ "${1}" = "-h" ]]; then
+	usage
+	exit
+fi
+
+mkdir -p "${TODO_DIR}/notes/archive/" || exit 1
+cd "${TODO_DIR}/notes/archive/" || exit 1
+
+# Find a list of files
+find . -maxdepth 1 -name "${PRE}-*enc" -type f -printf '%P\n' | \
+  sed  -e "s/^${PRE}-//g" -e "s/^/enote:/g" -e "s/\.enc$//g" -e "s/\.[0-9]\{1,10\}$//g" > \
+  "${TODO_TMP_FILE}"
+if [[ $(grep -c "$*" "${TODO_TMP_FILE}") -gt 0 ]]; then
+  if [[ "$#" -eq 0 ]]; then
+    cat "${TODO_TMP_FILE}"
+    [[ -f "${TODO_TMP_FILE}" ]] && rm -rf "${TODO_TMP_FILE}"
+  else
+    grep "$*" "${TODO_TMP_FILE}"
+    [[ -f "${TODO_TMP_FILE}" ]] && rm -rf "${TODO_TMP_FILE}"
+  fi
+else
+  echo "No notes with the term \"$*\""
+  [[ -f "${TODO_TMP_FILE}" ]] && rm -rf "${TODO_TMP_FILE}"
+  exit 1
+fi
