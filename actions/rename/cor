@@ -3,4 +3,4 @@
 # Remove action
 shift
 
-"$TODO_FULL_SH" projectrename "$@"
+"$TODO_FULL_SH" contextrename "$@"

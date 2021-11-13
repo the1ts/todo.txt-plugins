@@ -1,0 +1,86 @@
+#!/usr/bin/env bash
+# shellcheck shell=bash
+#===============================================================================
+#
+#          FILE: contextrename 
+#
+#         USAGE: todo.sh contextrename [OLD CONTEXT] [NEW CONTEXT] [ITEM#...]
+#
+#        AUTHOR: Paul Mansfield (paul.mansfield@mansteck.co.uk), 
+#     COPYRIGHT: 2009-2021 Paul Mansfield
+#       LICENSE: GPL, http://www.gnu.org/copyleft/gpl.html
+#===============================================================================
+
+usage() {
+	echo "    $(basename "${0}") [OLD CONTEXT] [NEW CONTEXT] [ITEM#]"
+	echo "      Rename old context to new context in ITEM#"
+	echo "      If no ITEM# given the rename all instances of old context"
+}
+
+# Function to take CONTEXT and standardize
+_context_fix () {
+  INPUT="$1"
+  if [[ ${INPUT} =~ ^\@ ]]; then
+    NOTE="${INPUT##@}"
+  else
+    NOTE="${INPUT}"
+  fi
+  echo "${NOTE}"
+}
+
+# Remove action
+shift
+
+# tests
+if [[ "${1}" = "usage" ]] || [[ "${1}" = "-h" ]]; then
+  usage
+  exit
+elif [[ $# -lt 2 ]]; then
+  echo "   Not enough options"
+  usage
+  exit 1
+fi
+
+OLDCONTEXT=$(_context_fix "$1");shift
+NEWCONTEXT=$(_context_fix "$1");shift
+ITEM="$*"
+
+# Check our ITEM# are numeric
+if [[ -n "${ITEM}" ]] && ! [[ ${ITEM} =~ ^[0-9\ ]+$ ]]; then
+  echo "    ITEM# should be a LINE number"
+  usage
+  exit 1
+fi
+
+# do we have that context in the todofile?
+if [[ "$(grep -c "${OLDCONTEXT}\>" "${TODO_FILE}")" -eq 0 ]]; then
+  echo "    Cannot find context ${OLDCONTEXT}"
+  usage
+  exit 1
+fi
+
+# Check OLDCONTEXT is found in ITEM#
+for item in ${ITEM}; do
+  LINE=$(sed -n "${item}p" "${TODO_FILE}")
+  if [[ -n "${item}" ]] && ! [[ "${LINE}" =~ @${OLDCONTEXT} ]]; then
+    echo "    Cannot find context ${OLDCONTEXT} in line number ${ITEM}"
+    usage
+    exit 1
+  fi
+done
+
+# Get the ITEM#s to run over
+# Either our ITEM or list of items containing OLDCONTEXT
+if [[ -z "${ITEM}" ]]; then
+  ITEM=$(grep -n "${OLDCONTEXT}" "${TODO_FILE}" | cut -f1 -d:)
+fi
+
+for LINE in ${ITEM}; do
+  # Change context on specified lines, do twice once with ending space and once without
+  sed -i "{${LINE}s|\ @${OLDCONTEXT} |\ @${NEWCONTEXT} |;${LINE}s|\ @${OLDCONTEXT}$|\ @${NEWCONTEXT}|}" "${TODO_FILE}"
+  NEWTODO=$(sed -n "${LINE}p" "${TODO_FILE}")
+  [ "${TODOTXT_VERBOSE}" -gt 0 ] && {
+    echo "${LINE}: ${NEWTODO}"
+    echo "$(getPrefix): ${LINE} updated context ${OLDCONTEXT} to ${NEWCONTEXT}."
+  }
+done
