@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-
-if [ "$1" = "usage" ]; then
-    "$TODO_FULL_SH" listprojects usage
-else
-    "$TODO_FULL_SH" listprojects "$@"
-fi
