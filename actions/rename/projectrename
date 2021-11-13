@@ -1,97 +1,86 @@
 #!/usr/bin/env bash
-# 2010 Paul Mansfield <paul.mansfield@mansteck.co.uk>
-# License:    GPL, http://www.gnu.org/copyleft/gpl.html
-
-if [ "${1}" != "usage" ]; then
-	action="${1}";shift
-fi
+# shellcheck shell=bash
+#===============================================================================
+#
+#          FILE: projectrename 
+#
+#         USAGE: todo.sh projectrename [OLD PROJECT] [NEW PROJECT] [ITEM#...]
+#
+#        AUTHOR: Paul Mansfield (paul.mansfield@mansteck.co.uk), 
+#     COPYRIGHT: 2009-2021 Paul Mansfield
+#       LICENSE: GPL, http://www.gnu.org/copyleft/gpl.html
+#===============================================================================
 
 usage() {
-	echo "  $(basename "${0}") [old project] [new project] [ITEM#]"
-	echo "    Rename old project to new project in ITEM#"
-	echo "    If no ITEM# given the rename all instances of old project"
-	echo ""
-	exit 0
+	echo "    $(basename "${0}") [OLD PROJECT] [NEW PROJECT] [ITEM#]"
+	echo "      Rename old project to new project in ITEM#"
+	echo "      If no ITEM# given the rename all instances of old project"
 }
 
-# Check things look okay.
-tests () {
-	# test number of options
-	if [ $# -lt 2 ]; then
-	 echo "   Not enough options"
-	 usage
-	 exit 1
-	fi
-
-	# do we have that project?
-	if [ "$("${TODO_FULL_SH}" lsprj | grep -c "${1}")" -ne 1 ]; then
-	 echo "Cannot find project $1"
-	 echo "We have: $("${TODO_FULL_SH}" lsprj | tr  '\n' ' ')"
-	 echo ""
-	 usage
-	 exit 1
-	fi
-
-	# is new project valid as a project?
-	if [ "$(echo "${2}" | grep -c '^+\w')" -ne 1 ]; then
-		echo "New project is not valid"
-		usage
-		exit 1
-	fi
-
-	oldproject=$1;shift
-	newproject=$1;shift
-	# Check our ITEM# are numeric
-	if [ ! -z "$(echo "$*" | sed 's/ //g')" ]; then
-		if [ "$(echo "$*" | sed 's/ //g' | grep -c "^[0-9]\{1,\}$")" -ne 1 ]; then
-			echo "ITEM# should be numeric only"
-			usage
-			exit 1
-		fi
-		# Check oldproject is found in those ITEM#
-		for item in $*; do
-			if [ $(sed -n ${item}p $TODO_FILE | grep -c "$oldproject") -ne 1 ]; then
-				echo "    Cannot find project $oldproject in line number $item"
-				usage
-				exit 1
-			fi
-		done
-	fi
+# Function to take PROJECT and standardize
+_project_fix () {
+  INPUT="$1"
+  if [[ ${INPUT} =~ ^\+ ]]; then
+    NOTE="${INPUT##+}"
+  else
+    NOTE="${INPUT}"
+  fi
+  echo "${NOTE}"
 }
 
-case $1 in
-	"usage")
-		usage
-	;;
+# Remove action
+shift
 
-	"-h")
-		usage
-	;;
+# tests
+if [[ "${1}" = "usage" ]] || [[ "${1}" = "-h" ]]; then
+  usage
+  exit
+elif [[ $# -lt 2 ]]; then
+  echo "   Not enough options"
+  usage
+  exit 1
+fi
 
-	*)
-		# Tests
-		tests $*
+OLDPROJECT=$(_project_fix "$1");shift
+NEWPROJECT=$(_project_fix "$1");shift
+ITEM="$*"
 
-		# Set some variables
-		oldproject=$1;shift
-		newproject=$1;shift
+# Check our ITEM# are numeric
+if [[ -n "${ITEM}" ]] && ! [[ ${ITEM} =~ ^[0-9\ ]+$ ]]; then
+  echo "    ITEM# should be a LINE number"
+  usage
+  exit 1
+fi
 
-		# Get the ITEM# to run over
-		if [ -z "$(echo "$*" | sed 's/ //g')" ]; then
-			items=$(grep -n "${oldproject}" "${TODO_FILE}" | sed 's/:.*//g')
-		else
-			items=$*
-		fi
+# do we have that project in the todofile?
+if [[ "$(grep -c "${OLDPROJECT}\>" "${TODO_FILE}")" -eq 0 ]]; then
+  echo "    Cannot find project ${OLDPROJECT}"
+  usage
+  exit 1
+fi
 
-		# Change project
-		for item in $items ; do
-			item=$(printf "%02d" $item)
-			sed -i $item"{s|\ $oldproject |\ $newproject |;s|\ $oldproject$|\ $newproject|}" "$TODO_FILE"
-			NEWTODO=$(sed -n ${item}p $TODO_FILE)
-			[ $TODOTXT_VERBOSE -gt 0 ] && {
-				echo "$item: $NEWTODO"
-				echo "TODO: $item updated project $oldproject to $newproject."
-			}
-		done
-	;;
-esac
+# Check OLDPROJECT is found in ITEM#
+for item in ${ITEM}; do
+  LINE=$(sed -n "${item}p" "${TODO_FILE}")
+  if [[ -n "${item}" ]] && ! [[ "${LINE}" =~ \+${OLDPROJECT} ]]; then
+    echo "    Cannot find project ${OLDPROJECT} in line number ${ITEM}"
+    usage
+    exit 1
+  fi
+done
+
+# Get the ITEM#s to run over
+# Either our ITEM or list of items containing OLDPROJECT
+if [[ -z "${ITEM}" ]]; then
+  ITEM=$(grep -n "${OLDPROJECT}" "${TODO_FILE}" | cut -f1 -d:)
+fi
+
+for LINE in ${ITEM}; do
+  # Change project on specified lines, do twice once with ending space and once without
+  sed -i "{${LINE}s|\ +${OLDPROJECT} |\ +${NEWPROJECT} |;${LINE}s|\ +${OLDPROJECT}$|\ +${NEWPROJECT}|}" "${TODO_FILE}"
+  NEWTODO=$(sed -n "${LINE}p" "${TODO_FILE}")
+  [ "${TODOTXT_VERBOSE}" -gt 0 ] && {
+    echo "${LINE}: ${NEWTODO}"
+    echo "$(getPrefix): ${LINE} updated project ${OLDPROJECT} to ${NEWPROJECT}."
+  }
+done
