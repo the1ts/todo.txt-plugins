@@ -15,8 +15,6 @@
 usage() {
   echo "  $(basename "$0")"
   echo "    list all possible actions"
-  echo ""
-  exit
 }
 
 # remove action
@@ -30,10 +28,10 @@ fi
 
 ## list all possible actions
 # shellcheck disable=SC2209
-BUILTINS="$(PAGER=cat tt shorthelp | sed '/ Actions can be/,$d' | grep "^    [[:alnum:]]" | cut -f 5 -d " " | sed 's/|/\n/')"
+BUILTINS="add a addm addto archive command duplicate del rm delpri done do help list listall lsa listaddons listcon listfile lf listpri lsp listproj lsprj move mv prepend prep pri p replace report shorthelp"
 # Use builtin to find all external actions
 ADDONS="$("${TODO_FULL_SH}" listaddons)"
 # echo each and sort
-for action in ${BUILTINS} ; do 
+for action in ${BUILTINS} ${ADDONS} ; do 
 	echo "$action"
-done; echo "${ADDONS}" | sort | uniq
+done | sort -u
