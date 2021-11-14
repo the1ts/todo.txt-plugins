@@ -18,10 +18,10 @@ usage() {
 }
 
 # remove action
-shift
+action=$1;shift
 
 # Usage for todo.sh help
-if [[ "$1" = "usage" ]] || [[ "$1" = "-h" ]]; then
+if [[ "${action}" = "usage" ]]; then
 	usage
 	exit
 fi
