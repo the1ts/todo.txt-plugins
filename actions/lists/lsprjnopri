@@ -13,44 +13,36 @@
 
 # Functions
 usage() {
-	echo "  $(basename "$0")"
-	echo "    List projects with no priorities set"
-	echo ""
+	echo "    $(basename "$0")"
+	echo "      List projects with no priorities set"
 }
 
-# Remove action
-shift
-
-# Usage for todo.sh help
-if [[ "$1" = "usage" ]] || [[ "$1" = "-h" ]]; then
+# check for usage and remove action
+if [[ $1 = "usage" ]] || [[ $2 = "usage" ]]; then
 	usage
-	exit
+	exit 0
+elif [[ $1 = "listprjnopri" ]]; then
+  # shellcheck disable=SC2034
+	action=$1;shift
 fi
 
 # shellcheck disable=SC2034
 TODOTXT_VERBOSE=0
+NOPRI=0
 
-# Create array and variable to count hits.
-declare -a NOPRI
-TOTAL=0
-# Find all projects in todo file
-PROJECTS=$(${TODO_FULL_SH} listproj | sed 's/^+//g')
-for PROJECT in ${PROJECTS} ; do
-  # If the project does not have a priority set, add to the array
-  if [ "$(grep "${PROJECT}" "${TODO_FILE}" | grep -c "(\w)")" -eq 0 ] ; then
-    NOPRI[$TOTAL]=$PROJECT
-    TOTAL=$((TOTAL+1))
-  fi
-done
-
-# Did we find some projects without priorities ?
-if [ "${TOTAL}" -gt 0 ] ; then
-  for PROJECT in ${NOPRI}; do
+PROJECTS=$("${TODO_FULL_SH}" lsprj | sed 's/^+//')
+for PROJECT in ${PROJECTS}; do
+  if [ "$(grep "+${PROJECT}" "${TODO_FILE}" | grep -c "(\w)")" -eq 0 ] ; then
     echo "No priority set in ${PROJECT}"
     echo "==============================="
     _list "$TODO_FILE" "+${PROJECT}\b" "" | sed "s/\ \x1b\[[0-9;]*m@[a-zA-Z0-9._:\-]*\b//g"
     echo "====================================="
-  done
-else
-  echo "All projects have priorities set"
+  else
+    ((NOPRI+=1))
+  fi
+done
+
+if [[ ${NOPRI} -eq 0 ]]; then
+  echo "    All projects have priorities set"
+  usage
 fi
