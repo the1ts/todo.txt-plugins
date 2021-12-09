@@ -12,20 +12,34 @@
 #===============================================================================
 
 usage () {
-	echo "    $(basename "$0") [ITEMS] [ENOTESFILE]"
-	echo "      add ENOTESFILE in ITEMS"
+	echo "    $(basename "$0") [ITEM...] [ENOTESFILE]"
+	echo "      add ENOTESFILE to ITEMS"
 }
 
-# Function to take NOTEFILE and standardize on no note:
-_enote_fix () {
-  INPUT="$1"
-  if [[ ${INPUT} =~ 'enote:' ]]; then
-    ENOTE="${INPUT##enote:}"
-  else
-    ENOTE="${INPUT}"
+die () {
+	if [[ -n $* ]]; then
+		echo -e "$*"
   fi
-  echo "${ENOTE}"
+	usage
+	exit 1
 }
+
+# Usage for todo.sh help or remove action
+if [[ "${1}" = "usage" ]] || [[ "${2}" = "usage" ]]; then
+	usage
+	exit
+elif [[ "${1}" = "$(basename "$0")" ]]; then
+  shift
+fi
+
+# Test for no enotesfile or note items
+if [[ "$#" -lt 2 ]]; then
+  if [[ "$1" =~ ^[0-9]+$ ]]; then
+    die "      No enotesfile given"
+  elif ! [[ "$1" =~ ^[0-9]+$ ]]; then
+    die "      No item given"
+  fi
+fi
 
 # Check notes and archive exist
 mkdir -p "${TODO_DIR}/notes/archive" || exit 1
@@ -45,7 +59,7 @@ fi
 # Set enotes file from last argument and remove last argument
 # this leaves items which we test later
 ENOTES_FILE=${!#};
-ENOTES_FILE=$(_enote_fix "${ENOTES_FILE}")
+ENOTES_FILE="${ENOTES_FILE/#enote:/}"
 set -- "${@:1:$(($#-1))}"
 PRE="$(basename "${TODO_FILE}" | sed 's/.enc$//g')"
 ENOTES=$(find . -maxdepth 1 -name "${PRE}*enc" -printf '%P\n')
@@ -69,23 +83,19 @@ if [[ "${NOTE_ADD_EDIT}" = "OFF" ]]; then
 fi
 
 # Are items in the file?
-# shellcheck disable=SC2048
-for item in $*; do
+# shellcheck disable=SC2068
+for item in $@; do
   if [[ ${item} -gt $(wc -l "${TODO_FILE}" | cut -f 1 -d " ") ]]; then
-    echo "$(getPrefix "${TODO_FILE}"): No task ${item}"
-    exit 1
+    die "      No task ${item}"
   fi
 done
 
-# Are items  in the file?
-# shellcheck disable=SC2048
-for item in $*; do
+# Are items in the file?
+# shellcheck disable=SC2068
+for item in $@; do
   # Test we have an item number
   if ! [[ "${item}" =~ ^[0-9]+$ ]]; then
-  en
-    echo "	ITEM is not a number"
-    usage
-    exit 1
+    die "	ITEM is not a number"
   fi
   "${TODO_FULL_SH}" append "${item}" "enote:${ENOTES_FILE}"
   echo "$(getPrefix "${TODO_FILE}"): enote:${ENOTES_FILE} added to item ${item}"

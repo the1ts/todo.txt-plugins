@@ -16,16 +16,20 @@ usage() {
 	echo "      List archived notes"
 }
 
+die () {
+  if [[ -n $* ]]; then
+    echo -e "$*"
+  fi
+  usage
+	exit 1
+}
 
-# Remove action
-shift
-PRE=$(basename "${TODO_FILE}" | sed 's/.txt$//g')
-TODO_TMP_FILE="${TODO_TMP_FILE:-${TODO_DIR}/todo.tmp}"
-
-# Usage for todo.sh help
-if [[ "${1}" = "usage" ]] || [[ "${1}" = "-h" ]]; then
+# Usage for todo.sh help or remove action
+if [[ "${1}" = "usage" ]] || [[ "${2}" = "usage" ]]; then
 	usage
 	exit
+elif [[ "${1}" = "$(basename "$0")" ]]; then
+  shift
 fi
 
 mkdir -p "${TODO_DIR}/notes/archive/" || exit 1

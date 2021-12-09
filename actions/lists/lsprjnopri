@@ -17,13 +17,25 @@ usage() {
 	echo "      List projects with no priorities set"
 }
 
-# check for usage and remove action
-if [[ $1 = "usage" ]] || [[ $2 = "usage" ]]; then
+die () {
+  if [[ -n $* ]]; then
+    echo -e "$*"
+  fi
 	usage
-	exit 0
-elif [[ $1 = "listprjnopri" ]]; then
-  # shellcheck disable=SC2034
-	action=$1;shift
+	exit 1
+}
+
+# Usage for todo.sh help or remove action
+if [[ "${1}" = "usage" ]] || [[ "${2}" = "usage" ]]; then
+  usage
+  exit
+elif [[ "${1}" = "$(basename "$0")" ]]; then
+  shift
+fi
+
+# Don't run if not projects
+if [[ $("${TODO_FULL_SH}" lsprj |wc -l | cut -f 1 -d " ") -eq 0 ]]; then
+  die "      No projects in todo.txt"
 fi
 
 # shellcheck disable=SC2034

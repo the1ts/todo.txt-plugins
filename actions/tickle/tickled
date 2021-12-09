@@ -10,11 +10,18 @@ usage() {
 		echo "      list all tickled items"
 }
 
+die()
+{
+	echo "$*"
+  usage
+	exit 1
+}
+
 # check for usage and remove action
 if [[ $1 = "usage" ]] || [[ $2 = "usage" ]]; then
 	usage
 	exit 0
-elif [[ $1 = "listactions" ]]; then
+elif [[ $1 = "$(basename "$0")" ]]; then
 	shift
 fi
 
@@ -29,8 +36,7 @@ cd "${TICKLER_DIR}" || exit 1
 FILES=$(find . -type f ! -name *state.txt -name *[0123][0-9].txt)
 # If we have no files exit
 if [ -z "${FILES}" ]; then
-	echo "    No tickled files"
-	exit
+	die "      No tickled files"
 fi
 
 # For each file find its date

@@ -18,28 +18,24 @@ usage () {
 	echo "      the note: is not required, but added"
 }
 
-# Function to take ENOTEFILE and standardize
-_note_fix () {
-  INPUT="$1"
-  if [[ ${INPUT} =~ 'note:' ]]; then
-    NOTE="${INPUT##note:}"
-  else
-    NOTE="${INPUT}"
+die () {
+  if [[ -n $* ]]; then
+    echo -e "$*"
   fi
-  echo "${NOTE}"
+  usage
+	exit 1
 }
 
-# Remove action
-shift
-
-# Usage for todo.sh help
-if [[ "${1}" = "usage" ]] || [[ "${1}" = "-h" ]]; then
+# Usage for todo.sh help or remove action
+if [[ "${1}" = "usage" ]] || [[ "${2}" = "usage" ]]; then
   usage
   exit
-elif ! [[ "$#" -eq 2 ]] ; then
-  echo "    check number of options"
-	usage
-	exit 1
+elif [[ "${1}" = "$(basename "$0")" ]]; then
+shift
+fi
+
+if [[ "$#" -ne 2 ]]; then
+  die "    check number of options"
 fi
 
 OLD_FILE=$(_note_fix "$1")
@@ -64,10 +60,8 @@ if [[ "$(grep -c "${OLD_FILE}" "${DONE_FILE}")" -ge 1 ]]; then
   ((UPDATE+=1))
   ((RETURN+=1))
 fi
-if [[ "${UPDATE}" -eq 0 ]]; then
-	echo "    ${OLD_FILE} is not a current note, use listnotes to find notes."
-  usage
-	exit 1
+if [[ -z "${UPDATE}" ]]; then
+	die "    ${OLD_FILE} is not a current note, use listnotes to find notes."
 fi
 
 # Test the OLD_FILE exists and RENAME
