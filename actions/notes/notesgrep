@@ -17,21 +17,25 @@ usage () {
 	echo "      -a show archived notes"
 }
 
-# Remove action
-shift
+die () {
+  if [[ -n $* ]]; then
+    echo -e "$*"
+  fi
+  usage
+	exit 1
+}
 
-# Usage for todo.sh help
-if [[ "${1}" = "usage" ]] || [[ "${1}" = "-h" ]]; then
+# Usage for todo.sh help or remove action
+if [[ "${1}" = "usage" ]] || [[ "${2}" = "usage" ]]; then
   usage
   exit
-elif [[ -z "$1" ]]; then
-  echo "    No TERM"
-	usage
-	exit 1
+elif [[ "${1}" = "$(basename "$0")" ]]; then
+  shift
 fi
 
-cd "${TODO_DIR}/notes/" || exit 1
-# Prepend for our notes files
+if [[ -z "$1" ]]; then
+  die "    No TERM"
+fi
 PRE="$(basename "${TODO_FILE}" | sed 's/.txt$//g')"
 # Our active notes files
   # shellcheck disable=SC2086

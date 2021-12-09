@@ -16,23 +16,27 @@ usage () {
   echo "      Cat notes file, use listnotes to get list of notes"
 }
 
-# Remove action
-shift
-# Usage for todo.sh help
-if [[ "${1}" = "usage" ]] || [[ "${1}" = "-h" ]]; then
+die () {
+  if [[ -n $* ]]; then
+    echo -e "$*"
+  fi
+  usage
+	exit 1
+}
+
+# Usage for todo.sh help or remove action
+if [[ "${1}" = "usage" ]] || [[ "${2}" = "usage" ]]; then
 	usage
 	exit
-elif [[ $# -lt 1 ]]; then
-  echo "      not enough options"
-  usage
-  exit 1
+elif [[ "${1}" = "$(basename "$0")" ]]; then
+  shift
 fi
-NOTE_FILE="$1"; shift
 
-# shellcheck disable=SC2001
-NOTE_FILE="$(echo "${NOTE_FILE}" | sed 's/^note://g')"
-PRE=$(basename "${TODO_FILE}" | sed 's/.txt$//g')
-# If note file exists
+if [[ $# -lt 1 ]]; then
+  die "      No notes file"
+fi
+
+
 if [ -e "${TODO_DIR}/notes/${PRE}-${NOTE_FILE}.txt" ]; then
 	cat "${TODO_DIR}/notes/${PRE}-${NOTE_FILE}.txt"
 else

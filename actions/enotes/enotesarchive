@@ -16,13 +16,20 @@ usage () {
 	echo "      archive encrypted notes files nolonger in todo file."
 }
 
-# Remove action
-shift
+die () {
+	if [[ -n $* ]]; then
+		echo -e "$*"
+	fi
+	usage
+	exit 1
+}
 
-# Usage for todo.sh help
-if [[ "${1}" = "usage" ]] || [[ "${1}" = "-h" ]]; then
+# Usage for todo.sh help or remove action
+if [[ "${1}" = "usage" ]] || [[ "${2}" = "usage" ]]; then
 	usage
 	exit
+elif [[ "${1}" = "$(basename "$0")" ]]; then
+  shift
 fi
 
 # Check notes and archive exist
@@ -49,7 +56,8 @@ for i in ${ENOTES} ; do
 	# if enote isn't in our todo file, archive in notes/archive/
 	if [[ "${NUM_ENOTE}" -eq 0 ]] ;then
     cat "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc" >> \
-      "${TODO_DIR}/notes/archive/${PRE}-${ENOTE_FILE}.$(date +%s).enc" || exit 1
+      "${TODO_DIR}/notes/archive/${PRE}-${ENOTE_FILE}.$(date +%s).enc" || \
+        die "      unable to create archive file" && \
     rm "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc"
     echo "$(getPrefix): Archived enote:${ENOTE_FILE}"
     ((RETURN+=1)) 
@@ -63,7 +71,7 @@ done
 [[ -f "${TODO_TMP_FILE}" ]] && rm -rf "${TODO_TMP_FILE}"
 
 # if we have not archived anything, then report
-if [[ "${RETURN}" -eq 0 ]]; then
+if [[ -z "${RETURN}" ]]; then
   echo "$(getPrefix): Nothing to archive"
   exit 1
 fi

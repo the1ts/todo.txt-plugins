@@ -17,12 +17,12 @@ usage () {
 	echo "      Use listenotes to show all encrypted notes files."
 }
 
-# Git add, will error on not in git WD or git not installed 
-# so send to dev null
-add () {
-	if [ -e "${TODOTXT_ACTIONS_DIR}/commit" ]; then
-		git add "$1" > /dev/null 2>&1
+die () {
+	if [[ -n $* ]]; then
+		echo -e "$*"
 	fi
+	usage
+	exit 1
 }
 
 # Git add, will error on not in gitt WD or git not installed
@@ -47,11 +47,12 @@ find_editor () {
   echo "${EDITOR}"
 }
 
-# Remove action
-shift
-if [[ "${1}" = "usage" ]] || [[ "${1}" = "-h" ]]; then
+# Usage for todo.sh help or remove action
+if [[ "${1}" = "usage" ]] || [[ "${2}" = "usage" ]]; then
 	usage
 	exit
+elif [[ "${1}" = "$(basename "$0")" ]]; then
+  shift
 fi
 # shellcheck disable=SC2001
 ENOTE_FILE="$(echo "$1" | sed 's/^enote://g')"; shift
@@ -60,18 +61,11 @@ PRE="$(basename "${TODO_FILE}" | sed 's/.txt$//g')"
 TODO_TMP_FILE="${TODO_TMP_FILE:-${TODO_DIR}/todo.tmp}"
 
 if [[ -z "${ENOTE_FILE}" ]]; then
-  echo "      No encryted notes file"
-  usage
-  exit 1
+  die "      No encryted notes file"
 elif  [[ $(grep -c "${ENOTE_FILE}" "${TODO_FILE}") -eq 0 ]]; then
-  echo "      Encrypted notes file $1 not in todo.txt file,"
-  echo "      use listenotes to find encrypted notes files"
-  usage
-  exit 1
+	die "      Encrypted notes file $1 not in todo.txt file,\n      use listenotes to find encrypted notes files"
 elif [[ -z "${GPG_USER}" ]]; then
-  echo "      Please set a variable GPT_USER in your todo.cfg"
-  usage
-  exit 1
+  die "      Please set a variable GPG_USER in your todo.cfg"
 fi
 
 EDITOR=$(find_editor)
@@ -82,15 +76,15 @@ if [ -n "${TICKLER_DIR}" ]; then
 	find "${TICKLER_DIR}" -mindepth 2 -type f -size 1 -exec cat {} \; >> "${TODO_TMP_FILE}"
 fi
 
-# If file exists edit it else check listenotes for pointer then edit 
+# If file exists edit it, else check listenotes for pointer then edit 
 if [ -e "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc" ]; then
 	# Decrypt, move old aside, edit, encrypt and tidy up
-	gpg -dq -o "${TODO_TMP_FILE}.encrypt" "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc"
-	mv "$TODO_DIR/notes/${PRE}-${ENOTE_FILE}.enc" "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc.bak"
+	gpg -dq -o "${TODO_TMP_FILE}.encrypt" "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc" > /dev/null 2>&1 \
+    || die "      Unable to decrypt ${PRE}-${ENOTE_FILE}.enc"
+	mv "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc" "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc.bak"
 	"${EDITOR}" "${TODO_TMP_FILE}.encrypt"
-	gpg -eq --batch -r "${GPG_USER}" -o "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc" "${TODO_TMP_FILE}.encrypt"
-  add "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc"
-  commit "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc"
+	gpg -eq --batch -r "${GPG_USER}" -o "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc" "${TODO_TMP_FILE}.encrypt" \
+		|| die "			Unable to encrypt ${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc"
 	# shellcheck disable=SC2181
 	if [ "$?" -eq 0 ] ; then
 		rm -rf "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc.bak"
@@ -105,9 +99,8 @@ else
 	if [ "${NUM_ENOTE}" -ge 1 ] ; then
 		# edit file, encrypt and tidy up
 		"${EDITOR}" "${TODO_TMP_FILE}.encrypt"
-		gpg -eq --batch -r "${GPG_USER}" -o "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc" "${TODO_TMP_FILE}.encrypt"
-    add "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc"
-    commit "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc"
+	 	gpg -eq --batch -r "${GPG_USER}" -o "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc" "${TODO_TMP_FILE}.encrypt" \
+    || die "			Unable to decrypt ${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc"
 		rm -rf "${TODO_TMP_FILE}.encrypt"
 	else
 		echo "    No such encrypted Notes file, use lsenotes to find notes files"

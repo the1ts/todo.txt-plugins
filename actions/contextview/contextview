@@ -19,13 +19,20 @@ usage (){
   echo "      to search within those contexts."
 }
 
-# Remove action
-shift
+die () {
+  if [[ -n $* ]]; then
+    echo -e "$*"
+  fi
+  usage
+	exit 1
+}
 
-# Usage for todo.sh help
-if [[ "${1}" = "usage" ]] || [[ "${1}" = "-h" ]]; then
+# Usage for todo.sh help or remove action
+if [[ "${1}" = "usage" ]] || [[ "${2}" = "usage" ]]; then
 	usage
 	exit
+elif [[ "${1}" = "$(basename "$0")" ]]; then
+  shift
 fi
 
 # Eat the remaining arguments putting them into context or terms variables
@@ -40,15 +47,10 @@ while [[ $# -gt 0 ]]; do
   fi
 done
 
-# If we have no valid terms or contexts error out
+# If we have non-valid context error out
 for context in ${CONTEXTS}; do
-  OLD_TODOTXT_VERBOSE=${TODOTXT_VERBOSE:-1}
-  TODOTXT_VERBOSE=0 VALID_CONTEXT=$(_list "${TODO_FILE}" "@${context}" "${TERMS}" | wc -l)
-  TODOTXT_VERBOSE=${OLD_TODOTXT_VERBOSE}
-  if [[ "${VALID_CONTEXT}" -eq 0 ]]; then
-    echo "      \"${TERMS}\" not found in context @${context} in todo.txt"
-    usage
-    exit 1
+  if ! [[ $(grep -c "${context}" "${TODO_FILE}") -gt 0  ]]; then
+    die "      context \"${context}\" not found in todo.txt"
   fi
 done
 
@@ -62,7 +64,16 @@ if [[ -z "${CONTEXTS}" ]] && [[ -n "${TERMS}" ]]; then
     usage
     exit 1
   fi
+
+# If we have no valid terms in valid contexts error out
+for context in ${CONTEXTS}; do
+  OLD_TODOTXT_VERBOSE=${TODOTXT_VERBOSE:-1}
+  TODOTXT_VERBOSE=0 VALID_CONTEXT=$(_list "${TODO_FILE}" "@${context}" "${TERMS}" | wc -l)
+  TODOTXT_VERBOSE=${OLD_TODOTXT_VERBOSE}
+  if [[ "${VALID_CONTEXT}" -eq 0 ]]; then
+    die "      \"${TERMS}\" not found in context \"@${context}\" in todo.txt"
 fi
+done
 
 # If we have no valid contexts
 if [[ -z "${CONTEXTS}" ]] && [[ -z "${TERMS}" ]]; then

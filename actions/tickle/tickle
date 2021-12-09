@@ -15,6 +15,7 @@ usage() {
 die()
 {
 	echo "$*"
+  usage
 	exit 1
 }
 
@@ -22,19 +23,20 @@ die()
 if [[ $1 = "usage" ]] || [[ $2 = "usage" ]]; then
 	usage
 	exit 0
-elif [[ $1 = "tickle" ]]; then
+elif [[ $1 = "$(basename "$0")" ]]; then
 	shift
 fi
 
-item=$1;
-[ -z "${item}" ] && usage
-[[ "${item}" = +([0-9]) ]] || usage
-
-datetype=$2; 
-
-# Make directories
-mkdir -p "${TICKLER_DIR}/days/{01..31}/"
-mkdir -p "${TICKLER_DIR}/months/{01..12}/"
+item=$1; shift
+datetype=$1; shift
+# set -x
+if [[ -z "${item}" ]]; then
+  die "      No items set"
+elif ! [[ "${item}" = +([0-9]) ]]; then
+  die "      Item not a number"
+elif [[ "$(sed -ne "${item} p" "${TODO_FILE}" | wc -l)" -lt 1 ]]; then
+	die "    Item number ${item} does not exist in todo file."
+fi
 
 # If we don't have date details ask for them.
 if [ -z "${datetype}" ]; then
@@ -52,7 +54,7 @@ read -r ANSWER
 else
 	# If we are already given date details, check before using
 	if [ "$(echo "${datetype}" | grep -c "^[dDmM][0-9]\{1,2\}$")" -ne 1 ]; then
-		usage
+		die "   Datetype given but not valid"
 	fi
 
 	# Are we going to use a day or month tickle file?
@@ -61,18 +63,14 @@ else
 		# shellcheck disable=SC2001
 		NUMBER="$(echo "${datetype}" | sed 's/d//')"
 		if [[ "${NUMBER}" -lt 1 ]] || [[ "${NUMBER}" -gt 31 ]]; then
-			echo "    Day number not a valid day of month"
-			usage
-			exit 1
+			die "    Day number not a valid day of month"
 		fi
 	elif expr "${datetype}" : ' *[mM].*' > /dev/null; then
 		FOLDER="months"
 		# shellcheck disable=SC2001
 		NUMBER="$(echo "${datetype}"| sed 's/m//')"
 		if [[ "${NUMBER}" -lt 1 ]] || [[ "${NUMBER}" -gt 12 ]]; then
-			echo "    Month number not a valid month of year"
-			usage
-			exit 1
+			die "    Month number not a valid month of year"
 		fi
 	fi
 fi
@@ -87,9 +85,7 @@ fi
 if [ "$(sed -ne "${item} p" "${TODO_FILE}" | grep -c "^.")" -eq 1 ]; then
 DELETEME=$(sed "${item}!d" "${TODO_FILE}")
 else
-	echo "    Item number ${item} does not exist in todo file."
-	usage
-	exit 1
+	die "    Item number ${item} does not exist in todo file."
 fi
 
 # Check we have the required directories, if not create them
@@ -99,5 +95,5 @@ fi
 
 # Write the tickle file, then remove from the todo.txt file
 echo "${DELETEME}" >> "${TICKLER_DIR}/${TYPE}/${FOLDER}/${NUMBER}/${NUMBER}.txt"
-sed -i.bak -e "${1}""s/^.*//" -e '/./!d' "${TODO_FILE}"
-echo "$(getPrefix): Moved todo item ${1} to ${TYPE}/${FOLDER}/${NUMBER}/${NUMBER}.txt"
+sed -i.bak -e "${item}""s/^.*//" -e '/./!d' "${TODO_FILE}"
+echo "$(getPrefix): Moved todo item ${item} to ${TYPE}/${FOLDER}/${NUMBER}/${NUMBER}.txt"

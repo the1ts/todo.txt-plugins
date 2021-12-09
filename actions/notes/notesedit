@@ -17,12 +17,12 @@ usage () {
   echo "      use listnotes to get list of notes files"
 }
 
-# Git add, will error on not in git WD or git not installed 
-# so send to dev null
-add () {
-	if [ -e "${TODOTXT_ACTIONS_DIR}/commit" ]; then
-		git add "$1" > /dev/null 2>&1
+die () {
+  if [[ -n $* ]]; then
+    echo -e "$*"
 	fi
+  usage
+	exit 1
 }
 
 # Git add, will error on not in gitt WD or git not installed
@@ -47,11 +47,13 @@ find_editor () {
   echo "${EDITOR}"
 }
 
-# Remove action
+# Usage for todo.sh help or remove action
+if [[ "${1}" = "usage" ]] || [[ "${2}" = "usage" ]]; then
+  usage
+  exit
+elif [[ "${1}" = "$(basename "$0")" ]]; then
 shift
-# construct file name
-# shellcheck disable=2001
-NOTE_FILE="$(echo "$1" | sed 's/^note://g')"
+fi
 PRE="$(basename "${TODO_FILE}" | sed 's/.txt$//g')"
 TODO_TMP_FILE="${TODO_TMP_FILE:-${TODO_DIR}/todo.tmp}"
 

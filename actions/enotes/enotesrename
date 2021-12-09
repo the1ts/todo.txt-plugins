@@ -19,35 +19,32 @@ usage () {
 	echo "      the enote: is not required, but added"
 }
 
-# Function to take ENOTEFILE and standardize
-_note_fix () {
-  INPUT="$1"
-  if [[ ${INPUT} =~ 'enote:' ]]; then
-    NOTE="${INPUT##enote:}"
-  else
-    NOTE="${INPUT}"
+die () {
+  if [[ -n $* ]]; then
+    echo -e "$*"
   fi
-  echo "${NOTE}"
+  usage
+	exit 1
 }
 
-# Remove action
-shift
-# Usage for todo.sh help
-if [[ "${1}" = "usage" ]] || [[ "${1}" = "-h" ]]; then
+# Usage for todo.sh help or remove action
+if [[ "${1}" = "usage" ]] || [[ "${2}" = "usage" ]]; then
   usage
   exit
-elif [[ "$#" -ne 2 ]]; then
-  echo "    check number of options"
-	usage
-	exit 1
+elif [[ "${1}" = "$(basename "$0")" ]]; then
+  shift
 fi
 OLD_FILE=$(_note_fix "$1")
 NEW_FILE=$(_note_fix "$2")
 PRE=$(basename "${TODO_FILE}" | sed 's/.txt$//g')
 NOTES_DIR="${TODO_DIR}/notes"
 
+if [[ "$#" -ne 2 ]]; then
+  die "    check number of options"
+fi
 
-cd "${NOTES_DIR}" || exit
+OLD_FILE=${1##enote:}
+NEW_FILE=${2##enote:}
 
 RETURN=0
 if [[ "$(grep -c "${OLD_FILE}" "${TODO_FILE}")" -ge 1 ]]; then
@@ -62,10 +59,8 @@ if [[ "$(grep -c "${OLD_FILE}" "${DONE_FILE}")" -ge 1 ]]; then
   ((UPDATE+=1))
   ((RETURN+=1))
 fi
-if [[ "${UPDATE}" -eq 0 ]]; then
-	echo "    ${OLD_FILE} is not a current enote, use listenotes to find enotes."
-  usage
-	exit 1
+if [[ -z "${UPDATE}" ]]; then
+	die "    ${OLD_FILE} is not a current enote, use listenotes to find enotes."
 fi
 
 # Test the OLD_FILE exists and RENAME
@@ -80,13 +75,14 @@ if [[ -n ${TICKLER_DIR} ]]; then
 	for FILE in ${TICKLED}; do
 		# shellcheck disable=SC1117
 		sed -i "s/enote:${OLD_FILE}\b/enote:${NEW_FILE}" "${FILE}"
+    echo "$(getPrefix "${TODO_FILE}"): Changed enote:${OLD_FILE} to enote:${NEW_FILE} in tickled file"
 	done
   if [[ -f "${NOTES_DIR}/${OLD_FILE}.enc" ]]; then
     mv "${NOTES_DIR}/${OLD_FILE}.enc" "${NOTES_DIR}/${NEW_FILE}.enc"
   fi
 fi
 
-if [[ "${RETURN}" -gt 0 ]]; then
+if [[ -n "${RETURN}" ]]; then
   exit 0
 else
   exit 1

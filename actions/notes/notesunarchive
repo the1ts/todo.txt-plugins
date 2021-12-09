@@ -17,16 +17,21 @@ usage() {
   echo "      version of the notefile"
 }
 
-# Function to take NOTEFILE and standardize
-_note_fix () {
-  INPUT="$1"
-  if [[ ${INPUT} =~ 'note:' ]]; then
-    NOTE="${INPUT##note:}"
-  else
-    NOTE="${INPUT}"
+die () {
+  if [[ -n $* ]]; then
+    echo -e "$*"
   fi
-  echo "${NOTE}"
+  usage
+	exit 1
 }
+
+# Usage for todo.sh help or remove action
+if [[ "${1}" = "usage" ]] || [[ "${2}" = "usage" ]]; then
+  usage
+  exit
+elif [[ "${1}" = "$(basename "$0")" ]]; then
+  shift
+fi
 
 # Check notes and archive exist
 mkdir -p "${TODO_DIR}/notes/archive" || exit 1

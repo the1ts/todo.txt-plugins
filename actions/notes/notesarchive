@@ -16,13 +16,20 @@ usage() {
   echo "      archive notes files nolonger in todo file."
 }
 
-# Remove action
-shift
+die () {
+	if [[ -n $* ]]; then
+		echo -e "$*"
+	fi
+	usage
+	exit 1
+}
 
-# Usage for todo.sh help
-if [[ "${1}" = "usage" ]] || [[ "${1}" = "-h" ]]; then
+# Usage for todo.sh help or remove action
+if [[ "${1}" = "usage" ]] || [[ "${2}" = "usage" ]]; then
 	usage
 	exit
+elif [[ "${1}" = "$(basename "$0")" ]]; then
+  shift
 fi
 
 # Check notes and archive exist

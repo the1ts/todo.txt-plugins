@@ -13,17 +13,16 @@
 
 ## Functions
 usage() {
-  echo "  $(basename "$0")"
-  echo "    list all possible actions"
+  echo "    $(basename "$0")"
+  echo "      list all possible actions"
 }
 
-# remove action
-action=$1;shift
-
-# Usage for todo.sh help
-if [[ "${action}" = "usage" ]]; then
+# check for usage and remove action
+if [[ $1 = "usage" ]] || [[ $2 = "usage" ]]; then
 	usage
 	exit
+elif [[ $1 = "$(basename "$0")" ]]; then
+	shift
 fi
 
 ## list all possible actions

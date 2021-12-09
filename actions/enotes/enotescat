@@ -16,28 +16,37 @@ usage () {
   echo "      Cat encrypted notes file, use listenotes to get list of notes"
 }
 
-# Remove action
-shift
-# Tests and show usage
-if [[ "${1}" = "usage" ]] || [[ "${1}" = "-h" ]]; then
+die () {
+  if [[ -n $* ]]; then
+    echo -e "$*"
+  fi
+  usage
+	exit 1
+}
+
+# Usage for todo.sh help or remove action
+if [[ "${1}" = "usage" ]] || [[ "${2}" = "usage" ]]; then
 	usage
 	exit
-elif [[ $# -lt 1 ]]; then
-  echo "      not enough options"
-  usage
-  exit 1
+elif [[ "${1}" = "$(basename "$0")" ]]; then
+  shift
 fi
+
+if [[ $# -lt 1 ]]; then
+  die "      No encrypted notes file"
+elif [[ -z "${GPG_USER}" ]]; then
+  die "      Please set a variable GPG_USER in your todo.cfg"
+fi
+
 # shellcheck disable=SC2001
 ENOTE_FILE="$(echo "${1}" | sed 's/^enote://g')"
 PRE="$(basename "${TODO_FILE}" | sed 's/.txt$//g')"
 
 if  [[ $(grep -c "${ENOTE_FILE}" "${TODO_FILE}") -lt 1 ]]; then
-  echo "      Encrypted notes file $1 not in todo.txt file,"
-  echo "      use listenotes to find encrypted notes files"
-  usage
-  exit 1
+  die "      Encrypted notes file $1 not in todo.txt file,\n      use listenotes to find encrypted notes files"
 fi
 
 if [ -e "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc" ]; then
-    gpg -dq "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc"
+  gpg -dq "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc"  2> /dev/null \
+    || die "    Unable to decrypt ${PRE}-${ENOTE_FILE}.enc"
 fi

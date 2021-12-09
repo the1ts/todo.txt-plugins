@@ -17,39 +17,35 @@ usage() {
   echo "      version of the enotefile"
 }
 
-# Function to take ENOTEFILE and standardize
-_enote_fix () {
-  INPUT="$1"
-  if [[ ${INPUT} =~ 'enote:' ]]; then
-    ENOTE="${INPUT##enote:}"
-  else
-    ENOTE="${INPUT}"
+die () {
+  if [[ -n $* ]]; then
+    echo -e "$*"
   fi
-  echo "${ENOTE}"
+  usage
+	exit 1
 }
+
+# Usage for todo.sh help or remove action
+if [[ "${1}" = "usage" ]] || [[ "${2}" = "usage" ]]; then
+  usage
+  exit
+elif [[ "${1}" = "$(basename "$0")" ]]; then
+  shift
+fi
 
 # Check notes and archive exist
 mkdir -p "${TODO_DIR}/notes/archive" || exit 1
 
-# Remove Action
-shift
-if [[ "${1}" = "usage" ]] || [[ "${1}" = "-h" ]]; then
-	usage
-	exit
-fi
-FILE=$(_enote_fix "$1"); shift
-PRE=$(basename "${TODO_FILE}" | sed 's/.txt$//g')
+FILE=${1##enote:}; shift
+PRE="$(basename "${TODO_FILE}")"; PRE=${PRE/%\.txt/}
 cd "${TODO_DIR}/notes/archive" || exit 1
-# shellcheck disable=SC2086
-DATE_FILE=$(find ${PRE}-${FILE}.*.enc -type f -printf "%T@ %p\n"  2> /dev/null | sort -n | cut -f 2 -d " "  | tail -n 1)
+DATE_FILE=$(find -- * -name "${PRE}-${FILE}.*.enc" -type f -printf "%T@ %p\n"  2> /dev/null | sort -n | cut -f 2 -d " "  | tail -n 1)
 ARC_FILE="${TODO_DIR}/notes/archive/${DATE_FILE}"
 ENOTES_FILE="${TODO_DIR}/notes/${PRE}-${FILE}.enc"
 TODO_TMP_FILE="${TODO_TMP_FILE:-${TODO_DIR}/todo.tmp}"
 
 if [[ -z "${DATE_FILE}" ]]; then
-  echo "    No archived enotes file named ${FILE}. User listarchivedenotes to find them"
-  usage
-  exit 1
+  die "    No archived enotes file named ${FILE}. User listarchivedenotes to find them"
 fi
 
 # Does the notes file exist? i.e  mentioned in todo/tickled file?
@@ -57,18 +53,14 @@ cat "${TODO_FILE}" > "${TODO_TMP_FILE}"
 if [[ -n ${TICKLER_DIR} ]] && [[ -d ${TICKLER_DIR} ]]; then
   find "${TICKLER_DIR}" -mindepth 2 -type f -size 1 -exec cat {} \; >> "${TODO_TMP_FILE}"
 fi
-if [[ "$(grep -o '[^ ]*enote:[^ ]\+' "${TODO_TMP_FILE}" | grep -c "^enote:${FILE}$")" -eq 0 ]] ;then
-  echo "    Encrypted note file ${FILE} not mentioned in todo"
-  echo "    use listenotes to find them"
-  usage
-  exit 1
+if [[ "$(grep -c "\benote:${FILE}\b" "${TODO_TMP_FILE}")" -eq 0 ]] ;then
+  die "    Encrypted note file ${FILE} not mentioned in todo\n    use listenotes to find them"
 fi
 [[ -f "${TODO_TMP_FILE}" ]] && rm -rf "${TODO_TMP_FILE}"
 
 cp "${ARC_FILE}" "${ENOTES_FILE}" 
 if [[ "$?" -eq 1 ]]; then
-  echo "Unable to move ${PRE}-${FILE}.enc to ${NO_DATE_FILE}.enc"
-  exit 1
+  die "      Unable to move ${PRE}-${FILE}.enc to ${NO_DATE_FILE}.enc"
 else
   echo "$(getPrefix): Notes file ${PRE}-${FILE}.enc restored from newest archive"
 fi
