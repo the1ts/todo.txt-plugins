@@ -37,31 +37,35 @@ fi
 echo "${EDITOR}"
 }
 
-# Remove action
-action=$1;shift
-# If first arg is usage then give usage
-if [[ "${action}" = "usage" ]]; then
+die () {
+	if [[ -n $* ]]; then
+		echo -e "$*"
+	fi
+	usage
+	exit 1
+}
+
+# Usage for todo.sh help or remove action
+if [[ "${1}" = "usage" ]] || [[ "${2}" = "usage" ]]; then
 	usage
 	exit
+elif [[ "${1}" = "$(basename "$0")" ]]; then
+  shift
 fi
+
 FILE=$1; shift
 LINE=$1; shift
 
-
 # Which file used. No file then todo.txt is default
-if [ -z "${FILE}" ] ; then
+if [[ -z "${FILE}" ]] || [[ "${FILE}" =~ ^todo$ ]] ; then
   EDIT_FILE="$TODO_FILE"
-elif [ "$(echo "${FILE}" | grep -ic ^todo$)" -eq 1 ] ; then
-  EDIT_FILE="$TODO_FILE"
-elif [ "$(echo "${FILE}" | grep -ic ^done$)" -eq 1 ] ; then
+elif [[ "${FILE}" =~ ^done$ ]] ; then
   EDIT_FILE="$DONE_FILE"
 elif [ "$(echo "${FILE}" | grep -ic ^cfg$)" -eq 1 ] ; then
   EDIT_FILE="$TODOTXT_CFG_FILE"
 # Not blank, or a valid file so show usage
 else
-	echo "    Not a valid file"
-	usage
-	exit
+	die "      Not a valid file"
 fi
 
 # Test line number and set in format

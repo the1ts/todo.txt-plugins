@@ -38,11 +38,10 @@ fi
 # Eat the remaining arguments putting them into context or terms variables
 while [[ $# -gt 0 ]]; do
 	if [[ $(echo "$1" | grep -c "^@\w") -eq 1 ]]; then
-      # shellcheck disable=SC2001
-      CONTEXTS="$(echo "$1" | sed 's/^@//g')"; shift
-      CONTEXT_LIMIT=1
+    # shellcheck disable=SC2001
+    CONTEXTS="${1/#@/}"; shift
+    CONTEXT_LIMIT=1
   else
-    ((FOUND+=1))
     TERMS="$(echo "$1" | cut -d ' ' -f 1)"; shift
   fi
 done
@@ -54,16 +53,13 @@ for context in ${CONTEXTS}; do
   fi
 done
 
-# if we have no contexts and terms not in todo.txt error
-if [[ -z "${CONTEXTS}" ]] && [[ -n "${TERMS}" ]]; then
-  OLD_TODOTXT_VERBOSE=${TODOTXT_VERBOSE:-1}
-  TODOTXT_VERBOSE=0 VALID_TERM=$(_list "${TODO_FILE}" "" "${TERMS}" | wc -l)
-  TODOTXT_VERBOSE=${OLD_TODOTXT_VERBOSE}
-  if [[ "${VALID_TERM}" -eq 0 ]]; then
-    echo "      \"${TERMS}\" not found in todo.txt"
-    usage
-    exit 1
-  fi
+# if we have terms not in todo.txt error
+OLD_TODOTXT_VERBOSE=${TODOTXT_VERBOSE:-1}
+TODOTXT_VERBOSE=0 VALID_TERM=$(_list "${TODO_FILE}" "" "${TERMS}" | wc -l)
+TODOTXT_VERBOSE=${OLD_TODOTXT_VERBOSE}
+if [[ "${VALID_TERM}" -eq 0 ]]; then
+  die "      \"${TERMS}\" not found in todo.txt"
+fi
 
 # If we have no valid terms in valid contexts error out
 for context in ${CONTEXTS}; do
@@ -72,22 +68,20 @@ for context in ${CONTEXTS}; do
   TODOTXT_VERBOSE=${OLD_TODOTXT_VERBOSE}
   if [[ "${VALID_CONTEXT}" -eq 0 ]]; then
     die "      \"${TERMS}\" not found in context \"@${context}\" in todo.txt"
-fi
+  fi
 done
 
-# If we have no valid contexts
+# If we have no contexts or terms, set to all contexts
 if [[ -z "${CONTEXTS}" ]] && [[ -z "${TERMS}" ]]; then
-  CONTEXTS=$(grep -o '[^ ]*@[^ ]\+' "$TODO_FILE" | grep '^@' | sort -u \
-  | sed 's/^@//g' )
-  ((FOUND+=1))
+  CONTEXTS=$("${TODO_FULL_SH}" listcon |sed 's/@//g')
 fi
 
 # Show contexts in alphabetical order and todo items in priority order
 echo "===== Contexts ====="
 echo ""
 
-for context in $CONTEXTS; do
 # For each context show header and the list of todo items
+for context in ${CONTEXTS}; do
 	# Use core _list function, does numbering and colouring for us
 	CONTEXT_LIST=$(_list "${TODO_FILE}" "@${context}\b" "${TERMS}" \
   | sed "s/\ \x1b\[[0-9;]*m@[a-zA-Z0-9._:\-]*\b//g")

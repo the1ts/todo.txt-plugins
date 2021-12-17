@@ -17,55 +17,45 @@ usage() {
 	echo "      If no ITEM# given the rename all instances of old project"
 }
 
-# Function to take PROJECT and standardize
-_project_fix () {
-  INPUT="$1"
-  if [[ ${INPUT} =~ ^\+ ]]; then
-    NOTE="${INPUT##+}"
-  else
-    NOTE="${INPUT}"
+die () {
+  if [[ -n $* ]]; then
+    echo -e "$*"
   fi
-  echo "${NOTE}"
+  usage
+	exit 1
 }
 
-# Remove action
-shift
-
-# tests
-if [[ "${1}" = "usage" ]] || [[ "${1}" = "-h" ]]; then
+# Usage for todo.sh help or remove action
+if [[ "${1}" = "usage" ]] || [[ "${2}" = "usage" ]]; then
   usage
-  exit
-elif [[ $# -lt 2 ]]; then
-  echo "   Not enough options"
-  usage
-  exit 1
+	exit
+elif [[ "${1}" = "$(basename "$0")" ]]; then
+  shift
 fi
 
-OLDPROJECT=$(_project_fix "$1");shift
-NEWPROJECT=$(_project_fix "$1");shift
+if [[ $# -lt 2 ]]; then
+  die "      Not enough options"
+fi
+
+OLDPROJECT=${1/#+/};shift
+NEWPROJECT=${1/#+/};shift
 ITEM="$*"
 
 # Check our ITEM# are numeric
 if [[ -n "${ITEM}" ]] && ! [[ ${ITEM} =~ ^[0-9\ ]+$ ]]; then
-  echo "    ITEM# should be a LINE number"
-  usage
-  exit 1
+  die "      ITEM# should be a LINE number"
 fi
 
 # do we have that project in the todofile?
 if [[ "$(grep -c "${OLDPROJECT}\>" "${TODO_FILE}")" -eq 0 ]]; then
-  echo "    Cannot find project ${OLDPROJECT}"
-  usage
-  exit 1
+  die "      Cannot find project ${OLDPROJECT}"
 fi
 
 # Check OLDPROJECT is found in ITEM#
 for item in ${ITEM}; do
   LINE=$(sed -n "${item}p" "${TODO_FILE}")
   if [[ -n "${item}" ]] && ! [[ "${LINE}" =~ \+${OLDPROJECT} ]]; then
-    echo "    Cannot find project ${OLDPROJECT} in line number ${ITEM}"
-    usage
-    exit 1
+    die "      Cannot find project ${OLDPROJECT} in line number ${ITEM}"
   fi
 done
 

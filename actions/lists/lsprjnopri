@@ -34,27 +34,23 @@ elif [[ "${1}" = "$(basename "$0")" ]]; then
 fi
 
 # Don't run if not projects
-if [[ $("${TODO_FULL_SH}" lsprj |wc -l | cut -f 1 -d " ") -eq 0 ]]; then
+if [[ $("${TODO_FULL_SH}" lsprj | wc -l) -eq 0 ]]; then
   die "      No projects in todo.txt"
 fi
 
-# shellcheck disable=SC2034
-TODOTXT_VERBOSE=0
-NOPRI=0
-
-PROJECTS=$("${TODO_FULL_SH}" lsprj | sed 's/^+//')
+PROJECTS=$("${TODO_FULL_SH}" lsprj | grep -v '^\(\w\)')
 for PROJECT in ${PROJECTS}; do
+  PROJECT=${PROJECT/#+/}
   if [ "$(grep "+${PROJECT}" "${TODO_FILE}" | grep -c "(\w)")" -eq 0 ] ; then
     echo "No priority set in ${PROJECT}"
     echo "==============================="
-    _list "$TODO_FILE" "+${PROJECT}\b" "" | sed "s/\ \x1b\[[0-9;]*m@[a-zA-Z0-9._:\-]*\b//g"
+    TODOTXT_VERBOSE=0 _list "$TODO_FILE" "+${PROJECT}\b" "" | \
+      sed "s/\ \x1b\[[0-9;]*m@[a-zA-Z0-9._:\-]*\b//g"
     echo "====================================="
-  else
     ((NOPRI+=1))
   fi
 done
 
-if [[ ${NOPRI} -eq 0 ]]; then
-  echo "    All projects have priorities set"
-  usage
+if [[ -z ${NOPRI} ]]; then
+  echo "      All projects have priorities set"
 fi
