@@ -26,8 +26,8 @@ die () {
 
 # Usage for todo.sh help or remove action
 if [[ "${1}" = "usage" ]] || [[ "${2}" = "usage" ]]; then
-	usage
-	exit
+  usage
+  exit
 elif [[ "${1}" = "$(basename "$0")" ]]; then
   shift
 fi
@@ -39,11 +39,11 @@ elif [[ -z "${GPG_USER}" ]]; then
 fi
 
 # shellcheck disable=SC2001
-ENOTE_FILE="$(echo "${1}" | sed 's/^enote://g')"
-PRE="$(basename "${TODO_FILE}" | sed 's/.txt$//g')"
+ENOTE_FILE="${1/#enote:/}"; shift
+PRE="$(basename "${TODO_FILE}")"; PRE=${PRE/%\.txt/}
 
 if  [[ $(grep -c "${ENOTE_FILE}" "${TODO_FILE}") -lt 1 ]]; then
-  die "      Encrypted notes file $1 not in todo.txt file,\n      use listenotes to find encrypted notes files"
+  die "      Encrypted notes file ${ENOTE_FILE} not in todo.txt file,\n      use listenotes to find encrypted notes files"
 fi
 
 if [ -e "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc" ]; then

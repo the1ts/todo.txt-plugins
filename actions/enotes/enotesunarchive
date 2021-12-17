@@ -35,17 +35,17 @@ fi
 
 # Check notes and archive exist
 mkdir -p "${TODO_DIR}/notes/archive" || exit 1
+cd "${TODO_DIR}/notes/archive" || exit 1
 
 FILE=${1##enote:}; shift
 PRE="$(basename "${TODO_FILE}")"; PRE=${PRE/%\.txt/}
-cd "${TODO_DIR}/notes/archive" || exit 1
 DATE_FILE=$(find -- * -name "${PRE}-${FILE}.*.enc" -type f -printf "%T@ %p\n"  2> /dev/null | sort -n | cut -f 2 -d " "  | tail -n 1)
 ARC_FILE="${TODO_DIR}/notes/archive/${DATE_FILE}"
 ENOTES_FILE="${TODO_DIR}/notes/${PRE}-${FILE}.enc"
 TODO_TMP_FILE="${TODO_TMP_FILE:-${TODO_DIR}/todo.tmp}"
 
 if [[ -z "${DATE_FILE}" ]]; then
-  die "    No archived enotes file named ${FILE}. User listarchivedenotes to find them"
+  die "      No archived enotes file named ${FILE}. Use listarchivedenotes to find them"
 fi
 
 # Does the notes file exist? i.e  mentioned in todo/tickled file?
@@ -54,7 +54,7 @@ if [[ -n ${TICKLER_DIR} ]] && [[ -d ${TICKLER_DIR} ]]; then
   find "${TICKLER_DIR}" -mindepth 2 -type f -size 1 -exec cat {} \; >> "${TODO_TMP_FILE}"
 fi
 if [[ "$(grep -c "\benote:${FILE}\b" "${TODO_TMP_FILE}")" -eq 0 ]] ;then
-  die "    Encrypted note file ${FILE} not mentioned in todo\n    use listenotes to find them"
+  die "      Encrypted note file ${FILE} not mentioned in todo. Use listenotes to find them"
 fi
 [[ -f "${TODO_TMP_FILE}" ]] && rm -rf "${TODO_TMP_FILE}"
 
@@ -62,5 +62,5 @@ cp "${ARC_FILE}" "${ENOTES_FILE}"
 if [[ "$?" -eq 1 ]]; then
   die "      Unable to move ${PRE}-${FILE}.enc to ${NO_DATE_FILE}.enc"
 else
-  echo "$(getPrefix): Notes file ${PRE}-${FILE}.enc restored from newest archive"
+  echo "$(getPrefix): Encrypted notes file ${PRE}-${FILE}.enc restored from newest archive"
 fi

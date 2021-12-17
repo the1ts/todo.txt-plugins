@@ -2,5 +2,5 @@
 
 # Remove action
 shift
-
+  
 "$TODO_FULL_SH" enotesadd "$@"

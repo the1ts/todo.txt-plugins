@@ -35,11 +35,11 @@ fi
 # Check notes and archive exist
 mkdir -p "${TODO_DIR}/notes/archive" || exit 1
 cd "${TODO_DIR}/notes" || exit 1
-TODO_TMP_FILE="${TODO_TMP_FILE:-${TODO_DIR}/todo.tmp}"
 
 # construct file name
-PRE="$(basename "${TODO_FILE}" | sed 's/.txt$//g')"
-ENOTES=$(find . -maxdepth 1 -name "${PRE}*enc" -printf '%P\n')
+PRE="$(basename "${TODO_FILE}")"; PRE=${PRE/%\.txt/}
+TODO_TMP_FILE="${TODO_TMP_FILE:-${TODO_DIR}/todo.tmp}"
+ENOTES=$(find . -maxdepth 1 -name "${PRE}-*enc" -printf '%P\n')
 
 # Create file from todo and 'tickled' files
 cat "${TODO_FILE}" > "${TODO_TMP_FILE}"
@@ -47,24 +47,19 @@ if [[ -n "${TICKLER_DIR}" ]]; then
 	find "${TICKLER_DIR}" -mindepth 2 -type f -size 1 -exec cat {} \; >> "${TODO_TMP_FILE}"
 fi
 
-RETURN=0
 # for each file, remove $PRE and see if its in todo or 'tickled' files
 for i in ${ENOTES} ; do
-	ENOTE_FILE="$(echo "$i"  | sed -e "s/${PRE}-//g" -e "s/[.]enc//g")"
+	i="${i/#${PRE}-/}"; ENOTE_FILE="${i/%\.enc/}"
   # Number of times enote appears in todo.txt
-  NUM_ENOTE=$(grep -c "[^ ]*enote:${ENOTE_FILE}[^ ]\+" "${TODO_TMP_FILE}")
+  NUM_ENOTE=$(grep -c "\benote:${ENOTE_FILE}\b" "${TODO_TMP_FILE}")
 	# if enote isn't in our todo file, archive in notes/archive/
 	if [[ "${NUM_ENOTE}" -eq 0 ]] ;then
     cat "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc" >> \
       "${TODO_DIR}/notes/archive/${PRE}-${ENOTE_FILE}.$(date +%s).enc" || \
         die "      unable to create archive file" && \
-    rm "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc"
+        rm "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc"
     echo "$(getPrefix): Archived enote:${ENOTE_FILE}"
     ((RETURN+=1)) 
-    # If we are using commit action then add to git
-    if [ -e "${TODOTXT_ACTIONS_DIR}/commit" ]; then
-        git add "${TODO_DIR}/notes/archive/${PRE}-${ENOTE_FILE}.$(date +%s).enc"
-    fi
 	fi
 done
 
