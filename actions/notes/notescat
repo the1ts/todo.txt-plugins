@@ -36,18 +36,14 @@ if [[ $# -lt 1 ]]; then
   die "      No notes file"
 fi
 
+NOTE_FILE="${1/#note:/}"; shift
+PRE="$(basename "${TODO_FILE}")"; PRE=${PRE/%\.txt/}
+
+if  [[ $(grep -c "${NOTE_FILE}" "${TODO_FILE}") -lt 1 ]]; then
+  die "      Notes file ${NOTE_FILE} not in todo.txt file,\n      use listnotes to find notes files"
+fi
 
 if [ -e "${TODO_DIR}/notes/${PRE}-${NOTE_FILE}.txt" ]; then
-	cat "${TODO_DIR}/notes/${PRE}-${NOTE_FILE}.txt"
-else
-	# If note file is in todo.txt, but empty
-	# shellcheck disable=SC2046,SC1117
-	if [ $(grep -c "\b${NOTE_FILE}\b"  "${TODO_FILE}") -gt 0 ]; then
-		echo "${NOTE_FILE} is empty"
-    exit 1
-	else
-		echo "Note file ${NOTE_FILE} not in todo.txt file,"
-		echo "use listnotes to find notes files"
-    exit 1
-	fi
+  cat "${TODO_DIR}/notes/${PRE}-${NOTE_FILE}.txt" 2> /dev/null || \
+    die "    Unable to find or show ${PRE}-${NOTE_FILE}.txt"
 fi

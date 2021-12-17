@@ -44,8 +44,6 @@ if [[ $(grep -o '\bnote\:[a-zA-Z0-9\._-]*' "${TODO_TMP_FILE}" | grep -c "$*") -g
   grep -o '\bnote\:[a-zA-Z0-9\._-]*' "${TODO_TMP_FILE}" | grep "$*" | sort -u
   [[ -f "${TODO_TMP_FILE}" ]] && rm -rf "${TODO_TMP_FILE}"
 else
-  echo "No notes with the term \"$*\""
   [[ -f "${TODO_TMP_FILE}" ]] && rm -rf "${TODO_TMP_FILE}"
-  usage
-  exit 1
+  die "      No notes with the term \"$*\""
 fi

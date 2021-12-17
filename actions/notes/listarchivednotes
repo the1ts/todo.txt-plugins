@@ -32,19 +32,21 @@ elif [[ "${1}" = "$(basename "$0")" ]]; then
   shift
 fi
 
+PRE="$(basename "${TODO_FILE}")"; PRE=${PRE/%\.txt/}
+TODO_TMP_FILE="${TODO_TMP_FILE:-${TODO_DIR}/todo.tmp}"
+
+# Check notes and archive exist
 mkdir -p "${TODO_DIR}/notes/archive/" || exit 1
 cd "${TODO_DIR}/notes/archive/" || exit 1
 
 # Find a list of files
-find . -type f -regex ".*\.txt" -printf '%P\n'  | grep "^${PRE}-" \
-  | sed  -e "s/${PRE}-//" -e 's/.txt$//' > "${TODO_TMP_FILE}"
+find . -name "${PRE}-*txt" -printf '%P\n'  | grep "^${PRE}-" | \
+  sed  -e "s/${PRE}-//" -e "s/^/note:/" -e "s/.txt$//" -e "s/\.[0-9]\{1,10\}$//g" > \
+  "${TODO_TMP_FILE}"
 if [[ $(grep -c "$*" "${TODO_TMP_FILE}") -gt 0 ]]; then
-  if [[ "$#" -eq 0 ]]; then
-    sed 's/^/note:/' "${TODO_TMP_FILE}"
-  else
-    sed 's/^/note:/' "${TODO_TMP_FILE}" | grep "$*"
-  fi
+  grep "$*" "${TODO_TMP_FILE}"
+  [[ -f "${TODO_TMP_FILE}" ]] && rm -rf "${TODO_TMP_FILE}"
 else
-  echo "No notes with the term \"$*\""
+  [[ -f "${TODO_TMP_FILE}" ]] && rm -rf "${TODO_TMP_FILE}"
+  die "      No notes with the term \"$*\""
 fi
-[[ -f "${TODO_TMP_FILE}" ]] && rm -rf "${TODO_TMP_FILE}"

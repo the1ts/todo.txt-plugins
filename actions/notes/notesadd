@@ -32,7 +32,7 @@ elif [[ "${1}" = "$(basename "$0")" ]]; then
   shift
 fi
 
-# Check notes and archive exist
+# Check notes and item number exist
 if [[ "$#" -lt 2 ]]; then
   if [[ "$1" =~ ^[0-9]+$ ]]; then
     die "      No notesfile given"
@@ -45,30 +45,17 @@ fi
 mkdir -p "${TODO_DIR}/notes/archive" || exit 1
 cd "${TODO_DIR}/notes" || exit 1
 
-# Remove action
-shift
-# Usage for todo.sh help
-if [[ "${1}" = "usage" ]] || [[ "${1}" = "-h" ]]; then
-	usage
-	exit
-elif [[ "$#" -lt 2 ]]; then
-  echo "      Not enough options"
-  usage
-  exit 1
-fi
 # Set notes file from last argument and remove last argument
 # this leaves items which we test later
 NOTES_FILE="${!#}"
-NOTES_FILE=$(_note_fix "${NOTES_FILE}")
+NOTES_FILE="${NOTES_FILE/#note:/}"
 set -- "${@:1:$(($#-1))}"
-PRE="$(basename "${TODO_FILE}" | sed 's/.txt$//g')"
+PRE="$(basename "${TODO_FILE}")"; PRE=${PRE/%\.txt/}
 NOTES=$(find . -maxdepth 1 -name "${PRE}*txt" -printf '%P\n')
 
-# If our notes file is just numbers we didn't get given one
+# If our enotes file is just numbers we didn't get given one
 if [[ "${NOTES_FILE}" =~ ^[0-9]+$ ]]; then
-  echo "      No notesfile given"
-  usage
-  exit 1
+  die "      No notesfile given"
 fi
 
 # Can we edit after addition?
@@ -86,8 +73,7 @@ fi
 # shellcheck disable=SC2048
 for item in $*; do
   if [[ ${item} -gt $(wc -l "${TODO_FILE}" | cut -f 1 -d " ") ]]; then
-    echo "$(getPrefix "${TODO_FILE}"): No task ${item}"
-    exit 1
+    die "      No item ${item}"
   fi
 done
 
@@ -96,9 +82,7 @@ done
 for item in $*; do
   # Test we have an item number
   if ! [[ "${item}" =~ ^[0-9]+$ ]]; then
-    echo "	ITEM is not a number"
-    usage
-    exit 1
+    die " ITEM is not a number"
   fi
   "${TODO_FULL_SH}" append "${item}" "note:${NOTES_FILE}"
   echo "$(getPrefix "${TODO_FILE}"): note:${NOTES_FILE} added to item ${item}"

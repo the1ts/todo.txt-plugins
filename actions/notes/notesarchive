@@ -35,11 +35,11 @@ fi
 # Check notes and archive exist
 mkdir -p "${TODO_DIR}/notes/archive" || exit 1
 cd "${TODO_DIR}/notes" || exit 1
-TODO_TMP_FILE="${TODO_TMP_FILE:-${TODO_DIR}/todo.tmp}"
 
 # construct file name
 PRE="$(basename "${TODO_FILE}" | sed 's/.txt$//g')"
-NOTES=$(find . -maxdepth 1 -name "${PRE}*txt" -printf '%P\n')
+TODO_TMP_FILE="${TODO_TMP_FILE:-${TODO_DIR}/todo.tmp}"
+NOTES=$(find . -maxdepth 1 -name "${PRE}-*txt" -printf '%P\n')
 
 # Create file from todo and 'tickled' files
 cat "${TODO_FILE}" > "${TODO_TMP_FILE}"
@@ -47,29 +47,25 @@ if [[ -n "${TICKLER_DIR}" ]] && [[ -d "${TICKLER_DIR}" ]]; then
 	find "${TICKLER_DIR}" -mindepth 2 -type f -size 1 -exec cat {} \; >> "${TODO_TMP_FILE}"
 fi
 
-RETURN=0
 # for each file, remove $PRE and see if its in todo or 'tickled' files
 for i in ${NOTES} ; do
-	NOTE_FILE="$(echo "$i"  | sed -e "s/${PRE}-//g" -e "s/[.]txt//g")"
-	# if filename isn't in our todo file, archive in notes/archive/$file
-	# shellcheck disable=SC2046,SC2086
-	if [[ $(grep -oc "\bnote:${NOTE_FILE}\b" "${TODO_TMP_FILE}") -eq 0 ]] ;then
+	i="${i/#${PRE}-/}"; NOTE_FILE="${i/%\.txt/}"
+	# Number of times note appears in todo.txt
+  NUM_NOTE=$(grep -c "\bnote:${NOTE_FILE}\b" "${TODO_TMP_FILE}")
+	if [[ "${NUM_NOTE}" -eq 0 ]] ;then
 		cat "${TODO_DIR}/notes/${PRE}-${NOTE_FILE}.txt" >> \
-			"${TODO_DIR}/notes/archive/${PRE}-${NOTE_FILE}.$(date +%s).txt" || exit 1
+			"${TODO_DIR}/notes/archive/${PRE}-${NOTE_FILE}.$(date +%s).txt" || 
+      die "      unable to create archive file" && \
 		rm "${TODO_DIR}/notes/${PRE}-${NOTE_FILE}.txt"
     echo "$(getPrefix): Archived note:${NOTE_FILE}"
     ((RETURN+=1)) 
-		# If we are using commit action then add to git
-		if [ -e "${TODOTXT_ACTIONS_DIR}/commit" ]; then
-			git add "${TODO_DIR}/notes/archive/${PRE}-${NOTE_FILE}.$(date +%s).txt"
-		fi
 	fi
 done
 
 [[ -f "${TODO_TMP_FILE}" ]] && rm -rf "${TODO_TMP_FILE}"
 
 # if we have not archived anything, then report
-if [[ "${RETURN}" -eq 0 ]]; then
+if [[ -z "${RETURN}" ]]; then
   echo "$(getPrefix): Nothing to archive"
   exit 1
 fi
