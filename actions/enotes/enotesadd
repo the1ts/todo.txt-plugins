@@ -32,7 +32,7 @@ elif [[ "${1}" = "$(basename "$0")" ]]; then
   shift
 fi
 
-# Test for no enotesfile or note items
+# Check enotes and item number exist
 if [[ "$#" -lt 2 ]]; then
   if [[ "$1" =~ ^[0-9]+$ ]]; then
     die "      No enotesfile given"
@@ -45,17 +45,6 @@ fi
 mkdir -p "${TODO_DIR}/notes/archive" || exit 1
 cd "${TODO_DIR}/notes" || exit 1
 
-# Remove action
-shift
-# Usage for todo.sh help
-if [[ "${1}" = "usage" ]] || [[ "${1}" = "-h" ]]; then
-  usage
-  exit
-elif [ "$#" -lt 2 ]; then
-  echo "      Not enough options"
-	usage
-	exit 1
-fi
 # Set enotes file from last argument and remove last argument
 # this leaves items which we test later
 ENOTES_FILE=${!#};
@@ -66,9 +55,7 @@ ENOTES=$(find . -maxdepth 1 -name "${PRE}*enc" -printf '%P\n')
 
 # If our enotes file is just numbers we didn't get given one
 if [[ "${ENOTES_FILE}" =~ ^[0-9]+$ ]]; then
-  echo "      No enotesfile given"
-  usage
-  exit 1
+  die "      No enotesfile given"
 fi
 
 # Can we edit after addition?
@@ -77,7 +64,7 @@ fi
 if [[ "${NOTE_ADD_EDIT}" = "OFF" ]]; then
   if [[ $(grep -c "${ENOTES_FILE}" "${TODO_FILE}") -eq 0 ]] && \
     ! [[ -f "${TODOTXT_DIR}/notes/${PRE}-${ENOTES}.txt" ]] && \
-    [[ $(${TODO_FULL_SH} listaddons | grep -c ^notesedit$) -eq 1 ]]; then
+    [[ $(${TODO_FULL_SH} listaddons | grep -c ^enotesedit$) -eq 1 ]]; then
     EDIT_FILE=1
   fi
 fi
@@ -86,7 +73,7 @@ fi
 # shellcheck disable=SC2068
 for item in $@; do
   if [[ ${item} -gt $(wc -l "${TODO_FILE}" | cut -f 1 -d " ") ]]; then
-    die "      No task ${item}"
+    die "      No item ${item}"
   fi
 done
 

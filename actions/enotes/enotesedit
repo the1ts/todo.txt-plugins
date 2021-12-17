@@ -25,14 +25,6 @@ die () {
 	exit 1
 }
 
-# Git add, will error on not in gitt WD or git not installed
-# so send to dev null
-commit () {
-	if [ -e "${TODOTXT_ACTIONS_DIR}/commit" ]; then
-		git commit "$1" -m "$(date +'%Y-%m-%d %H:%M:%S')" > /dev/null 2>&1
-	fi
-}
-
 # Find editor to use
 # Use debian and derivatives editor (alternatives auto set by OS), then
 # if EDITOR already set use, else if EDITOR not set default to vi
@@ -54,11 +46,11 @@ if [[ "${1}" = "usage" ]] || [[ "${2}" = "usage" ]]; then
 elif [[ "${1}" = "$(basename "$0")" ]]; then
   shift
 fi
-# shellcheck disable=SC2001
-ENOTE_FILE="$(echo "$1" | sed 's/^enote://g')"; shift
-# shellcheck disable=SC2001
-PRE="$(basename "${TODO_FILE}" | sed 's/.txt$//g')"
+
+ENOTE_FILE="${1/#enote:/}"; shift
+PRE="$(basename "${TODO_FILE}")"; PRE=${PRE/%\.txt/}
 TODO_TMP_FILE="${TODO_TMP_FILE:-${TODO_DIR}/todo.tmp}"
+EDITOR=$(find_editor)
 
 if [[ -z "${ENOTE_FILE}" ]]; then
   die "      No encryted notes file"
@@ -68,7 +60,6 @@ elif [[ -z "${GPG_USER}" ]]; then
   die "      Please set a variable GPG_USER in your todo.cfg"
 fi
 
-EDITOR=$(find_editor)
 
 # Create file from todo and 'tickled' files since enotes could be in tickled file
 cat "${TODO_FILE}" > "${TODO_TMP_FILE}"
@@ -85,15 +76,15 @@ if [ -e "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc" ]; then
 	"${EDITOR}" "${TODO_TMP_FILE}.encrypt"
 	gpg -eq --batch -r "${GPG_USER}" -o "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc" "${TODO_TMP_FILE}.encrypt" \
 		|| die "			Unable to encrypt ${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc"
-	# shellcheck disable=SC2181
+  # shellcheck disable=SC2181
 	if [ "$?" -eq 0 ] ; then
 		rm -rf "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc.bak"
 	else
 		mv "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc.bak" "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc"
 	fi
-	rm -rf "${TODO_TMP_FILE}.encrypt"
+	[[ -f "${TODO_TMP_FILE}.encrypt" ]] && rm -rf "${TODO_TMP_FILE}.encrypt"
 else
-	# If note link in todo.txt exists then edit
+	# If enote link in todo.txt exists then edit
 	# shellcheck disable=SC2046,SC2086
   NUM_ENOTE=$(grep -c "[^ ]*enote:${ENOTE_FILE}[^ ]\+" "${TODO_TMP_FILE}")
 	if [ "${NUM_ENOTE}" -ge 1 ] ; then
@@ -101,11 +92,6 @@ else
 		"${EDITOR}" "${TODO_TMP_FILE}.encrypt"
 	 	gpg -eq --batch -r "${GPG_USER}" -o "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc" "${TODO_TMP_FILE}.encrypt" \
     || die "			Unable to decrypt ${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc"
-		rm -rf "${TODO_TMP_FILE}.encrypt"
-	else
-		echo "    No such encrypted Notes file, use lsenotes to find notes files"
-    usage
-    rm -rf "${TODO_TMP_FILE}"
-    exit
+		[[ -f "${TODO_TMP_FILE}.encrypt" ]] && rm -rf "${TODO_TMP_FILE}.encrypt"
 	fi
 fi
