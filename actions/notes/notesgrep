@@ -36,13 +36,12 @@ fi
 if [[ -z "$1" ]]; then
   die "    No TERM"
 fi
-PRE="$(basename "${TODO_FILE}" | sed 's/.txt$//g')"
-# Our active notes files
-  # shellcheck disable=SC2086
-NOTES="$(find ${PRE}-*.txt)"
-# Our archived notes files
-  # shellcheck disable=SC2086
-ARCHIVED="$(find archive/${PRE}-*.txt)"
+
+mkdir -p "${TODO_DIR}/notes/archive" || exit 1
+cd "${TODO_DIR}/notes/" || exit 1
+PRE="$(basename "${TODO_FILE}")"; PRE=${PRE/%\.txt/}
+NOTES="$(find -- * -maxdepth 0 -name "${PRE}-*txt" -printf "%f\n")"
+ARCHIVED="$(find -- archive/* -name "${PRE}-*.txt" -printf "%p\n")"
 if [[ "$1" = "-a" ]]; then
 	ARCHIVE=1; shift
 fi
@@ -73,16 +72,15 @@ else
   ((RETURN+=1))
 fi
 if [[ ${ARCHIVE} -eq 1 ]]; then
-  # shellcheck disable=SC2086
-  # if [ "$(grep -o "$*" ${ARCHIVED} | wc -l)" -gt 0 ]; then
   if [ ${TOTAL_ARCHIVED} -gt 0 ]; then
     echo ""
     echo "Archived Notes Files containing \"$*\""
     echo "--------------------"
     # shellcheck disable=SC2086
-    grep -l "$*" ${ARCHIVED} | sed "s/^.*${PRE}-/note:/g ; s/[.]txt$//g"
+    grep -l "$*" ${ARCHIVED} | sed -e "s/^.*${PRE}-/note:/g" \
+    -e "s/[.]txt$//g" -e "s/\.[0-9]\{1,10\}$//g"
   else
-    echo "No current archived Notes containing \"$*\""
+    echo "No archived Notes containing \"$*\""
     ((RETURN+=1))
   fi
 fi

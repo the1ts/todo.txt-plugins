@@ -35,26 +35,17 @@ fi
 
 # Check notes and archive exist
 mkdir -p "${TODO_DIR}/notes/archive" || exit 1
-
-# Remove action
-shift
-if [[ "${1}" = "usage" ]] || [[ "${1}" = "-h" ]]; then
-	usage
-	exit
-fi
-FILE=$(_note_fix "$1"); shift
-PRE=$(basename "${TODO_FILE}" | sed 's/.txt$//g')
 cd "${TODO_DIR}/notes/archive/" || exit 1
-# shellcheck disable=SC2086
-DATE_FILE=$(find ${PRE}-${FILE}.*.txt -type f -printf "%T@ %p\n"  2> /dev/null | sort -n | cut -f 2 -d " "  | tail -n 1)
+
+FILE=${1##note:}; shift
+PRE="$(basename "${TODO_FILE}")"; PRE=${PRE/%\.txt/}
+DATE_FILE=$(find -- * -name "${PRE}-${FILE}.*.txt" -type f -printf "%T@ %p\n"  2> /dev/null | sort -n | cut -f 2 -d " "  | tail -n 1)
 ARC_FILE="${TODO_DIR}/notes/archive/${DATE_FILE}"
 NOTES_FILE="${TODO_DIR}/notes/${PRE}-${FILE}.txt"
 TODO_TMP_FILE="${TODO_TMP_FILE:-${TODO_DIR}/todo.tmp}"
 
 if [[ -z "${DATE_FILE}" ]]; then
-	echo "    No archived notes file named ${FILE}. Use listarchivedenotes to find them"
-	usage
-	exit 1
+	die "      No archived notes file named ${FILE}. Use listarchivedenotes to find them"
 fi
 
 # Does the notes file exist? i.e  mentioned in todo/tickled file?
@@ -62,18 +53,14 @@ cat "${TODO_FILE}" > "${TODO_TMP_FILE}"
 if [[ -n ${TICKLER_DIR} ]] && [[ -d ${TICKLER_DIR} ]]; then
   find "${TICKLER_DIR}" -mindepth 2 -type f -size 1 -exec cat {} \; >> "${TMP_FILE}"
 fi
-if [[ "$(grep -o '[^ ]*note:[^ ]\+' "${TODO_TMP_FILE}" | grep -c "^note:${FILE}$")" -eq 0 ]] ;then
-  echo "    Note file ${FILE} not mentioned in todo"
-  echo "    use listnotes to find them"
-  usage
-  exit 1
+if [[ "$(grep -c "\bnote:${FILE}\b" "${TODO_TMP_FILE}")" -eq 0 ]] ;then
+  die "      Note file ${FILE} not mentioned in todo\n      use listnotes to find them"
 fi
 [[ -f "${TODO_TMP_FILE}" ]] && rm -rf "${TODO_TMP_FILE}"
 
 cp "${ARC_FILE}" "${NOTES_FILE}"
 if [[ "$?" -eq 1 ]]; then
-  echo "Unable to move ${PRE}-${FILE}.txt to ${NO_DATE_FILE}.txt"
-  exit 1
+  die "     Unable to move ${PRE}-${FILE}.txt to ${NO_DATE_FILE}.txt"
 else
   echo "$(getPrefix): Notes file ${PRE}-${FILE}.txt restored from newest archive"
 fi

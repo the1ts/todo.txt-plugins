@@ -11,7 +11,6 @@
 #       LICENSE: GPL, http://www.gnu.org/copyleft/gpl.html
 #===============================================================================
 
-# functions
 usage () {
 	echo "    $(basename "$0") [ORIGINAL_NOTESFILE] [NEW_NOTESFILE]"
 	echo "      rename ORIGINAL_NOTESFILE to NEW_NOTESFILE"
@@ -31,41 +30,37 @@ if [[ "${1}" = "usage" ]] || [[ "${2}" = "usage" ]]; then
   usage
   exit
 elif [[ "${1}" = "$(basename "$0")" ]]; then
-shift
+  shift
 fi
 
 if [[ "$#" -ne 2 ]]; then
   die "    check number of options"
 fi
 
-OLD_FILE=$(_note_fix "$1")
-NEW_FILE=$(_note_fix "$2")
-PRE=$(basename "${TODO_FILE}" | sed 's/.txt$//g')
+OLD_FILE=${1##note:}
+NEW_FILE=${2##note:}
+PRE="$(basename "${TODO_FILE}")"; PRE=${PRE/%\.txt/}
 NOTES_DIR="${TODO_DIR}/notes"
 
-cd "${NOTES_DIR}" || exit 
+mkdir -p "${NOTES_DIR}" || exit 1
+cd "${NOTES_DIR}" || exit 1
 
-# Test the OLD_FILE is in the TODO_FILE or DONE_FILE and rename in 
-# todo.txt and done.txt
-RETURN=0
+# Move the note
 if [[ "$(grep -c "${OLD_FILE}" "${TODO_FILE}")" -ge 1 ]]; then
 	sed -i "s/note:${OLD_FILE}\b/note:${NEW_FILE}/g" "${TODO_FILE}"
   echo "$(getPrefix): Changed note:${OLD_FILE} to note:${NEW_FILE} in todo.txt"
   ((UPDATE+=1))
-  ((RETURN+=1))
 fi
 if [[ "$(grep -c "${OLD_FILE}" "${DONE_FILE}")" -ge 1 ]]; then
 	sed -i "s/note:${OLD_FILE}\b/note:${NEW_FILE}/g" "${DONE_FILE}"
   echo "$(getPrefix): Changed note:${OLD_FILE} to note:${NEW_FILE} in done.txt"
   ((UPDATE+=1))
-  ((RETURN+=1))
 fi
 if [[ -z "${UPDATE}" ]]; then
 	die "    ${OLD_FILE} is not a current note, use listnotes to find notes."
 fi
 
-# Test the OLD_FILE exists and RENAME
-# Remove the note: to be used as filename
+# rename OLD_FILE
 if [[ -f "${NOTES_DIR}/${PRE}-${OLD_FILE}.txt" ]]; then
 	mv "${NOTES_DIR}/${PRE}-${OLD_FILE}.txt" "${NOTES_DIR}/${PRE}-${NEW_FILE}.txt"
 fi
@@ -74,15 +69,8 @@ fi
 if [[ -n ${TICKLER_DIR} ]]; then
 	TICKLED="$(find "${TICKLER_DIR}" -mindepth 2 -type f -size 1 -exec grep -l "${OLD_FILE}" {} \;)"
 	for FILE in ${TICKLED}; do
-		# shellcheck disable=SC1117
 		sed -i "s/note:${OLD_FILE}\b/note:${NEW_FILE}" "${FILE}"
     echo "$(getPrefix): Changed note:${OLD_FILE} to note:${NEW_FILE} in tickled file ${FILE}"
-    ((RETURN+=1))
 	done
-fi
-
-if [[ "${RETURN}" -gt 0 ]]; then
-  exit 0
-else
-  exit 1
+    mv "${NOTES_DIR}/${OLD_FILE}.txt" "${NOTES_DIR}/${NEW_FILE}.txt"
 fi
