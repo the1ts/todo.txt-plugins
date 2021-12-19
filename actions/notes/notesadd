@@ -1,69 +1,94 @@
 #!/usr/bin/env bash
-# 2019 Paul Mansfield <paul.mansfield@mansteck.co.uk>
-# License:  GPL, http://www.gnu.org/copyleft/gpl.html
+# shellcheck shell=bash
+#===============================================================================
+#
+#          FILE: notesadd
+#
+#         USAGE: todo.sh notesadd [ITEMS] [NOTESFILE]
+#
+#        AUTHOR: Paul Mansfield (paul.mansfield@mansteck.co.uk), 
+#     COPYRIGHT: 2009-2021 Paul Mansfield
+#       LICENSE: GPL, http://www.gnu.org/copyleft/gpl.html
+#===============================================================================
 
-# functions
 usage () {
-	echo "  $(basename "$0") [ITEM] [NOTESFILE]"
-	echo "    add NOTESFILE in ITEM"
-	echo "    eg todo.sh $(basename "$0") 1 note:test "
-	exit 0
+	echo "    $(basename "$0") [ITEMS] [NOTESFILE]"
+	echo "      add NOTESFILE in ITEMS"
 }
 
-# Usage for todo.sh help
-if [ "$1" = "usage" ]; then
+die () {
+	if [[ -n $* ]]; then
+		echo -e "$*"
+  fi
+	usage
+	exit 1
+}
+
+# Usage for todo.sh help or remove action
+if [[ "${1}" = "usage" ]] || [[ "${2}" = "usage" ]]; then
 	usage
 	exit
+elif [[ "${1}" = "$(basename "$0")" ]]; then
+  shift
 fi
 
-# Variables
-# shellcheck disable=SC2034
-action="$1"; shift
+# Check notes and item number exist
+if [[ "$#" -lt 2 ]]; then
+  if [[ "$1" =~ ^[0-9]+$ ]]; then
+    die "      No notesfile given"
+  elif ! [[ "$1" =~ ^[0-9]+$ ]]; then
+    die "      No item given"
+  fi
+fi
 
-tests () {
-	# Test correct number of options
-	if [ $# -lt 2 ]; then
-		if [ "$1" != "usage" ]; then
-			echo "   not enough options"
-			usage
-			exit 1
-		fi
-		usage
-		exit 1
-	fi
+# Check notes and archive exist
+mkdir -p "${TODO_DIR}/notes/archive" || exit 1
+cd "${TODO_DIR}/notes" || exit 1
 
-	# Test we have an item number (bash specific)
-	if [[  "$1" =~ ^[0-9]+$  ]]; then
-		ITEM="${1}"
-	else
-		echo "	ITEM is not a number"
-		usage
-		exit 1
-	fi
+# Set notes file from last argument and remove last argument
+# this leaves items which we test later
+NOTES_FILE="${!#}"
+NOTES_FILE="${NOTES_FILE/#note:/}"
+set -- "${@:1:$(($#-1))}"
+PRE="$(basename "${TODO_FILE}")"; PRE=${PRE/%\.txt/}
+NOTES=$(find . -maxdepth 1 -name "${PRE}*txt" -printf '%P\n')
 
-	# Test NOTESFILE is in correct format note:file
-	# Add note: if needed
-	if [ "$(echo "${2}" | grep -c "^note:")" -eq 1 ]; then
-		NOTESFILE="${2}"
-	else
-		NOTESFILE="note:${2}"
-	fi
-}
+# If our enotes file is just numbers we didn't get given one
+if [[ "${NOTES_FILE}" =~ ^[0-9]+$ ]]; then
+  die "      No notesfile given"
+fi
 
-## Main
+# Can we edit after addition?
+# Only set if file new to todo.txt and note doesn't exist
+# Also check we have notesedit addon installed
+if [[ "${NOTE_ADD_EDIT}" = "OFF" ]]; then
+  if [[ $(grep -c "${NOTES_FILE}" "${TODO_FILE}") -eq 0 ]] && \
+    ! [[ -f "${TODOTXT_DIR}/notes/${PRE}-${NOTES}.txt" ]] && \
+    [[ $(${TODO_FULL_SH} listaddons | grep -c ^notesedit$) -eq 1 ]]; then
+    EDIT_FILE=1
+  fi
+fi
 
-# Run tests - don't quote $* needs to be space delimited list
-# shellcheck disable=SC2048,SC2086
-tests $*
+# Are items in the file?
+# shellcheck disable=SC2048
+for item in $*; do
+  if [[ ${item} -gt $(wc -l "${TODO_FILE}" | cut -f 1 -d " ") ]]; then
+    die "      No item ${item}"
+  fi
+done
 
-case $1 in
-	"usage")
-		usage
-		exit
-	;;
+# Use built in append action to add notesfile to each item, testing as we go
+# shellcheck disable=SC2048
+for item in $*; do
+  # Test we have an item number
+  if ! [[ "${item}" =~ ^[0-9]+$ ]]; then
+    die " ITEM is not a number"
+  fi
+  "${TODO_FULL_SH}" append "${item}" "note:${NOTES_FILE}"
+  echo "$(getPrefix "${TODO_FILE}"): note:${NOTES_FILE} added to item ${item}"
+done
 
-	*)
-	# Use built in append action to add notesfile
-	${TODO_FULL_SH} append "${ITEM}" "${NOTESFILE}"
-	;;
-esac
+# If our tests allow open file for editing
+if [[ "${EDIT_FILE}" = 1 ]]; then
+  "${TODO_FULL_SH}" notesedit "note:${NOTES_FILE}"
+fi

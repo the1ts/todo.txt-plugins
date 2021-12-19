@@ -1,6 +1,12 @@
 #
-# Makefile for todo.txt
+# Makefile for todo.txt Actions
 #
+
+SHELL = /bin/sh
+
+INSTALL = /usr/bin/install
+INSTALL_PROGRAM = $(INSTALL)
+INSTALL_DATA = $(INSTALL) -m 644
 
 # Dynamically detect/generate version file as necessary
 # This file will define a variable called VERSION.

@@ -1,26 +1,52 @@
 #!/usr/bin/env bash
-# 2009 Paul Mansfield <paul.mansfield@mansteck.co.uk>
-# License:  GPL, http://www.gnu.org/copyleft/gpl.html
+# shellcheck shell=bash
+#===============================================================================
+#
+#          FILE: enotescat
+#
+#         USAGE: todo.sh enotescat [ENOTESFILE]
+#
+#        AUTHOR: Paul Mansfield (paul.mansfield@mansteck.co.uk), 
+#     COPYRIGHT: 2009-2021 Paul Mansfield
+#       LICENSE: GPL, http://www.gnu.org/copyleft/gpl.html
+#===============================================================================
 
-case $1 in
-"usage")
-    echo "  $(basename $0) [NOTESFILE]"
-    echo "    Cat encyrpted notes file, use lsenotes to get list of notes"
-    echo ""
-;;
+usage () {
+  echo "    $(basename "$0") [ENOTESFILE]"
+  echo "      Cat encrypted notes file, use listenotes to get list of notes"
+}
 
-*)
-    if [ $# -lt 2 ]; then
-        $0 usage
-        exit 1
-    fi
-    NOTE_FILE=$(echo $2 | sed 's/^enote://g')
-    PRE=$(basename $TODO_FILE | sed 's/.enc$//g')
-    if [ -e $TODO_DIR/notes/${PRE}-${NOTE_FILE}.enc ]; then
-        gpg -d $TODO_DIR/notes/${PRE}-${NOTE_FILE}.enc
-        echo ""
-    else
-        echo "No such encrypted notes file, use lsenotes to find encrypted notes files"
-    fi
-;;
-esac
+die () {
+  if [[ -n $* ]]; then
+    echo -e "$*"
+  fi
+  usage
+	exit 1
+}
+
+# Usage for todo.sh help or remove action
+if [[ "${1}" = "usage" ]] || [[ "${2}" = "usage" ]]; then
+  usage
+  exit
+elif [[ "${1}" = "$(basename "$0")" ]]; then
+  shift
+fi
+
+if [[ $# -lt 1 ]]; then
+  die "      No encrypted notes file"
+elif [[ -z "${GPG_USER}" ]]; then
+  die "      Please set a variable GPG_USER in your todo.cfg"
+fi
+
+# shellcheck disable=SC2001
+ENOTE_FILE="${1/#enote:/}"; shift
+PRE="$(basename "${TODO_FILE}")"; PRE=${PRE/%\.txt/}
+
+if  [[ $(grep -c "${ENOTE_FILE}" "${TODO_FILE}") -lt 1 ]]; then
+  die "      Encrypted notes file ${ENOTE_FILE} not in todo.txt file,\n      use listenotes to find encrypted notes files"
+fi
+
+if [ -e "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc" ]; then
+  gpg -dq "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc"  2> /dev/null \
+    || die "    Unable to decrypt ${PRE}-${ENOTE_FILE}.enc"
+fi

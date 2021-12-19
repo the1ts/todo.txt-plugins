@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-[ "$1" = "usage" ] && exit 0
-shift
+# shellcheck disable=SC2034
+action="$1"; shift
 
-"$TODO_SH" projectview "$@"
+"$TODO_FULL_SH" projectview "$@"

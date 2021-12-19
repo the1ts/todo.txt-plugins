@@ -6,86 +6,94 @@
 # License: GPL, http://www.gnu.org/copyleft/gpl.html
 
 usage() {
-	echo "tickle NUMBER [dmNUMBER]"
-	echo "  Move a line from todo.txt to day or month file in ${TODODIR}/Tickler/."
-	echo "  If [dm]<number> is omitted you will be prompted to enter a day or"
-	echo "  month and then number."
-	exit 1
+	echo "    tickle ITEM [dmNUMBER]"
+	echo "      Move a line from todo.txt to day or month file in \${TODO_DIR}/tickler/."
+	echo "      If [dm]<number> is omitted you will be prompted to enter a day or"
+	echo "      month and then number."
 }
 
 die()
 {
 	echo "$*"
+  usage
 	exit 1
 }
 
-#=== HEAVY LIFTING ===
-shopt -s extglob
+# check for usage and remove action
+if [[ $1 = "usage" ]] || [[ $2 = "usage" ]]; then
+	usage
+	exit 0
+elif [[ $1 = "$(basename "$0")" ]]; then
+	shift
+fi
 
+item=$1; shift
+datetype=$1; shift
+# set -x
+if [[ -z "${item}" ]]; then
+  die "      No items set"
+elif ! [[ "${item}" = +([0-9]) ]]; then
+  die "      Item not a number"
+elif [[ "$(sed -ne "${item} p" "${TODO_FILE}" | wc -l)" -lt 1 ]]; then
+	die "    Item number ${item} does not exist in todo file."
+fi
 
-action=$1
-case "${action}" in
-	"usage")
-		usage
-	;;
-	"tickle" )
-		item=$2;
-		[ -z "${item}" ] && usage
-		[[ "${item}" = +([0-9]) ]] || usage
+# If we don't have date details ask for them.
+if [ -z "${datetype}" ]; then
+echo "Tickle to day or month folder?  (d/m)"
+read -r ANSWER
+	if [ "${ANSWER}" = "d" ]; then
+		FOLDER="days"
+		echo "Tickle to which day folder?"
+		read -r NUMBER
+	elif [ "${ANSWER}" = "m" ]; then
+		FOLDER="months"
+		echo "Tickle to which month folder?"
+		read -r NUMBER
+	fi
+else
+	# If we are already given date details, check before using
+	if [ "$(echo "${datetype}" | grep -c "^[dDmM][0-9]\{1,2\}$")" -ne 1 ]; then
+		die "   Datetype given but not valid"
+	fi
 
-		datetype=$3; 
-		
-		# If we don't have date details ask for them.
-		if [ -z "${datetype}" ]; then
-		echo "Tickle to day or month folder?  (d/m)"
-		read -r ANSWER
-			if [ "${ANSWER}" = "d" ]; then
-				FOLDER="days"
-				echo "Tickle to which day folder?"
-				read -r NUMBER
-			elif [ "${ANSWER}" = "m" ]; then
-				FOLDER="months"
-				echo "Tickle to which month folder?"
-				read -r NUMBER
-			fi
-		else
-			# If we are already given date details, check before using
-			if [ "$(echo "${datetype}" | grep -c "^[dDmM][0-9]\{1,2\}$")" -ne 1 ]; then
-				usage
-			fi
-
-			# Are we going to use a day or month tickle file?
-			if expr "${datetype}" : ' *[dD].*' > /dev/null; then
-				FOLDER="days"
-				NUMBER="$(echo "${datetype}" | sed 's/d//')"
-			elif expr "${datetype}" : ' *[mM].*' > /dev/null; then
-				FOLDER="months"
-				NUMBER="$(echo"${datetype}"| sed 's/m//')"
-			fi
+	# Are we going to use a day or month tickle file?
+	if expr "${datetype}" : ' *[dD].*' > /dev/null; then
+		FOLDER="days"
+		# shellcheck disable=SC2001
+		NUMBER="$(echo "${datetype}" | sed 's/d//')"
+		if [[ "${NUMBER}" -lt 1 ]] || [[ "${NUMBER}" -gt 31 ]]; then
+			die "    Day number not a valid day of month"
 		fi
-		
-		# Add leading zeros
-		LENGTH=$(expr "${NUMBER}" : ".*")
-		if [ "$LENGTH" = "1" ]; then
-			NUMBER="0${NUMBER}"
+	elif expr "${datetype}" : ' *[mM].*' > /dev/null; then
+		FOLDER="months"
+		# shellcheck disable=SC2001
+		NUMBER="$(echo "${datetype}"| sed 's/m//')"
+		if [[ "${NUMBER}" -lt 1 ]] || [[ "${NUMBER}" -gt 12 ]]; then
+			die "    Month number not a valid month of year"
 		fi
+	fi
+fi
 
-		# Main work, find the item to be tickled
-		if [ "$(sed -ne "${item} p" "${TODO_FILE}" | grep -c "^.")" -eq 1 ]; then
-		DELETEME=$(sed "${item}!d" "${TODO_FILE}")
-		else
-			echo "Item number ${item} does not exist in todo file."
-			usage
-		fi
+# Add leading zeros
+LENGTH=$(expr "${NUMBER}" : ".*")
+if [ "$LENGTH" = "1" ]; then
+	NUMBER="0${NUMBER}"
+fi
 
-		# Check we have the required directories, if not create them
-		if [ ! -e "${TICKLER_DIR}/${TYPE}/${FOLDER}/${NUMBER}/" ]; then
-			"mkdir -p ${TICKLER_DIR}/${TYPE}/${FOLDER}/${NUMBER}/"
-		fi
+# Main work, find the item to be tickled
+if [ "$(sed -ne "${item} p" "${TODO_FILE}" | grep -c "^.")" -eq 1 ]; then
+DELETEME=$(sed "${item}!d" "${TODO_FILE}")
+else
+	die "    Item number ${item} does not exist in todo file."
+fi
 
-		# Write the tickle file, then remove from the todo.txt file
-		echo "${DELETEME}" >> "${TICKLER_DIR}/${TYPE}/${FOLDER}/${NUMBER}/${NUMBER}.txt"
-		sed -i.bak -e "${2}""s/^.*//" -e '/./!d' "${TODO_FILE}"
-		echo "Moved todo ${2} to ${TICKLER_DIR}/${TYPE}/${FOLDER}/${NUMBER}/${NUMBER}.txt"
-	;;
-esac
+# Check we have the required directories, if not create them
+if [ ! -e "${TICKLER_DIR}/${TYPE}/${FOLDER}/${NUMBER}/" ]; then
+	mkdir -p "${TICKLER_DIR}/${TYPE}/${FOLDER}/${NUMBER}/"
+fi
+
+# Write the tickle file, then remove from the todo.txt file
+echo "${DELETEME}" >> "${TICKLER_DIR}/${TYPE}/${FOLDER}/${NUMBER}/${NUMBER}.txt"
+sed -i.bak -e "${item}""s/^.*//" -e '/./!d' "${TODO_FILE}"
+echo "$(getPrefix): Moved todo item ${item} to ${TYPE}/${FOLDER}/${NUMBER}/${NUMBER}.txt"

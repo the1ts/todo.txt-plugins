@@ -3,69 +3,89 @@
 #
 #          FILE: edit
 #
-#         USAGE: todo.sh edit
+#         USAGE: todo.sh edit [todo|done|cfg] [line number]
 #
-#   DESCRIPTION: 
-#
-#       OPTIONS: ---
-#  REQUIREMENTS: ---
-#          BUGS: ---
-#         NOTES: todo.sh action
 #        AUTHOR: Paul Mansfield (paul.mansfield@mansteck.co.uk), 
 #     COPYRIGHT: 2019 Paul Mansfield
 #       LICENSE: GPL, http://www.gnu.org/copyleft/gpl.html
 #       CREATED: 19/09/09 10:52:44
-#      REVISION:  ---
 #===============================================================================
 
-# Functions
-usage () {
-	echo "    $(basename "$0") [todo|done|cfg]"
+usage() {
+	echo "    $(basename "$0") [todo|done|cfg] [line number]"
 	echo "      Allows editing of the todo.txt files."
 	echo "      todo.txt (todo), done.txt (done) or config (cfg)"
 	echo "      files in your default editor or vi"
-	echo ""
-	exit
 }
 
-# Variables
-action=$1;shift
-TODO_EDITOR=${EDITOR:-vi} # If EDITOR set then use, default vi
+# Find editor to use
+find_editor() {
+if [[ -n "${EDITOR}" ]]; then
+  true
+elif [[ -L /usr/bin/editor ]]; then
+  EDITOR="/usr/bin/editor"
+  # /usr/bin/editor is an alternative, see if its vim
+  if [[ "${EDITOR}" = "/usr/bin/editor" ]] && [[ -x "/usr/bin/update-alternatives" ]] ; then
+    if [[ "$(update-alternatives --query editor | grep ^Value: | grep -c vim)" -eq 1 ]]; then
+      VIM=1
+    fi
+  fi
+elif [[ -z "${EDITOR}" ]]; then
+  EDITOR="vim"
+  VIM=1
+fi
+echo "${EDITOR}"
+}
 
-# Main
-# If first arg is usage then give usage
-if [ "$action" = "usage" ]; then
+die () {
+	if [[ -n $* ]]; then
+		echo -e "$*"
+	fi
 	usage
+	exit 1
+}
+
+# Usage for todo.sh help or remove action
+if [[ "${1}" = "usage" ]] || [[ "${2}" = "usage" ]]; then
+	usage
+	exit
+elif [[ "${1}" = "$(basename "$0")" ]]; then
+  shift
 fi
 
-# Which file used. No file then todo.txt
-if [ "$1"x == x ] ; then
+FILE=$1; shift
+LINE=$1; shift
+
+# Which file used. No file then todo.txt is default
+if [[ -z "${FILE}" ]] || [[ "${FILE}" =~ ^todo$ ]] ; then
   EDIT_FILE="$TODO_FILE"
-# todo file then todo.txt
-elif echo "$1" | grep -iq ^todo$ ; then
-  EDIT_FILE="$TODO_FILE"
-# done file then done.txt
-elif echo "$1" | grep -iq ^done$ ; then
+elif [[ "${FILE}" =~ ^done$ ]] ; then
   EDIT_FILE="$DONE_FILE"
-# config file then todo.cfg
-elif echo "$1" | grep -iq ^cfg$ ; then
+elif [ "$(echo "${FILE}" | grep -ic ^cfg$)" -eq 1 ] ; then
   EDIT_FILE="$TODOTXT_CFG_FILE"
-# Not valid, show usage
+# Not blank, or a valid file so show usage
 else
-	usage
+	die "      Not a valid file"
 fi
 
-# Do we have a line to edit as a second arg?
-if [ "$2"x != x ]; then
-	LINE="+$2"
+# Test line number and set in format
+if [[ -n "${LINE}" ]]; then
+  if ! [[ "${LINE}" =~ ^[0-9]+$ ]]; then
+    echo "    Line number not a number"
+    usage
+    exit 1
+  else 
+    LINE="+${LINE}"
+  fi
 else
-	LINE=""
+  LINE="+1"
 fi
 
-# edit the file
-if [[ "${TODO_EDITOR}" =~ vi ]] && [[ ! -z "$LINE" ]]; then
-	"$TODO_EDITOR" "$EDIT_FILE" "$LINE"
-else
-	"$TODO_EDITOR" "$EDIT_FILE"
+EDITOR=$(find_editor)
+
+# How to edit the file, vim allows +line_number as arg
+if [[ "${VIM}" -eq 1 ]]; then
+  "$EDITOR" "$EDIT_FILE" "$LINE"
+  else
+  "$EDITOR" "$EDIT_FILE"
 fi
-exit

@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+# shellcheck shell=bash
+#===============================================================================
+#
+#          FILE: enotesrename
+#
+#         USAGE: todo.sh enotesrename [ORIGINAL_ENOTESFILE] [NEW_ENOTESFILE]
+#
+#        AUTHOR: Paul Mansfield (paul.mansfield@mansteck.co.uk), 
+#     COPYRIGHT: 2009-2021 Paul Mansfield
+#       LICENSE: GPL, http://www.gnu.org/copyleft/gpl.html
+#===============================================================================
+
+usage () {
+	echo "    $(basename "$0") [ORIGINAL_ENOTESFILE] [NEW_ENOTESFILE]"
+	echo "      rename ORIGINAL_ENOTESFILE to NEW_ENOTESFILE"
+  echo "      renames in todo.txt and enotefile"
+	echo "      the enote: is not required, but added"
+}
+
+die () {
+  if [[ -n $* ]]; then
+    echo -e "$*"
+  fi
+  usage
+	exit 1
+}
+
+# Usage for todo.sh help or remove action
+if [[ "${1}" = "usage" ]] || [[ "${2}" = "usage" ]]; then
+  usage
+  exit
+elif [[ "${1}" = "$(basename "$0")" ]]; then
+  shift
+fi
+
+if [[ "$#" -ne 2 ]]; then
+  die "    check number of options"
+fi
+
+OLD_FILE=${1##enote:}
+NEW_FILE=${2##enote:}
+PRE="$(basename "${TODO_FILE}")"; PRE=${PRE/%\.txt/}
+NOTES_DIR="${TODO_DIR}/notes"
+
+mkdir -p "${NOTES_DIR}" || exit 1
+cd "${NOTES_DIR}" || exit 1
+
+# Move the enote
+if [[ "$(grep -c "${OLD_FILE}" "${TODO_FILE}")" -ge 1 ]]; then
+	sed -i "s/enote:${OLD_FILE}\b/enote:${NEW_FILE}/g" "${TODO_FILE}"
+  echo "$(getPrefix): Changed enote:${OLD_FILE} to enote:${NEW_FILE} in todo.txt"
+  ((UPDATE+=1))
+fi
+if [[ "$(grep -c "${OLD_FILE}" "${DONE_FILE}")" -ge 1 ]]; then
+	sed -i "s/note:${OLD_FILE}\b/enote:${NEW_FILE}/g" "${DONE_FILE}"
+  echo "$(getPrefix): Changed enote:${OLD_FILE} to enote:${NEW_FILE} in done.txt"
+  ((UPDATE+=1))
+fi
+if [[ -z "${UPDATE}" ]]; then
+	die "    ${OLD_FILE} is not a current enote, use listenotes to find enotes."
+fi
+
+# Rename OLD_FILE
+if [[ -f "${NOTES_DIR}/${PRE}-${OLD_FILE}.enc" ]]; then
+	mv "${NOTES_DIR}/${PRE}-${OLD_FILE}.enc" "${NOTES_DIR}/${PRE}-${NEW_FILE}.enc"
+fi
+
+# Test for OLD_FILE in 'tickled' files and rename
+if [[ -n ${TICKLER_DIR} ]]; then
+	TICKLED="$(find "${TICKLER_DIR}" -mindepth 2 -type f -size 1 -exec grep -l "${OLD_FILE}" {} \;)"
+	for FILE in ${TICKLED}; do
+		sed -i "s/enote:${OLD_FILE}\b/enote:${NEW_FILE}" "${FILE}"
+    echo "$(getPrefix "${TODO_FILE}"): Changed enote:${OLD_FILE} to enote:${NEW_FILE} in tickled file"
+	done
+    mv "${NOTES_DIR}/${OLD_FILE}.enc" "${NOTES_DIR}/${NEW_FILE}.enc"
+fi

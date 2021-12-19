@@ -1,10 +1,6 @@
 #!/usr/bin/env bash
 
-# Remove short code
+# Remove action
 shift
 
-if [ "$1" = "usage" ]; then
-    "$TODO_FULL_SH" projectrename usage
-else
-    "$TODO_FULL_SH" projectrename "$@"
-fi
+"$TODO_FULL_SH" projectrename "$@"

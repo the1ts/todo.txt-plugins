@@ -1,73 +1,56 @@
 #!/usr/bin/env bash
-# 2011 Paul Mansfield <paul.mansfield@mansteck.co.uk>
-# License:    GPL, http://www.gnu.org/copyleft/gpl.html
+# shellcheck shell=bash
+#===============================================================================
+#
+#          FILE: lsprjnopri
+#
+#         USAGE: todo.sh lsprjnopri
+#
+#        AUTHOR: Paul Mansfield (paul.mansfield@mansteck.co.uk), 
+#     COPYRIGHT: 2009-2021 Paul Mansfield
+#       LICENSE: GPL, http://www.gnu.org/copyleft/gpl.html
+#===============================================================================
 
 # Functions
 usage() {
-	echo "  $(basename $0)"
-	echo "    List projects with no priorities set"
-	echo ""
+	echo "    $(basename "$0")"
+	echo "      List projects with no priorities set"
 }
 
-# Usage for todo.sh help
-if [ "$1" = "usage" ]; then
+die () {
+  if [[ -n $* ]]; then
+    echo -e "$*"
+  fi
 	usage
-	exit
+	exit 1
+}
+
+# Usage for todo.sh help or remove action
+if [[ "${1}" = "usage" ]] || [[ "${2}" = "usage" ]]; then
+  usage
+  exit
+elif [[ "${1}" = "$(basename "$0")" ]]; then
+  shift
 fi
 
-# Variables
-action="$1"; shift
-# Turn off colours
-TODOTXT_PLAIN=1
-PRI_X=$NONE
-PRI_A=$NONE
-PRI_B=$NONE
-PRI_C=$NONE
-DEFAULT=$NONE
-COLOR_DONE=$NONE
-# Stop Verbose lines
-TODOTXT_VERBOSE=0
+# Don't run if not projects
+if [[ $("${TODO_FULL_SH}" lsprj | wc -l) -eq 0 ]]; then
+  die "      No projects in todo.txt"
+fi
 
-case $1 in
-	"usage")
-		usage
-		exit
-	;;
+PROJECTS=$("${TODO_FULL_SH}" lsprj | grep -v '^\(\w\)')
+for PROJECT in ${PROJECTS}; do
+  PROJECT=${PROJECT/#+/}
+  if [ "$(grep "+${PROJECT}" "${TODO_FILE}" | grep -c "(\w)")" -eq 0 ] ; then
+    echo "No priority set in ${PROJECT}"
+    echo "==============================="
+    TODOTXT_VERBOSE=0 _list "$TODO_FILE" "+${PROJECT}\b" "" | \
+      sed "s/\ \x1b\[[0-9;]*m@[a-zA-Z0-9._:\-]*\b//g"
+    echo "====================================="
+    ((NOPRI+=1))
+  fi
+done
 
-	"-h")
-		usage
-		exit
-	;;
-
-	*)
-		# Create array and variable to count hits.
-		declare -a NOPRI
-		TOTAL=0
-		# Find all projects in todo file
-		PROJECTS=$(grep '\+\w*' "$TODO_FILE" | grep -o "+\w*" | sort -u | sed 's/^+//g')
-		for PROJECT in ${PROJECTS} ; do
-			# If the project does not have a priority set, add to the array
-			if [ $(grep $PROJECT $TODO_FILE | grep -c "(\w)") -eq 0 ] ; then
-				NOPRI[$TOTAL]=$PROJECT
-				TOTAL=$[TOTAL+1]
-			fi
-		done
-
-		# Did we find some projects without priorities ?
-		if [ $TOTAL -gt 0 ] ; then
-			echo "These projects have no priorities set"
-			echo "====================================="
-			echo ${NOPRI[*]} | sed 's/ /\n/g'
-			echo "====================================="
-		else
-			echo "All projects have priorities set"
-		fi
-		# Show todo items not associated to a project
-		PROJECTS=$(_list "$TODO_FILE" "$@" | grep -v "+\w")
-		if [[ -n "${PROJECTS}" ]]; then
-			echo "====================================="
-			echo "Not in projects"
-			echo "${PROJECTS}"
-		fi
-	;;
-esac
+if [[ -z ${NOPRI} ]]; then
+  echo "      All projects have priorities set"
+fi

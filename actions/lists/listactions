@@ -1,46 +1,36 @@
-#!/usr/bin/env bash 
-# 2009 Paul Mansfield <paul.mansfield@mansteck.co.uk>
-# License:  GPL, http://www.gnu.org/copyleft/gpl.html
-#set -x
+#!/usr/bin/env bash
+# shellcheck shell=bash
+#===============================================================================
+#
+#          FILE: listactions
+#
+#         USAGE: todo.sh listactions
+#
+#        AUTHOR: Paul Mansfield (paul.mansfield@mansteck.co.uk), 
+#     COPYRIGHT: 2009-2021 Paul Mansfield
+#       LICENSE: GPL, http://www.gnu.org/copyleft/gpl.html
+#===============================================================================
+
 ## Functions
-# Usage
-function usage() {
-  echo "  $(basename $0)"
-  echo "    list all possible actions"
-  echo ""
-  exit
+usage() {
+  echo "    $(basename "$0")"
+  echo "      list all possible actions"
 }
 
-# Usage for todo.sh help
-if [ "$1" = "usage" ]; then
-    usage
-    exit
+# check for usage and remove action
+if [[ $1 = "usage" ]] || [[ $2 = "usage" ]]; then
+	usage
+	exit
+elif [[ $1 = "$(basename "$0")" ]]; then
+	shift
 fi
 
-# Variables
-action="$1"; shift
-
-# Main
-case $1 in
-	"usage")
-		usage
-		exit
-	;;
-
-	"-h")
-			usage
-			exit
-	;;
-
-	*)
-		## list all possible actions
-		# Built ins are manual below (Shorthelp and pager causes issues grabbing all builtins)
-		BUILTINS="add addm addto append archive command deduplicate del rm depri do help list ls listall lsa listaddons listcon lsc listfile lf listpri lsp listproj lsprj move mv prepend prep pri p replace report shorthelp"
-		# Use builtin to find all external actions
-		ADDONS="$("${TODO_FULL_SH}" listaddons)"
-		# echo each and sort
-		for action in ${BUILTINS} ; do 
-			echo "$action"
-		done; echo "${ADDONS}" | sort | uniq
-	;;
-esac
+## list all possible actions
+# shellcheck disable=SC2209
+BUILTINS="add a addm addto archive command duplicate del rm delpri done do help list listall lsa listaddons listcon listfile lf listpri lsp listproj lsprj move mv prepend prep pri p replace report shorthelp"
+# Use builtin to find all external actions
+ADDONS="$("${TODO_FULL_SH}" listaddons)"
+# echo each and sort
+for action in ${BUILTINS} ${ADDONS} ; do 
+	echo "$action"
+done | sort -u
