@@ -52,14 +52,11 @@ test_todo_session 'edit done file' <<EOF
 === 0
 EOF
 
-# Since cfg file is long, check for first 5 lines with blank lines stripped
+# Since cfg file is long, check for first 2 lines with blank lines stripped
 test_todo_session 'edit config file' <<EOF
->>> todo.sh edit cfg | sed '/^$/d' | head -5
+>>> todo.sh edit cfg | sed '/^$/d' | head -2
 # === EDIT FILE LOCATIONS BELOW ===
 # Your todo.txt directory (this should be an absolute path)
-#export TODO_DIR="/net/nas1/volume1/scratcharea/paulbm/git/home/github/todo.txt-plugins/tests/trash directory.t5080-edit"
-export TODO_DIR="/net/nas1/volume1/scratcharea/paulbm/git/home/github/todo.txt-plugins/tests/trash directory.t5080-edit"
-# Your todo/done/report.txt locations
 === 0
 EOF
 
