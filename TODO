@@ -1,20 +1,43 @@
+TODO items
+==========
+
 contextview
+-----------
 
-enotes  
+enotes
+------
 
-lists  
+notes
+-----
 
+projectview
+-----------
 
-notes  
+rename
+------
 
-projectview  
+tickle
+------
 
-
-rename  
-
-
-tickle  
-
+lists
+-----
 
 timetracker
-Allow stop start in past using format 2012-06-13 13:15 format, useful for those that forgot to turn off a counting up clock and wish to fix.
+-----------
+
+Allow stop start in past using format 2012-06-13 13:15 format, useful for those that forgot to turn off a counting up clock and wish to fix. Perhaps use question answer to get time required. Easier in bash than 3 hours 15 minutes ago and convert.
+
+bash completion
+---------------
+
+Move to todo.txt's own bash completion and see about bash completion snippets for actions.
+
+documents
+---------
+
+Move all but README.md to docs directory or move each specific readme to its directory, needs fixing in makefile here and deb build for either option.
+
+bash_completion
+---------------
+
+Add bash completion location flexibility. i.e. Allow a variable from todo.cfg for location and default to /usr/share/todo.txt/bash_completion.d/actions
