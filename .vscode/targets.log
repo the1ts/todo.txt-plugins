@@ -1,0 +1,353 @@
+make all -f "/home/paulbm/scratcharea/git/home/github/todo.txt-plugins/Makefile" --print-data-base --no-builtin-variables --no-builtin-rules --question
+make: *** No rule to make target 'all'.  Stop.
+ 
+# GNU Make 4.2.1
+# Built for x86_64-pc-linux-gnu
+# Copyright (C) 1988-2016 Free Software Foundation, Inc.
+# License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+# This is free software: you are free to change and redistribute it.
+# There is NO WARRANTY, to the extent permitted by law.
+
+# Make data base, printed on Thu Nov 18 15:19:11 2021
+
+# Variables
+
+# automatic
+<D = $(patsubst %/,%,$(dir $<))
+# automatic
+?F = $(notdir $?)
+# environment
+DESKTOP_SESSION = lightdm-xsession
+# default
+.SHELLFLAGS := -c
+# environment
+XDG_SESSION_CLASS = user
+# environment
+XDG_SESSION_TYPE = x11
+# environment
+VSCODE_LOG_NATIVE = false
+# automatic
+?D = $(patsubst %/,%,$(dir $?))
+# automatic
+@D = $(patsubst %/,%,$(dir $@))
+# environment
+XAUTHORITY = /home/paulbm/.Xauthority
+# environment
+GDMSESSION = lightdm-xsession
+# default
+MAKE_VERSION := 4.2.1
+# makefile
+CURDIR := /net/nas1/volume1/scratcharea/paulbm/git/home/github/todo.txt-plugins
+# makefile
+SHELL = /bin/sh
+# environment
+VSCODE_NLS_CONFIG = {"locale":"en-gb","availableLanguages":{},"_languagePackSupport":true}
+# makefile (from '/home/paulbm/scratcharea/git/home/github/todo.txt-plugins/Makefile', line 13)
+DISTFILES := actions
+# makefile (from 'VERSION-FILE', line 1)
+MAKEFILE_LIST :=  /home/paulbm/scratcharea/git/home/github/todo.txt-plugins/Makefile VERSION-FILE
+# automatic
+@F = $(notdir $@)
+# 'override' directive
+GNUMAKEFLAGS := 
+# environment
+XDG_DATA_DIRS = /home/paulbm/.local/share/flatpak/exports/share:/var/lib/flatpak/exports/share:/usr/local/share:/usr/share
+# environment
+DBUS_SESSION_BUS_ADDRESS = unix:path=/run/user/1000/bus
+# makefile (from 'VERSION-FILE', line 1)
+VERSION = 2.3.0.dirty
+# environment
+VSCODE_VERBOSE_LOGGING = true
+# makefile (from '/home/paulbm/scratcharea/git/home/github/todo.txt-plugins/Makefile', line 33)
+TESTS = $(wildcard tests/t[0-9][0-9][0-9][0-9]-*.sh)
+# environment
+VSCODE_IPC_HOOK_EXTHOST = /run/user/1000/vscode-ipc-5905cfbe-0931-4e4a-8135-325482480dbb.sock
+# environment
+VSCODE_CWD = /home/paulbm
+# environment
+XDG_SESSION_PATH = /org/freedesktop/DisplayManager/Session0
+# default
+MAKE_HOST := x86_64-pc-linux-gnu
+# environment
+PATH = /home/paulbm/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games
+# environment
+XDG_RUNTIME_DIR = /run/user/1000
+# environment
+VSCODE_LOG_STACK = false
+# environment
+VSCODE_CRASH_REPORTER_START_OPTIONS = {"companyName":"Microsoft","productName":"VSCode","submitURL":"appcenter://code?aid=fba07a4d-84bd-4fc8-a125-9640fc8ce171&uid=6cc3e9a2-2b5d-4420-9a2b-e844f10b9a2a&iid=6cc3e9a2-2b5d-4420-9a2b-e844f10b9a2a&sid=6cc3e9a2-2b5d-4420-9a2b-e844f10b9a2a","uploadToServer":true}
+# default
+.FEATURES := target-specific order-only second-expansion else-if shortest-stem undefine oneshell archives jobserver output-sync check-symlink load
+# environment
+XDG_GREETER_DATA_DIR = /var/lib/lightdm/data/paulbm
+# environment
+XDG_SESSION_DESKTOP = lightdm-xsession
+# environment
+SSH_AUTH_SOCK = /run/user/1000/ssh-agent.socket
+# automatic
+%F = $(notdir $%)
+# environment
+DISPLAY = :0
+# makefile (from '/home/paulbm/scratcharea/git/home/github/todo.txt-plugins/Makefile', line 16)
+DISTNAME = todo.txt_plugins-$(VERSION)
+# environment
+VSCODE_PIPE_LOGGING = true
+# environment
+PWD = /net/nas1/volume1/scratcharea/paulbm/git/home/github/todo.txt-plugins
+# makefile (from '/home/paulbm/scratcharea/git/home/github/todo.txt-plugins/Makefile', line 14)
+READMEFILES := README.*
+# default
+.LOADED := 
+# environment
+XDG_SEAT = seat0
+# environment
+OOO_FORCE_DESKTOP = gnome
+# environment
+VSCODE_AMD_ENTRYPOINT = vs/workbench/services/extensions/node/extensionHostProcess
+# environment
+HOME = /home/paulbm
+# environment
+VSCODE_CLI = 1
+# environment
+VSCODE_CODE_CACHE_PATH = /home/paulbm/.config/Code/CachedData/3a6960b964327f0e3882ce18fcebd07ed191b316
+# environment
+LOGNAME = paulbm
+# environment
+APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = true
+# environment
+ELECTRON_NO_ATTACH_CONSOLE = 1
+# environment
+VSCODE_HANDLES_UNCAUGHT_ERRORS = true
+# automatic
+^D = $(patsubst %/,%,$(dir $^))
+# environment
+XDG_VTNR = 7
+# environment
+MAKELEVEL := 0
+# default
+MAKE = $(MAKE_COMMAND)
+# default
+MAKECMDGOALS := all
+# environment
+XDG_SESSION_ID = 3
+# environment
+USER = paulbm
+# makefile
+.DEFAULT_GOAL := VERSION-FILE
+# automatic
+%D = $(patsubst %/,%,$(dir $%))
+# default
+MAKE_COMMAND := make
+# default
+.VARIABLES := 
+# automatic
+*F = $(notdir $*)
+# environment
+LANGUAGE = en_GB:en
+# environment
+XDG_SEAT_PATH = /org/freedesktop/DisplayManager/Seat0
+# environment
+VSCODE_IPC_HOOK = /run/user/1000/vscode-e53e3478-1.62.2-main.sock
+# makefile
+MAKEFLAGS = pqrR
+# environment
+MFLAGS = -pqrR
+# automatic
+*D = $(patsubst %/,%,$(dir $*))
+# environment
+BREAKPAD_DUMP_LOCATION = /home/paulbm/.config/Code/exthost Crash Reports
+# automatic
++D = $(patsubst %/,%,$(dir $+))
+# environment
+GDK_BACKEND = x11
+# automatic
++F = $(notdir $+)
+# environment
+NO_AT_BRIDGE = 1
+# default
+MAKEFILES := 
+# automatic
+<F = $(notdir $<)
+# environment
+ELECTRON_RUN_AS_NODE = 1
+# environment
+LC_ALL = C
+# environment
+SBX_CHROME_API_RQ = 1
+# automatic
+^F = $(notdir $^)
+# default
+SUFFIXES := 
+# environment
+CHROME_DESKTOP = code-url-handler.desktop
+# default
+.INCLUDE_DIRS = /usr/include /usr/local/include /usr/include
+# default
+.RECIPEPREFIX := 
+# environment
+LANG = C
+# environment
+ORIGINAL_XDG_CURRENT_DESKTOP = undefined
+# environment
+VSCODE_PID = 30101
+# variable set hash-table stats:
+# Load=89/1024=9%, Rehash=0, Collisions=12/123=10%
+
+# Pattern-specific Variable Values
+
+# No pattern-specific variable values.
+
+# Directories
+
+# tests (device 81, inode 335770): 12 files, no impossibilities.
+
+# 12 files, no impossibilities in 1 directories.
+
+# Implicit Rules
+
+# No implicit rules.
+
+# Files
+
+.FORCE-VERSION-FILE:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+all:
+#  Command line target.
+#  Implicit rule search has been done.
+#  File does not exist.
+#  File has not been updated.
+
+.PHONY: .FORCE-VERSION-FILE clean test test-pre-clean aggregate-results tests/t4030-enotesedit.sh
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+.SUFFIXES:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+actions:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+test-pre-clean:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from '/home/paulbm/scratcharea/git/home/github/todo.txt-plugins/Makefile', line 37):
+	rm -rf tests/test-results "tests/trash directory"*
+
+test: aggregate-results
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from '/home/paulbm/scratcharea/git/home/github/todo.txt-plugins/Makefile', line 45):
+	tests/aggregate-results.sh tests/test-results/t*-*
+	rm -rf tests/test-results
+
+VERSION-FILE: .FORCE-VERSION-FILE
+#  Implicit rule search has not been done.
+#  Implicit/static pattern stem: ''
+#  Last modified 2021-11-18 15:19:11.220453353
+#  File has been updated.
+#  Successfully updated.
+# automatic
+# @ := VERSION-FILE
+# automatic
+# % := 
+# automatic
+# * := 
+# automatic
+# + := .FORCE-VERSION-FILE
+# automatic
+# | := 
+# automatic
+# < := .FORCE-VERSION-FILE
+# automatic
+# ^ := .FORCE-VERSION-FILE
+# automatic
+# ? := .FORCE-VERSION-FILE
+# variable set hash-table stats:
+# Load=8/32=25%, Rehash=0, Collisions=1/11=9%
+#  recipe to execute (from '/home/paulbm/scratcharea/git/home/github/todo.txt-plugins/Makefile', line 9):
+ 
+	@./GEN-VERSION-FILE
+
+# Not a target:
+.DEFAULT:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+clean:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from '/home/paulbm/scratcharea/git/home/github/todo.txt-plugins/Makefile', line 29):
+	rm -f $(DISTNAME).tar.gz $(DISTNAME).zip VERSION-FILE
+
+tests/t4030-enotesedit.sh: test-pre-clean
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from '/home/paulbm/scratcharea/git/home/github/todo.txt-plugins/Makefile', line 42):
+	cd tests && ./$(notdir $@) $(TEST_OPTIONS)
+
+dist: actions
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (from '/home/paulbm/scratcharea/git/home/github/todo.txt-plugins/Makefile', line 18):
+	mkdir -p $(DISTNAME)/docs/
+	cp -rf README $(DISTNAME)/
+	cp -rf $(DISTFILES) $(DISTNAME)/
+	cp -rf $(READMEFILES) $(DISTNAME)/docs
+	tar cf $(DISTNAME).tar $(DISTNAME)/
+	gzip -f -9 $(DISTNAME).tar
+	zip -9r $(DISTNAME).zip $(DISTNAME)/
+	rm -r $(DISTNAME) VERSION-FILE
+
+aggregate-results: tests/t4030-enotesedit.sh
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+# Not a target:
+/home/paulbm/scratcharea/git/home/github/todo.txt-plugins/Makefile:
+#  Implicit rule search has been done.
+#  Last modified 2021-11-18 15:08:49.027525289
+#  File has been updated.
+#  Successfully updated.
+
+# files hash-table stats:
+# Load=14/1024=1%, Rehash=0, Collisions=0/41=0%
+# VPATH Search Paths
+
+# No 'vpath' search paths.
+
+# No general ('VPATH' variable) search path.
+
+# strcache buffers: 1 (0) / strings = 29 / storage = 374 B / avg = 12 B
+# current buf: size = 8162 B / used = 374 B / count = 29 / avg = 12 B
+
+# strcache performance: lookups = 56 / hit rate = 48%
+# hash-table stats:
+# Load=29/8192=0%, Rehash=0, Collisions=1/56=2%
+# Finished Make data base on Thu Nov 18 15:19:11 2021
+
+ 

@@ -1,0 +1,45 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"editor.tabSize": 2,
+    "editor.detectIndentation": false,
+    "gitflow4code.features": [
+      {
+        "name": "feature/notes_fixes",
+        "base": "develop"
+      },
+      {
+        "name": "feature/enotesrename_fixes",
+        "base": "develop"
+      },
+      {
+        "name": "feature/shortnames",
+        "base": "develop"
+      },
+      {
+        "name": "feature/list_fixes",
+        "base": "develop"
+      },
+      {
+        "name": "feature/new_usage",
+        "base": "develop"
+      },
+      {
+        "name": "feature/notes_fixes",
+        "base": "develop"
+      },
+      {
+        "name": "feature/misc_fixes-1",
+        "base": "develop"
+      },
+      {
+        "name": "feature/readme_markdown",
+        "base": "develop"
+      }
+    ]
+	}
+}
