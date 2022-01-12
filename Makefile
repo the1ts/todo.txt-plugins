@@ -22,7 +22,6 @@ READMEFILES := README.*
 DISTNAME=todo.txt_plugins-$(VERSION)
 dist: $(DISTFILES) 
 	mkdir -p $(DISTNAME)/docs/
-	cp -rf README $(DISTNAME)/
 	cp -rf $(DISTFILES) $(DISTNAME)/
 	cp -rf $(READMEFILES) $(DISTNAME)/docs
 	tar cf $(DISTNAME).tar $(DISTNAME)/
