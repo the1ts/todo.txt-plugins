@@ -2,14 +2,22 @@ name: Makefile CI
 
 on:
   push:
-    branches: [ feature/fix_ci ]
+    branches: 
+      - develop
+      - feature/**
+      - release/**
+      - master
   pull_request:
-    branches: [ feature/fix_ci ]
+    branches:
+      - develop
+      - feature/**
+      - release/**
+      - master
 
 jobs:
   build:
 
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v2
