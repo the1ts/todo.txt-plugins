@@ -1,9 +1,9 @@
 {
 	"folders": [
-		{
-			"path": "."
-		}
-	],
+    {
+      "path": "../../../../../../../net/nas1/volume1/scratcharea/paulbm/git/home/github/todo.txt-plugins"
+    }
+  ],
 	"settings": {
 		"editor.tabSize": 2,
     "editor.detectIndentation": false,
@@ -38,6 +38,10 @@
       },
       {
         "name": "feature/readme_markdown",
+        "base": "develop"
+      },
+      {
+        "name": "feature/fix_ci",
         "base": "develop"
       }
     ]
