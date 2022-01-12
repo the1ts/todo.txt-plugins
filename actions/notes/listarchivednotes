@@ -41,8 +41,8 @@ cd "${TODO_DIR}/notes/archive/" || exit 1
 
 # Find a list of files
 find . -name "${PRE}-*txt" -printf '%P\n'  | grep "^${PRE}-" | \
-  sed  -e "s/${PRE}-//" -e "s/^/note:/" -e "s/.txt$//" -e "s/\.[0-9]\{1,10\}$//g" > \
-  "${TODO_TMP_FILE}"
+  sed  -e "s/${PRE}-//" -e "s/^/note:/" -e "s/.txt$//" -e "s/\.[0-9]\{1,10\}$//g" | 
+  sort > "${TODO_TMP_FILE}"
 if [[ $(grep -c "$*" "${TODO_TMP_FILE}") -gt 0 ]]; then
   grep "$*" "${TODO_TMP_FILE}"
   [[ -f "${TODO_TMP_FILE}" ]] && rm -rf "${TODO_TMP_FILE}"

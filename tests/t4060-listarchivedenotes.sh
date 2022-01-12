@@ -18,16 +18,16 @@ Fix bicycle enote:testing
 Ride bike enote:testing
 EOF
 # Create our notes file with some content
-cat > notes/todo-test.enc << EOF                                                         
+cat > notes/todo-test.enc << EOF
 test note first line
 test note second line
 EOF
 # Create our notes file with some content
-cat > ./notes/archive/todo-testing.enc << EOF                                                         
+cat > ./notes/archive/todo-testing.enc << EOF
 test note first line
 test note second line
 EOF
-cat > ./notes/archive/todo-previous.10100000.enc << EOF                                                         
+cat > ./notes/archive/todo-previous.10100000.enc << EOF
 test note first line
 test note second line
 test note third line
@@ -49,8 +49,8 @@ EOF
 
 test_todo_session 'listarchivedenotes all' <<EOF
 >>> todo.sh listarchivedenotes
-enote:testing
 enote:previous
+enote:testing
 === 0
 EOF
 
