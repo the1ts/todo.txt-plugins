@@ -2,9 +2,17 @@ name: Makefile CI
 
 on:
   push:
-    branches: [ develop ]
+    branches: 
+      - develop
+      - feature/**
+      - release/**
+      - master
   pull_request:
-    branches: [ develop ]
+    branches:
+      - develop
+      - feature/**
+      - release/**
+      - master
 
 jobs:
   build:
