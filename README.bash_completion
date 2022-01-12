@@ -1,5 +1,0 @@
-README for bash completion
-
-This allows completion of both actions along with context, project or note.
-
-This relies on listaction to find both built in and actions from TODO_ACTIONS_DIR.

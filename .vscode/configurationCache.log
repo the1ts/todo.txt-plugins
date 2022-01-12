@@ -1,0 +1,1 @@
+{"buildTargets":["VERSION-FILE","aggregate-results","clean","dist","test","test-pre-clean","tests/t4030-enotesedit.sh"],"launchTargets":[],"customConfigurationProvider":{"workspaceBrowse":{"browsePath":[],"compilerArgs":[]},"fileIndex":[]}}

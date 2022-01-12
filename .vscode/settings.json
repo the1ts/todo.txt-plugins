@@ -1,0 +1,12 @@
+{
+  "gitflow4code.features": [
+    {
+      "name": "feature/rename_fixes",
+      "base": "develop"
+    },
+    {
+      "name": "feature/edit_fixes",
+      "base": "develop"
+    }
+  ]
+}
