@@ -36,7 +36,7 @@ fi
 
 # Gets our items and priorities as builtin pri function takes them i.e. line priority line priority
 # shellcheck disable=SC2068
-PRIS=$(TODOTXT_PLAIN=1 TODOTXT_VERBOSE=0 "${TODO_FULL_SH}" listpri $@ | awk '{print $1,$2}' | tr 'B-Z' 'A-X' | tr -d '()' | tr '\n' ' ')
+PRIS=$(TODOTXT_PLAIN=1 TODOTXT_VERBOSE=0 "${TODO_FULL_SH}" listpri $@ | grep -v '^x\ ' | awk '{print $1,$2}' | tr 'B-Z' 'A-X' | tr -d '()' | tr '\n' ' ')
 # Test if we have found any priorites, error out if none
 if [[ -z "${PRIS}" ]]; then
   die "      No priorites in our search of todo.txt"

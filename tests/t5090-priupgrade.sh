@@ -97,5 +97,22 @@ test_todo_session 'priupgrade with no priorities in our search of todo.txt' <<EO
 === 1
 EOF
 
+# Create our todo.txt file without priorities
+cat > todo.txt <<EOF
+Buy tools note:test
+Fix bicycle note:testing
+x (A) Ride bike note:testing
+EOF
+
+test_todo_session 'priupgrade and ignore completed items' <<EOF
+>>> todo.sh priupgrade None
+      No priorites in our search of todo.txt
+    priupgrade [TERM]
+      Increases the priority of all items matching TERM
+      Without TERM it runs across all priroties
+      For changes by line number use builtin pri
+=== 1
+EOF
+
 # TODO test for line number editing
 test_done

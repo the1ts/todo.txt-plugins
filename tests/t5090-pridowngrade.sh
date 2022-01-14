@@ -97,5 +97,22 @@ test_todo_session 'pridowngrade with no priorities in our search of todo.txt' <<
 === 1
 EOF
 
+# Create our todo.txt file without priorities
+cat > todo.txt <<EOF
+Buy tools note:test
+Fix bicycle note:testing
+x (A) Ride bike note:testing
+EOF
+
+test_todo_session 'pridowngrade and ignore completed items' <<EOF
+>>> todo.sh pridowngrade None
+      No priorites in our search of todo.txt
+    pridowngrade [TERM]
+      Decreases the priority of all items matching TERM
+      Without TERM it runs across all priroties
+      For changes by line number use builtin pri
+=== 1
+EOF
+
 # TODO test for line number editing
 test_done
