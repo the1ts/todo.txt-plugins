@@ -9,11 +9,13 @@ This is an improved edit function that can be used to edit the todo.txt file, th
 Usage: ```todo.sh edit todo```
 
 ## Upgrade Priorities
+
 Increase the priority of one or many items. It can take a TERM to search with, this TERM can be a project, a context or free form.
 
 Usage: ```todo.sh priupgrade @project```
 
 ## Downgrade Priorities
+
 Decrease the priority of one or many items. It can take a TERM to search with, this TERM can be a project, a context or free form.
 
 Usage: ```todo.sh pridowngrade @project```
