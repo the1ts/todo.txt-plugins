@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+#===============================================================================
+#
+#          FILE: addx 
+#
+#         USAGE: todo.sh addx [TASK]
+#
+#        AUTHOR: Paul Mansfield (paul.mansfield@mansteck.co.uk), 
+#     COPYRIGHT: 2022 Paul Mansfield
+#       LICENSE: GPL, http://www.gnu.org/copyleft/gpl.html
+#       CREATED: 15/01/22 10:52:44
+#===============================================================================
+
+usage() {
+	echo "    $(basename "$0") [TASK]"
+	echo "      Add item already completed"
+}
+
+die () {
+	if [[ -n $* ]]; then
+		echo -e "$*"
+	fi
+	usage
+	exit 1
+}
+
+# Usage for todo.sh help or remove action
+if [[ "${1}" = "usage" ]] || [[ "${2}" = "usage" ]]; then
+	usage
+	exit
+elif [[ "${1}" = "$(basename "$0")" ]]; then
+  shift
+fi
+
+# Test we have an item
+# shellcheck disable=SC2199
+if [[ -z ${@} ]]; then
+  die "      No task given"
+fi
+
+# Add task
+"${TODO_FULL_SH}" add "$@"
+# Find task, will be last so find size of file in lines
+ITEM=$(wc -l "${TODO_FILE}" | cut -f 1 -d " ")
+# Complete task, respects user ARCHIVE options
+TODOTXT_VERBOSE=0 "${TODO_FULL_SH}" "do" "${ITEM}"

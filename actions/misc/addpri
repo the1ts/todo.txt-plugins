@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+#===============================================================================
+#
+#          FILE: addpri 
+#
+#         USAGE: todo.sh addpri [PRIORITY] [TASK]
+#
+#        AUTHOR: Paul Mansfield (paul.mansfield@mansteck.co.uk), 
+#     COPYRIGHT: 2022 Paul Mansfield
+#       LICENSE: GPL, http://www.gnu.org/copyleft/gpl.html
+#       CREATED: 17/01/22 10:52:44
+#===============================================================================
+
+usage() {
+	echo "    $(basename "$0") [PRIORITY] [TASK]"
+	echo "      Add item with priority"
+}
+
+die () {
+	if [[ -n $* ]]; then
+		echo -e "$*"
+	fi
+	usage
+	exit 1
+}
+
+# Usage for todo.sh help or remove action
+if [[ "${1}" = "usage" ]] || [[ "${2}" = "usage" ]]; then
+	usage
+	exit
+elif [[ "${1}" = "$(basename "$0")" ]]; then
+  shift
+fi
+# Test we have a priority, move it in to a variable
+# shellcheck disable=SC2068
+if [[ $(echo $@ | cut -f 1 -d " " | grep -c '[a-zA-Z]') -lt 1 ]]; then
+  die "      No priority set"
+else
+  # shellcheck disable=SC2068
+  PRI="$(echo $@ | cut -f 1 -d " " | tr [a-z] [A-Z])"
+  # Test priority is correct
+  if [[ $(echo "${PRI}" | grep -Ec '^[A-Z]{1}$') -lt 1 ]]; then
+    die "      Priority must be a single letter A-Z"
+  fi
+  shift
+fi
+# Test we have an item left to add
+# shellcheck disable=SC2199
+if [[ -z ${@} ]]; then
+  die "      No task given"
+fi
+
+# Add task
+"${TODO_FULL_SH}" add  "(${PRI})" "$@"
