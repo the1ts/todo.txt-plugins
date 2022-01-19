@@ -1,0 +1,424 @@
+#!/usr/bin/env bash
+# shellcheck shell=bash
+#===============================================================================
+#
+#          FILE: notes
+#
+#         USAGE: todo.sh notes [add|archive|cat|edit|grep|list|listarchived|rename|unarchive]
+#
+#        AUTHOR: Paul Mansfield (paul.mansfield@mansteck.co.uk), 
+#     COPYRIGHT: 2009-2022 Paul Mansfield
+#       LICENSE: GPL, http://www.gnu.org/copyleft/gpl.html
+#===============================================================================
+
+usage () {
+	echo "    $(basename "$0") [add|archive]"
+	echo "      add [ITEMS] [NOTESFILE]"
+  echo "        Add NOTESFILE in ITEMS"
+	echo "      archive"
+  echo "        Archive any notesfile not in todo.txt"
+  echo "      cat"
+  echo "        Show contents of notesfile"
+  echo "      edit"
+  echo "        Edit a notesfile, use notes list to fine notesfiles"
+  echo "      grep"
+  echo "        List notesfiles that match a regex"
+  echo "      list"
+  echo "        Show all notes in todo.txt"
+  echo "      listarchived"
+  echo "        Show all archived notes"
+  echo "      rename"
+  echo "        Rename notesfile"
+  echo "      unarchive"
+  echo "        Move an archived note back to current"
+}
+
+die () {
+	if [[ -n $* ]]; then
+		echo -e "$*"
+  fi
+	usage
+	exit 1
+}
+
+# Find editor to use, if EDITOR already set use.
+# Else use debian and derivatives editor (alternatives auto set by OS)
+# finally if neither EDITOR nor alternative set default to vi
+find_editor () {
+  if [[ -n ${EDITOR} ]]; then
+    true
+	elif [[ -L /usr/bin/editor ]]; then
+		EDITOR="/usr/bin/editor"
+	elif [[ -z "${EDITOR}" ]]; then
+		EDITOR="vi"
+	fi
+  echo "${EDITOR}"
+}
+
+# Usage for todo.sh help or remove action
+# Remove notes todo.txt action name
+if [[ "${2}" = "usage" ]] || [[ "${3}" = "usage" ]]; then
+	usage
+	exit
+elif [[ "${1}" = "$(basename "$0")" ]]; then
+  shift
+  action=$1
+  shift
+fi
+
+PRE="$(basename "${TODO_FILE}")"; PRE=${PRE/%\.txt/}
+
+# Check notes and archive exist
+mkdir -p "${TODO_DIR}/notes/archive" || exit 1
+cd "${TODO_DIR}/notes" || exit 1
+
+_add () {
+  # Check notes and item number exist
+  if [[ "$#" -lt 2 ]]; then
+    if ! [[ "$1" =~ ^[0-9]+$ ]]; then
+      die "      No item given"
+    elif ! [[ "$2" =~ ^[0-9]+$ ]]; then
+      die "      No notesfile given"
+    fi
+  fi
+
+  # Set notes file from last argument and remove last argument
+  # this leaves items which we test later
+  NOTES_FILE="${!#}"
+  NOTES_FILE="${NOTES_FILE/#note:/}"
+  set -- "${@:1:$(($#-1))}"
+  NOTES=$(find . -maxdepth 1 -name "${PRE}*txt" -printf '%P\n')
+
+  # If our enotes file is just numbers we didn't get given one
+  if [[ "${NOTES_FILE}" =~ ^[0-9]+$ ]]; then
+    die "      No notesfile given"
+  fi
+
+  # Can we edit after addition?
+  # Only set if file new to todo.txt and note doesn't exist
+  # Also check we have notesedit addon installed
+  if [[ "${NOTE_ADD_EDIT}" = "OFF" ]]; then
+    if [[ $(grep -c "${NOTES_FILE}" "${TODO_FILE}") -eq 0 ]] && \
+      ! [[ -f "${TODOTXT_DIR}/notes/${PRE}-${NOTES}.txt" ]] && \
+      [[ $(${TODO_FULL_SH} listaddons | grep -c ^notesedit$) -eq 1 ]]; then
+      EDIT_FILE=1
+    fi
+  fi
+
+  # Are items in the file?
+  # shellcheck disable=SC2048
+  for item in $*; do
+    if [[ ${item} -gt $(wc -l "${TODO_FILE}" | cut -f 1 -d " ") ]]; then
+      die "      No item ${item}"
+    fi
+  done
+
+  # Use built in append action to add notesfile to each item, testing as we go
+  # shellcheck disable=SC2048
+  for item in $*; do
+    # Test we have an item number
+    if ! [[ "${item}" =~ ^[0-9]+$ ]]; then
+      die " ITEM is not a number"
+    fi
+    "${TODO_FULL_SH}" append "${item}" "note:${NOTES_FILE}"
+    echo "$(getPrefix "${TODO_FILE}"): note:${NOTES_FILE} added to item ${item}"
+  done
+
+  # If our tests allow open file for editing
+  if [[ "${EDIT_FILE}" = 1 ]]; then
+    "${TODO_FULL_SH}" notesedit "note:${NOTES_FILE}"
+  fi
+}
+
+_archive (){
+  # construct file name
+  TODO_TMP_FILE="${TODO_TMP_FILE:-${TODO_DIR}/todo.tmp}"
+  NOTES=$(find . -maxdepth 1 -name "${PRE}-*txt" -printf '%P\n')
+
+  # Create file from todo and 'tickled' files
+  cat "${TODO_FILE}" > "${TODO_TMP_FILE}"
+  if [[ -n "${TICKLER_DIR}" ]] && [[ -d "${TICKLER_DIR}" ]]; then
+    find "${TICKLER_DIR}" -mindepth 2 -type f -size 1 -exec cat {} \; >> "${TODO_TMP_FILE}"
+  fi
+
+  # for each file, remove $PRE and see if its in todo or 'tickled' files
+  for i in ${NOTES} ; do
+    i="${i/#${PRE}-/}"; NOTE_FILE="${i/%\.txt/}"
+    # Number of times note appears in todo.txt
+    NUM_NOTE=$(grep -c "\bnote:${NOTE_FILE}\b" "${TODO_TMP_FILE}")
+    if [[ "${NUM_NOTE}" -eq 0 ]] ;then
+      cat "${TODO_DIR}/notes/${PRE}-${NOTE_FILE}.txt" >> \
+        "${TODO_DIR}/notes/archive/${PRE}-${NOTE_FILE}.$(date +%s).txt" || 
+        die "      unable to create archive file" && \
+      rm "${TODO_DIR}/notes/${PRE}-${NOTE_FILE}.txt"
+      echo "$(getPrefix): Archived note:${NOTE_FILE}"
+      ((RETURN+=1)) 
+    fi
+  done
+
+  [[ -f "${TODO_TMP_FILE}" ]] && rm -rf "${TODO_TMP_FILE}"
+
+  # if we have not archived anything, then report
+  if [[ -z "${RETURN}" ]]; then
+    echo "$(getPrefix): Nothing to archive"
+    exit 1
+  fi
+}
+
+_cat (){
+  if [[ $# -lt 1 ]]; then
+    die "      No notes file"
+  fi
+
+  NOTE_FILE="${1/#note:/}"; shift
+
+  if  [[ $(grep -c "${NOTE_FILE}" "${TODO_FILE}") -lt 1 ]]; then
+    die "      Notes file ${NOTE_FILE} not in todo.txt file,\n      use listnotes to find notes files"
+  fi
+
+  if [ -e "${TODO_DIR}/notes/${PRE}-${NOTE_FILE}.txt" ]; then
+    cat "${TODO_DIR}/notes/${PRE}-${NOTE_FILE}.txt" 2> /dev/null || \
+      die "    Unable to find or show ${PRE}-${NOTE_FILE}.txt"
+  fi
+}
+
+_edit () {
+  NOTE_FILE="${1/#note:/}"; shift
+  TODO_TMP_FILE="${TODO_TMP_FILE:-${TODO_DIR}/todo.tmp}"
+  EDITOR=$(find_editor)
+
+  if [[ -z "${NOTE_FILE}" ]]; then
+    die "      No notes file"
+  elif [[ $(grep -c "note:${NOTE_FILE}" "${TODO_FILE}") -eq 0 ]]; then
+    die "      No such notes file, use listnotes to find notes files"
+  fi
+
+  # Create file from todo and 'tickled' files
+  cat "${TODO_FILE}" > "${TODO_TMP_FILE}"
+  if [ -n "${TICKLER_DIR}" ]; then
+    find "${TICKLER_DIR}" -mindepth 2 -type f -size 1 -exec cat {} \; >>"${TODO_TMP_FILE}"
+  fi
+
+  # If file exists edit it else check listnotes for pointer then edit 
+  if [ -e "${TODO_DIR}/notes/${PRE}-${NOTE_FILE}.txt" ]; then
+    "${EDITOR}" "${TODO_DIR}/notes/${PRE}-${NOTE_FILE}.txt"
+  else
+    # If note link in todo.txt exists then edit
+    # shellcheck disable=SC2046,SC2086
+    NUM_ENOTE=$(grep -c "[^ ]*enote:${NOTE_FILE}[^ ]\+" "${TODO_TMP_FILE}")
+    if [ "${NUM_ENOTE}" -ge 1 ] ; then
+      "${EDITOR}" "${TODO_DIR}/notes/${PRE}-${NOTE_FILE}.txt"
+      [[ -f "${TODO_TMP_FILE}" ]] && rm -rf "${TODO_TMP_FILE}"
+    fi
+  fi
+}
+
+_grep () {
+  if [[ -z "$1" ]]; then
+    die "    No TERM"
+  fi
+
+  cd "${TODO_DIR}/notes/" || exit 1
+  NOTES="$(find -- * -maxdepth 0 -name "${PRE}-*txt" -printf "%f\n")"
+  ARCHIVED="$(find -- archive/* -name "${PRE}-*.txt" -printf "%p\n")"
+  if [[ "$1" = "-a" ]]; then
+    ARCHIVE=1; shift
+  fi
+
+  ## Main
+  TOTAL_NOTES=0
+  for item in ${NOTES}; do
+    # shellcheck disable=SC2086
+    if [[ "$(grep -oc "$*" ${item})" -gt 0 ]]; then
+    ((TOTAL_NOTES=+1))
+    fi
+  done
+  TOTAL_ARCHIVED=0
+  for item in ${ARCHIVED}; do
+    # shellcheck disable=SC2086
+    if [[ "${ARCHIVE}" -eq 1 ]] && [[ "$(grep -oc "$*" ${item})" -gt 0 ]]; then
+      ((TOTAL_ARCHIVED=+1))
+    fi
+  done
+
+  if [[ "${TOTAL_NOTES}" -gt 0 ]]; then
+    echo "Notes Files containing \"$*\""
+    echo "-----------"
+    # shellcheck disable=SC2086
+    grep -l "$*" ${NOTES} | sed "s/^.*${PRE}-/note:/g ; s/[.]txt$//g"
+  else
+    echo "No current Notes containing \"$*\""
+    ((RETURN+=1))
+  fi
+  if [[ ${ARCHIVE} -eq 1 ]]; then
+    if [ ${TOTAL_ARCHIVED} -gt 0 ]; then
+      echo ""
+      echo "Archived Notes Files containing \"$*\""
+      echo "--------------------"
+      # shellcheck disable=SC2086
+      grep -l "$*" ${ARCHIVED} | sed -e "s/^.*${PRE}-/note:/g" \
+      -e "s/[.]txt$//g" -e "s/\.[0-9]\{1,10\}$//g"
+    else
+      echo "No archived Notes containing \"$*\""
+      ((RETURN+=1))
+    fi
+  fi
+  if [[ ${RETURN} -gt 0 ]]; then
+    exit 1
+  fi
+}
+
+_list () {
+  TODO_TMP_FILE="${TODO_TMP_FILE:-${TODO_DIR}/todo.tmp}"
+
+  # Create file from todo and 'tickled' files
+  cat "${TODO_FILE}" > "${TODO_TMP_FILE}"
+    if [ -n "${TICKLER_DIR}" ]; then
+    find "${TICKLER_DIR}" -mindepth 2 -type f -size 1 -exec cat {} \; >> "${TODO_TMP_FILE}"
+  fi
+
+  if [[ $(grep -o '\bnote\:[a-zA-Z0-9\._-]*' "${TODO_TMP_FILE}" | grep -c "$*") -gt 0 ]]; then
+    grep -o '\bnote\:[a-zA-Z0-9\._-]*' "${TODO_TMP_FILE}" | grep "$*" | sort -u
+    [[ -f "${TODO_TMP_FILE}" ]] && rm -rf "${TODO_TMP_FILE}"
+  else
+    [[ -f "${TODO_TMP_FILE}" ]] && rm -rf "${TODO_TMP_FILE}"
+    die "      No notes with the term \"$*\""
+  fi
+}
+
+_listarchived () {
+  TODO_TMP_FILE="${TODO_TMP_FILE:-${TODO_DIR}/todo.tmp}"
+
+  # Check notes and archive exist
+  mkdir -p "${TODO_DIR}/notes/archive/" || exit 1
+  cd "${TODO_DIR}/notes/archive/" || exit 1
+
+  # Find a list of files
+  find . -name "${PRE}-*txt" -printf '%P\n'  | grep "^${PRE}-" | \
+    sed  -e "s/${PRE}-//" -e "s/^/note:/" -e "s/.txt$//" -e "s/\.[0-9]\{1,10\}$//g" | 
+    sort > "${TODO_TMP_FILE}"
+  if [[ $(grep -c "$*" "${TODO_TMP_FILE}") -gt 0 ]]; then
+    grep "$*" "${TODO_TMP_FILE}"
+    [[ -f "${TODO_TMP_FILE}" ]] && rm -rf "${TODO_TMP_FILE}"
+  else
+    [[ -f "${TODO_TMP_FILE}" ]] && rm -rf "${TODO_TMP_FILE}"
+    die "      No notes with the term \"$*\""
+  fi
+}
+
+_rename () {
+  if [[ "$#" -ne 2 ]]; then
+    die "    check number of options"
+  fi
+
+  OLD_FILE=${1##note:}
+  NEW_FILE=${2##note:}
+  NOTES_DIR="${TODO_DIR}/notes"
+
+  cd "${NOTES_DIR}" || exit 1
+
+  # Move the note
+  if [[ "$(grep -c "${OLD_FILE}" "${TODO_FILE}")" -ge 1 ]]; then
+    sed -i "s/note:${OLD_FILE}\b/note:${NEW_FILE}/g" "${TODO_FILE}"
+    echo "$(getPrefix): Changed note:${OLD_FILE} to note:${NEW_FILE} in todo.txt"
+    ((UPDATE+=1))
+  fi
+  # shellcheck disable=SC2153
+  if [[ "$(grep -c "${OLD_FILE}" "${DONE_FILE}")" -ge 1 ]]; then
+    sed -i "s/note:${OLD_FILE}\b/note:${NEW_FILE}/g" "${DONE_FILE}"
+    echo "$(getPrefix): Changed note:${OLD_FILE} to note:${NEW_FILE} in done.txt"
+    ((UPDATE+=1))
+  fi
+  if [[ -z "${UPDATE}" ]]; then
+    die "    ${OLD_FILE} is not a current note, use listnotes to find notes."
+  fi
+
+  # rename OLD_FILE
+  if [[ -f "${NOTES_DIR}/${PRE}-${OLD_FILE}.txt" ]]; then
+    mv "${NOTES_DIR}/${PRE}-${OLD_FILE}.txt" "${NOTES_DIR}/${PRE}-${NEW_FILE}.txt"
+  fi
+
+  # Test for OLD_FILE in 'tickled' files and rename
+  if [[ -n ${TICKLER_DIR} ]]; then
+    TICKLED="$(find "${TICKLER_DIR}" -mindepth 2 -type f -size 1 -exec grep -l "${OLD_FILE}" {} \;)"
+    for FILE in ${TICKLED}; do
+      sed -i "s/note:${OLD_FILE}\b/note:${NEW_FILE}" "${FILE}"
+      echo "$(getPrefix): Changed note:${OLD_FILE} to note:${NEW_FILE} in tickled file ${FILE}"
+    done
+      mv "${NOTES_DIR}/${OLD_FILE}.txt" "${NOTES_DIR}/${NEW_FILE}.txt"
+  fi
+}
+
+_unarchive () {
+  cd "${TODO_DIR}/notes/archive/" || exit 1
+
+  FILE=${1##note:}; shift
+  DATE_FILE=$(find -- * -name "${PRE}-${FILE}.*.txt" -type f -printf "%T@ %p\n"  2> /dev/null | sort -n | cut -f 2 -d " "  | tail -n 1)
+  ARC_FILE="${TODO_DIR}/notes/archive/${DATE_FILE}"
+  NOTES_FILE="${TODO_DIR}/notes/${PRE}-${FILE}.txt"
+  TODO_TMP_FILE="${TODO_TMP_FILE:-${TODO_DIR}/todo.tmp}"
+
+  if [[ -z "${DATE_FILE}" ]]; then
+    die "      No archived notes file named ${FILE}. Use listarchivedenotes to find them"
+  fi
+
+  # Does the notes file exist? i.e  mentioned in todo/tickled file?
+  cat "${TODO_FILE}" > "${TODO_TMP_FILE}"
+  if [[ -n ${TICKLER_DIR} ]] && [[ -d ${TICKLER_DIR} ]]; then
+    find "${TICKLER_DIR}" -mindepth 2 -type f -size 1 -exec cat {} \; >> "${TMP_FILE}"
+  fi
+  if [[ "$(grep -c "\bnote:${FILE}\b" "${TODO_TMP_FILE}")" -eq 0 ]] ;then
+    die "      Note file ${FILE} not mentioned in todo\n      use listnotes to find them"
+  fi
+  [[ -f "${TODO_TMP_FILE}" ]] && rm -rf "${TODO_TMP_FILE}"
+
+  cp "${ARC_FILE}" "${NOTES_FILE}"
+  if [[ "$?" -eq 1 ]]; then
+    die "     Unable to move ${PRE}-${FILE}.txt to ${NO_DATE_FILE}.txt"
+  else
+    echo "$(getPrefix): Notes file ${PRE}-${FILE}.txt restored from newest archive"
+  fi
+}
+
+# what to do for each action
+case ${action} in
+  add)
+    # shellcheck disable=SC2068
+    _add $@
+  ;;
+  archive)
+    # shellcheck disable=SC2068
+    _archive $@
+  ;;
+  cat)
+    # shellcheck disable=SC2068
+    _cat $@
+  ;;
+  edit)
+    # shellcheck disable=SC2068
+    _edit $@
+  ;;
+  grep)
+    # shellcheck disable=SC2068
+    _grep $@
+  ;;
+  list)
+    # shellcheck disable=SC2068
+    _list $@
+  ;;
+  listarchived)
+    # shellcheck disable=SC2068
+    _listarchived $@
+  ;;
+  rename)
+    # shellcheck disable=SC2068
+    _rename $@
+  ;;
+  unarchive)
+    # shellcheck disable=SC2068
+    _unarchive $@
+  ;;
+  *) # This catches all cases that weren't previously listed. That's why it has the wildcard "*" operator.
+    usage
+  ;;
+esac
