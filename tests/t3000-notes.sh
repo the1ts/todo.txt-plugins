@@ -12,25 +12,13 @@ mkdir -p notes/archive
 # Set editor to cat so it tests nicely.
 export EDITOR="cat"
 
-USAGETEXT="    notes [add|archive]
-      add [ITEMS] [NOTESFILE]
-        Add NOTESFILE in ITEMS
-      archive
-        Archive any notesfile not in todo.txt
-      cat
-        Show contents of notesfile
-      edit
-        Edit a notesfile, use notes list to fine notesfiles
-      grep
-        List notesfiles that match a regex
-      list
-        Show all notes in todo.txt
-      listarchived
-        Show all archived notes
-      rename
-        Rename notesfile
-      unarchive
-        Move an archived note back to current"
+USAGETEXT="    notes [add|archive|cat|edit|grep|list|listarchived|rename|unarchive]"
+
+test_todo_session 'notes show usage' <<EOF
+>>> todo.sh notes add usage
+${USAGETEXT}
+=== 0
+EOF
 
 #
 ## add
@@ -43,12 +31,6 @@ Fix bicycle
 Ride bike
 EOF
 
-test_todo_session 'notes show usage' <<EOF
->>> todo.sh notes add usage
-${USAGETEXT}
-=== 0
-EOF
-
 test_todo_session 'notes add note to task' <<EOF
 >>> todo.sh notes add 1 test
 1 Buy tools note:test
@@ -56,24 +38,34 @@ TODO: note:test added to item 1
 === 0
 EOF
 
+test_todo_session 'notes add note to task note:test style' <<EOF
+>>> todo.sh notes add 1 note:test1
+1 Buy tools note:test note:test1
+TODO: note:test1 added to item 1
+=== 0
+EOF
+
 test_todo_session 'notes add item only no note' <<EOF
 >>> todo.sh notes add 1
       No notesfile given
-${USAGETEXT}
+    notes add [ITEMS] [NOTESFILE]
+      append NOTESFILE to ITEMS and edit NOTESFILE if new
 === 1
 EOF
 
 test_todo_session 'notes add no item only note' <<EOF
 >>> todo.sh notes add testing
       No item given
-${USAGETEXT}
+    notes add [ITEMS] [NOTESFILE]
+      append NOTESFILE to ITEMS and edit NOTESFILE if new
 === 1
 EOF
 
 test_todo_session 'notes add item nonexistant' <<EOF
 >>> todo.sh notes add 100 testing
-      No item 100
-${USAGETEXT}
+      ITEM 100 not in todo file
+    notes add [ITEMS] [NOTESFILE]
+      append NOTESFILE to ITEMS and edit NOTESFILE if new
 === 1
 EOF
 
@@ -134,9 +126,9 @@ TODO: Nothing to archive
 === 1
 EOF
 
-#
-## cat
-#
+# #
+# ## cat
+# #
 
 
 # Create our notes and archive directories
@@ -159,11 +151,19 @@ EOF
 test_todo_session 'notes cat no notes file' <<EOF
 >>> todo.sh notes cat
       No notes file
-${USAGETEXT}
+    notes cat
+      Archive NOTESFILE not in todo.txt
 === 1
 EOF
 
 test_todo_session 'notes cat show notesfile' <<EOF
+>>> todo.sh notes cat test
+test note first line
+test note second line
+=== 0
+EOF
+
+test_todo_session 'notes cat show notesfile in note:test style' <<EOF
 >>> todo.sh notes cat note:test
 test note first line
 test note second line
@@ -174,7 +174,8 @@ test_todo_session 'notes cat show no such note' <<EOF
 >>> todo.sh notes cat note:notafile
       Notes file notafile not in todo.txt file,
       use listnotes to find notes files
-${USAGETEXT}
+    notes cat
+      Archive NOTESFILE not in todo.txt
 === 1
 EOF
 
@@ -201,18 +202,29 @@ EOF
 test_todo_session 'notes edit no notefile' <<EOF
 >>> todo.sh notes edit
       No notes file
-${USAGETEXT}
+    notes edit
+      Edit notes file, \$EDITOR.
+      use listnotes to get list of notes files
 === 1
 EOF
 
 test_todo_session 'notes edit no such notefile' <<EOF
 >>> todo.sh notes edit note:notafile
       No such notes file, use listnotes to find notes files
-${USAGETEXT}
+    notes edit
+      Edit notes file, \$EDITOR.
+      use listnotes to get list of notes files
 === 1
 EOF
 
 test_todo_session 'notes edit show a notefile' <<EOF
+>>> todo.sh notes edit test
+test note first line
+test note second line
+=== 0
+EOF
+
+test_todo_session 'notes edit show a notefile in note:test style' <<EOF
 >>> todo.sh notes edit note:test
 test note first line
 test note second line
@@ -251,7 +263,9 @@ EOF
 test_todo_session 'notes grep no term' <<EOF
 >>> todo.sh notes grep
     No TERM
-${USAGETEXT}
+    notes grep -a [TERM...]
+      List notes that contain a TERM within them
+      -a show archived notes
 === 1
 EOF
 
@@ -344,7 +358,9 @@ EOF
 test_todo_session 'notes list unable to find term' <<EOF
 >>> todo.sh notes list foobar
       No notes with the term "foobar"
-${USAGETEXT}
+    notes list -a [TERM...]
+      List notes
+      -a show archived notes
 === 1
 EOF
 
@@ -392,7 +408,8 @@ EOF
 test_todo_session 'notes listarchived unable to find term' <<EOF
 >>> todo.sh notes listarchived foobar
       No notes with the term "foobar"
-${USAGETEXT}
+    notes listarchived [TERM...]
+      List archived notes
 === 1
 EOF
 
@@ -428,21 +445,27 @@ EOF
 test_todo_session 'notes rename not enough options' <<EOF
 >>> todo.sh notes rename foobar
     check number of options
-${USAGETEXT}
+    notes rename [ORIGINAL_NOTESFILE] [NEW_NOTESFILE]
+      rename ORIGINAL_NOTESFILE to NEW_NOTESFILE
+      the note: is not required, but added
 === 1
 EOF
 
 test_todo_session 'notes rename too many options' <<EOF
 >>> todo.sh notes rename foo bar wibble
     check number of options
-${USAGETEXT}
+    notes rename [ORIGINAL_NOTESFILE] [NEW_NOTESFILE]
+      rename ORIGINAL_NOTESFILE to NEW_NOTESFILE
+      the note: is not required, but added
 === 1
 EOF
 
 test_todo_session 'notes rename original note not in todo.txt' <<EOF
 >>> todo.sh notes rename foo bar
     foo is not a current note, use listnotes to find notes.
-${USAGETEXT}
+    notes rename [ORIGINAL_NOTESFILE] [NEW_NOTESFILE]
+      rename ORIGINAL_NOTESFILE to NEW_NOTESFILE
+      the note: is not required, but added
 === 1
 EOF
 
@@ -523,8 +546,9 @@ EOF
 
 test_todo_session 'notes unarchive for note never archived' <<EOF
 >>> todo.sh notes unarchive foobar
-      No archived notes file named foobar. Use listarchivedenotes to find them
-${USAGETEXT}
+      No archived notes file named foobar. Use notes listarchived to find them
+    notes unarchive [NOTESFILE]
+      unarchive notes files, this brings back the last
 === 1
 EOF
 
@@ -541,7 +565,8 @@ test_todo_session 'notes unarchive notefile not in todo.txt' <<EOF
 >>> todo.sh notes unarchive test_previous
       Note file test_previous not mentioned in todo
       use listnotes to find them
-${USAGETEXT}
+    notes unarchive [NOTESFILE]
+      unarchive notes files, this brings back the last
 === 1
 EOF
 
