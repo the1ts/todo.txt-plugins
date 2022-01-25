@@ -15,7 +15,7 @@ export EDITOR="cat"
 USAGETEXT="    notes [add|archive|cat|edit|grep|list|listarchived|rename|unarchive]"
 
 test_todo_session 'notes show usage' <<EOF
->>> todo.sh notes add usage
+>>> todo.sh notes usage
 ${USAGETEXT}
 === 0
 EOF
@@ -29,6 +29,13 @@ cat > todo.txt <<EOF
 Buy tools
 Fix bicycle
 Ride bike
+EOF
+
+test_todo_session 'notes add subaction help' <<EOF
+>>> todo.sh notes add help
+    notes add [ITEMS] [NOTESFILE]
+      append NOTESFILE to ITEMS and edit NOTESFILE if new
+=== 1
 EOF
 
 test_todo_session 'notes add note to task' <<EOF
@@ -114,6 +121,13 @@ cat > ./notes/todo-archive_file.txt << EOF
 File to test archiving
 EOF
 
+test_todo_session 'notes archive subaction help' <<EOF
+>>> todo.sh notes archive help
+    notes archive
+      Archive NOTESFILE not in todo.txt
+=== 1
+EOF
+
 test_todo_session 'notes archive run' <<EOF
 >>> todo.sh notes archive 
 TODO: Archived note:archive_file
@@ -146,6 +160,13 @@ EOF
 cat > notes/todo-test.txt << EOF                                                         
 test note first line
 test note second line
+EOF
+
+test_todo_session 'notes cat subaction help' <<EOF
+>>> todo.sh notes cat help
+    notes cat
+      Archive NOTESFILE not in todo.txt
+=== 1
 EOF
 
 test_todo_session 'notes cat no notes file' <<EOF
@@ -197,6 +218,14 @@ EOF
 cat > notes/todo-test.txt << EOF                                                         
 test note first line
 test note second line
+EOF
+
+test_todo_session 'notes edit subaction help' <<EOF
+>>> todo.sh notes edit help
+    notes edit
+      Edit notes file, \$EDITOR.
+      use listnotes to get list of notes files
+=== 1
 EOF
 
 test_todo_session 'notes edit no notefile' <<EOF
@@ -258,6 +287,14 @@ cat > ./notes/archive/todo-test-previous.10100000.txt << EOF
 test note first line
 test note second line
 test note third line
+EOF
+
+test_todo_session 'notes grep subaction help' <<EOF
+>>> todo.sh notes grep help
+    notes grep -a [TERM...]
+      List notes that contain a TERM within them
+      -a show archived notes
+=== 1
 EOF
 
 test_todo_session 'notes grep no term' <<EOF
@@ -342,6 +379,14 @@ test note second line
 test note third line
 EOF
 
+test_todo_session 'notes list subaction help' <<EOF
+>>> todo.sh notes list help
+    notes list -a [TERM...]
+      List notes
+      -a show archived notes
+=== 1
+EOF
+
 test_todo_session 'notes list all' <<EOF
 >>> todo.sh notes list
 note:test
@@ -393,6 +438,13 @@ test note second line
 test note third line
 EOF
 
+test_todo_session 'notes listarchived subaction help' <<EOF
+>>> todo.sh notes listarchived help
+    notes listarchived [TERM...]
+      List archived notes
+=== 1
+EOF
+
 test_todo_session 'notes listarchived all' <<EOF
 >>> todo.sh notes listarchived
 note:test-previous
@@ -440,6 +492,14 @@ cat > ./notes/archive/todo-test-previous.10100000.txt << EOF
 test note first line
 test note second line
 test note third line
+EOF
+
+test_todo_session 'notes rename subaction help' <<EOF
+>>> todo.sh notes rename help
+    notes rename [ORIGINAL_NOTESFILE] [NEW_NOTESFILE]
+      rename ORIGINAL_NOTESFILE to NEW_NOTESFILE
+      the note: is not required, but added
+=== 1
 EOF
 
 test_todo_session 'notes rename not enough options' <<EOF
@@ -542,6 +602,13 @@ cat > ./notes/archive/todo-testing.1020000.txt << EOF
 test note first line
 test note second line
 younger
+EOF
+
+test_todo_session 'notes unarchive subaction help' <<EOF
+>>> todo.sh notes unarchive help
+    notes unarchive [NOTESFILE]
+      unarchive notes files, this brings back the last
+=== 1
 EOF
 
 test_todo_session 'notes unarchive for note never archived' <<EOF

@@ -44,7 +44,7 @@ todo_tmp () {
 
 # Usage for todo.sh help or remove action
 # Remove notes todo.txt action name
-if [[ "${2}" =~ (usage|help|--help) ]] || [[ "${3}" =~ (usage|help|--help) ]]; then
+if [[ "${2}" =~ (usage|help|--help) ]]; then
 	usage
 	exit
 elif [[ "${1}" = "$(basename "$0")" ]]; then
@@ -70,6 +70,11 @@ _add () {
     echo "    $(basename "$0") ${action} [ITEMS] [NOTESFILE]"
     echo "      append NOTESFILE to ITEMS and edit NOTESFILE if new"
   }
+
+  if [[ "${1}" =~ (usage|--help|help) ]]; then
+    localUsage
+    die
+  fi
 
   if [[ "$#" -lt 2 ]]; then
     if ! [[ "$1" =~ ^[0-9]+$ ]]; then
@@ -123,6 +128,11 @@ _archive (){
     echo "      Archive NOTESFILE not in todo.txt"
   }
 
+  if [[ "${1}" =~ (usage|--help|help) ]]; then
+    localUsage
+    die
+  fi
+
   todo_tmp
 
   # for each file, remove $PRE and see if its in todo or 'tickled' files
@@ -160,6 +170,11 @@ _cat (){
     echo "      Archive NOTESFILE not in todo.txt"
   }
 
+  if [[ "${1}" =~ (usage|--help|help) ]]; then
+    localUsage
+    die
+  fi
+
   if [[ $# -lt 1 ]]; then
     echo "      No notes file"
     localUsage
@@ -191,6 +206,11 @@ _edit () {
     echo "      use listnotes to get list of notes files"
   }
 
+  if [[ "${1}" =~ (usage|--help|help) ]]; then
+    localUsage
+    die
+  fi
+
   NOTES_FILE="${1/#note:/}"; shift
   EDITOR=$(find_editor)
 
@@ -220,6 +240,11 @@ _grep () {
     echo "      List notes that contain a TERM within them"
     echo "      -a show archived notes"
   }
+
+  if [[ "${1}" =~ (usage|--help|help) ]]; then
+    localUsage
+    die
+  fi
 
   if [[ -z "$1" ]]; then
     echo "    No TERM"
@@ -282,6 +307,11 @@ _list () {
     echo "      -a show archived notes"
   }
 
+  if [[ "${1}" =~ (usage|--help|help) ]]; then
+    localUsage
+    die
+  fi
+
   todo_tmp
 
   if [[ $(grep -o '\bnote\:[a-zA-Z0-9\._-]*' "${TODO_TMP_FILE}" | grep -c "$*") -gt 0 ]]; then
@@ -299,7 +329,13 @@ _listarchived () {
     echo "    $(basename "$0") ${action} [TERM...]"
     echo "      List archived notes"
   }
+
   cd archive || exit 1
+
+  if [[ "${1}" =~ (usage|--help|help) ]]; then
+    localUsage
+    die
+  fi
 
   # Find a list of files
   find . -name "${PRE}-*txt" -printf '%P\n'  | grep "^${PRE}-" | \
@@ -321,6 +357,11 @@ _rename () {
     echo "      rename ORIGINAL_NOTESFILE to NEW_NOTESFILE"
     echo "      the note: is not required, but added"
   }
+
+  if [[ "${1}" =~ (usage|--help|help) ]]; then
+    localUsage
+    die
+  fi
 
   if [[ "$#" -ne 2 ]]; then
     echo "    check number of options"
@@ -371,6 +412,11 @@ _unarchive () {
   }
 
   cd archive || exit 1
+
+  if [[ "${1}" =~ (usage|--help|help) ]]; then
+    localUsage
+    die
+  fi
 
   NOTES_FILE=${1/#note:/}; shift
   DATE_FILE=$(find -- * -name "${PRE}-${NOTES_FILE}.*.txt" -type f -printf "%T@ %p\n"  2> /dev/null | sort -n | cut -f 2 -d " "  | tail -n 1)
