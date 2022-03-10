@@ -38,16 +38,10 @@ test_todo_session 'contextview no term' <<EOF
 ===== Contexts =====
 --- purchase ---
 1 Buy tools @purchase
---
-TODO: 1 of 3 tasks shown
 --- repair ---
 2 Fix bicycle @repair
---
-TODO: 1 of 3 tasks shown
 --- No context ---
 3 Ride bike
---
-TODO: 1 of 3 tasks shown
 === 0
 EOF
 
@@ -56,8 +50,6 @@ test_todo_session 'contextview with context as term' <<EOF
 ===== Contexts =====
 --- purchase ---
 1 Buy tools @purchase
---
-TODO: 1 of 3 tasks shown
 === 0
 EOF
 
@@ -66,8 +58,6 @@ test_todo_session 'contextview with not a context as term' <<EOF
 ===== Contexts =====
 --- No context ---
 3 Ride bike
---
-TODO: 1 of 3 tasks shown
 === 0
 EOF
 
@@ -76,8 +66,6 @@ test_todo_session 'contextview with multiple terms' <<EOF
 ===== Contexts =====
 --- purchase ---
 1 Buy tools @purchase
---
-TODO: 1 of 3 tasks shown
 === 0
 EOF
 
