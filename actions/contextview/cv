@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 
-# Remove action
-shift
+# Usage for todo.sh help or remove action
+if [[ "${1}" =~ (usage|help|--help) ]] || [[ "${2}" =~ (usage|help|--help) ]]; then
+	"${TODO_FULL_SH}" contextview usage
+	exit
+elif [[ "${1}" = "$(basename "$0")" ]]; then
+  shift
+fi
 
 "$TODO_FULL_SH" contextview "$@"

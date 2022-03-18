@@ -43,6 +43,14 @@
       {
         "name": "feature/fix_ci",
         "base": "develop"
+      },
+      {
+        "name": "feature/Priofity_changing_actions",
+        "base": "develop"
+      },
+      {
+        "name": "feature/Clean_unused_thirdparty_actions",
+        "base": "develop"
       }
     ]
 	}

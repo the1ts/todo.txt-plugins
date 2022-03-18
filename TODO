@@ -36,8 +36,3 @@ documents
 ---------
 
 Move all but README.md to docs directory or move each specific readme to its directory, needs fixing in makefile here and deb build for either option.
-
-bash_completion
----------------
-
-Add bash completion location flexibility. i.e. Allow a variable from todo.cfg for location and default to /usr/share/todo.txt/bash_completion.d/actions
