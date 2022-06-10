@@ -1,7 +1,5 @@
-make -f "/home/paulbm/scratcharea/git/home/github/todo.txt-plugins/Makefile" --dry-run --always-make --keep-going --print-directory
+make -f /net/nas1/volume1/scratcharea/paulbm/git/home/github/todo.txt-plugins/Makefile --dry-run --always-make --keep-going --print-directory
 make: Entering directory '/net/nas1/volume1/scratcharea/paulbm/git/home/github/todo.txt-plugins'
- 
-VERSION=2.3.0.dirty
  
 make: 'VERSION-FILE' is up to date.
 make: Leaving directory '/net/nas1/volume1/scratcharea/paulbm/git/home/github/todo.txt-plugins'
