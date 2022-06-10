@@ -38,16 +38,10 @@ test_todo_session 'projectview no term' <<EOF
 =====  Projects  =====
 ---  purchase  ---
 1 Buy tools +purchase
---
-TODO: 1 of 3 tasks shown
 ---  repair  ---
 2 Fix bicycle +repair
---
-TODO: 1 of 3 tasks shown
 --- Not in projects ---
 3 Ride bike
---
-TODO: 1 of 3 tasks shown
 === 0
 EOF
 
@@ -56,8 +50,6 @@ test_todo_session 'projectview with context as term' <<EOF
 =====  Projects  =====
 ---  purchase  ---
 1 Buy tools +purchase
---
-TODO: 1 of 3 tasks shown
 === 0
 EOF
 
@@ -66,8 +58,6 @@ test_todo_session 'projectview with not a context term' <<EOF
 =====  Projects  =====
 --- Not in projects ---
 3 Ride bike
---
-TODO: 1 of 3 tasks shown
 === 0
 EOF
 
@@ -76,8 +66,6 @@ test_todo_session 'projectview with multiple terms' <<EOF
 =====  Projects  =====
 ---  purchase  ---
 1 Buy tools +purchase
---
-TODO: 1 of 3 tasks shown
 === 0
 EOF
 

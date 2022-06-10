@@ -28,12 +28,18 @@ die () {
 }
 
 # Usage for todo.sh help or remove action
-if [[ "${1}" = "usage" ]] || [[ "${2}" = "usage" ]]; then
+if [[ "${1}" =~ (usage|help|--help) ]] || [[ "${2}" =~ (usage|help|--help) ]]; then
 	usage
 	exit
 elif [[ "${1}" = "$(basename "$0")" ]]; then
   shift
 fi
+
+## Variables
+# Stop Verbose lines, thanks to Mark Harrison
+export TODOTXT_VERBOSE=0
+# Stop filter now and run in a controlled manner after the _list function is run
+export TODOTXT_DISABLE_FILTER=1
 
 # Eat the remaining arguments putting them into context or terms variables
 while [[ $# -gt 0 ]]; do
@@ -63,10 +69,8 @@ fi
 
 # If we have no valid terms in valid contexts error out
 for context in ${CONTEXTS}; do
-  OLD_TODOTXT_VERBOSE=${TODOTXT_VERBOSE:-1}
-  TODOTXT_VERBOSE=0 VALID_CONTEXT=$(_list "${TODO_FILE}" "@${context}" "${TERMS}" | wc -l)
-  TODOTXT_VERBOSE=${OLD_TODOTXT_VERBOSE}
-  if [[ "${VALID_CONTEXT}" -eq 0 ]]; then
+  VALID_TERM=$(grep "${context}" "${TODO_FILE}" | grep -c "${TERMS}")
+  if [[ "${VALID_TERM}" -eq 0 ]]; then
     die "      \"${TERMS}\" not found in context \"@${context}\" in todo.txt"
   fi
 done
