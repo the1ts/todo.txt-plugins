@@ -7,8 +7,12 @@ contextview
 enotes
 ------
 
+Create replacement snub actions to take place of current actions, point them at single enotes.
+
 notes
 -----
+
+Create replacement snub actions to take place of current actions, point them at single notes.
 
 projectview
 -----------
@@ -29,8 +33,6 @@ Allow stop start in past using format 2012-06-13 13:15 format, useful for those 
 
 bash completion
 ---------------
-
-Move to todo.txt's own bash completion and see about bash completion snippets for actions.
 
 documents
 ---------
