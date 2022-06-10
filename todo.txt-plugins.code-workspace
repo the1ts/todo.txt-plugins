@@ -51,6 +51,22 @@
       {
         "name": "feature/Clean_unused_thirdparty_actions",
         "base": "develop"
+      },
+      {
+        "name": "feature/enotes_single_action",
+        "base": "develop"
+      },
+      {
+        "name": "feature/contextview_fixes_and_tests",
+        "base": "develop"
+      },
+      {
+        "name": "feature/projectview_fixes_and_tests",
+        "base": "develop"
+      },
+      {
+        "name": "feature/bash_completion_and_simple_file_additions",
+        "base": "develop"
       }
     ]
 	}
