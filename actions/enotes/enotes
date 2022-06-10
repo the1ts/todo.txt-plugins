@@ -1,0 +1,475 @@
+#!/usr/bin/env bash
+#===============================================================================
+#
+#          FILE: enotes
+#
+#         USAGE: todo.sh enotes [add|archive|cat|edit|grep|list|listarchived|rename|unarchive]
+#
+#        AUTHOR: Paul Mansfield (paul.mansfield@mansteck.co.uk), 
+#     COPYRIGHT: 2009-2022 Paul Mansfield
+#       LICENSE: GPL, http://www.gnu.org/copyleft/gpl.html
+#===============================================================================
+
+# shellcheck shell=bash disable=SC2068
+# We actually want white space separated options so no quotes on our $@
+
+usage () {
+	echo "    $(basename "$0") [add|archive|cat|edit|list|listarchived|rename|unarchive]"
+}
+
+die () {
+  [[ -f "${TODO_TMP_FILE}" ]] && rm -rf "${TODO_TMP_FILE}"
+	exit 1
+}
+
+# Find editor to use, if EDITOR already set use.
+# Else use debian and derivatives editor (alternatives auto set by OS)
+# finally if neither EDITOR nor alternative set default to vi
+find_editor () {
+  if [[ -n ${EDITOR} ]]; then
+    true
+	elif [[ -L /usr/bin/editor ]]; then
+		EDITOR="/usr/bin/editor"
+	elif [[ -z "${EDITOR}" ]]; then
+		EDITOR="vi"
+	fi
+  echo "${EDITOR}"
+}
+
+# Create file from todo and 'tickled' files if required
+todo_tmp () {
+  TODO_TMP_FILE="${TODO_TMP_FILE:-${TODO_DIR}/todo.tmp}"
+  cat "${TODO_FILE}" > "${TODO_TMP_FILE}"
+  if [ -n "${TICKLER_DIR}" ]; then
+    find "${TICKLER_DIR}" -mindepth 2 -type f -size 1 -exec cat {} \; >>"${TODO_TMP_FILE}"
+  fi
+}
+
+# Usage for todo.sh help or remove action
+# Remove notes todo.txt action name
+if [[ "${2}" =~ (usage|help|--help) ]]; then
+	usage
+	exit
+elif [[ "${1}" = "$(basename "$0")" ]]; then
+  shift
+  action=$1
+  shift
+fi
+
+if ! [[ "${action}" =~ (add|archive|cat|edit|list|listarchived|rename|unarchive) ]]; then
+  usage
+fi
+
+# Check notes and archive exist
+NOTES_DIR="${TODO_DIR}/notes"
+mkdir -p "${NOTES_DIR}/archive" || exit 1
+cd "${NOTES_DIR}/" || exit 1
+PRE="$(basename "${TODO_FILE}")"; PRE=${PRE/%\.txt/}
+ENOTES=$(find . -maxdepth 1 -name "${PRE}*enc" -printf '%P\n')
+
+_add () {
+  localUsage () {
+    echo "    $(basename "$0") ${action} [ITEMS] [ENOTESFILE]"
+    echo "      append ENOTESFILE to ITEMS and edit ENOTESFILE if new"
+  }
+
+  if [[ "${1}" =~ (usage|--help|help) ]]; then
+    localUsage
+    die
+  fi
+
+  # Check enotes and item number exist
+  if [[ "$#" -lt 2 ]]; then
+    if [[ "$1" =~ ^[0-9]+$ ]]; then
+      echo "      No enotesfile given"
+      localUsage
+      die
+    elif ! [[ "$1" =~ ^[0-9]+$ ]]; then
+      echo "      No item given"
+      localUsage
+      die
+    fi
+  fi
+
+  # Set enotes file from last argument and remove last argument
+  # this leaves items which we test later
+  ENOTES_FILE=${!##enote:};
+  set -- "${@:1:$(($#-1))}"
+
+  # If our enotes file is just numbers we didn't get given one
+  if [[ "${ENOTES_FILE}" =~ ^[0-9]+$ ]]; then
+    echo "      No enotesfile given"
+    localUsage
+    die
+  fi
+
+  # Are items in the file?
+  # shellcheck disable=SC2048
+  for item in $*; do
+    if [[ ${item} -gt $(wc -l "${TODO_FILE}" | cut -f 1 -d " ") ]]; then
+      echo "      ITEM ${item} not in todo file"
+      localUsage
+      die
+    elif ! [[ "${item}" =~ ^[0-9]+$ ]]; then
+      echo " ITEM is not a number"
+      localUsage
+      die
+    else
+      "${TODO_FULL_SH}" append "${item}" "enote:${ENOTES_FILE}"
+      echo "$(getPrefix "${TODO_FILE}"): enote:${ENOTES_FILE} added to item ${item}"
+    fi
+  done
+
+  # Can we edit after addition?
+  # Only set if file new to todo.txt and note doesn't exist
+  # Also check we have notesedit addon installed
+  if [[ "${NOTE_ADD_EDIT}" = "OFF" ]] && \
+    [[ $(grep -c "${ENOTES_FILE}" "${TODO_FILE}") -eq 0 ]] && \
+    ! [[ -f "${TODOTXT_DIR}/notes/${PRE}-${ENOTES}.enc" ]] && \
+    [[ $(${TODO_FULL_SH} listaddons | grep -c ^notesedit$) -eq 1 ]]; then
+    "${TODO_FULL_SH}" notesedit "enote:${ENOTES_FILE}"
+  fi
+}
+
+_archive () {
+  localUsage () {
+    echo "    $(basename "$0") ${action}"
+    echo "      Archive ENOTESFILE not in todo.txt"
+  }
+
+  if [[ "${1}" =~ (usage|--help|help) ]]; then
+    localUsage
+    die
+  fi
+
+  todo_tmp
+
+  # for each file, remove $PRE and see if its in todo or 'tickled' files
+  for i in ${ENOTES} ; do
+    i="${i/#${PRE}-/}"; ENOTE_FILE="${i/%\.enc/}"
+    # Number of times note appears in todo.txt
+    NUM_ENOTE=$(grep -c "\benote:${ENOTE_FILE}\b" "${TODO_TMP_FILE}")
+    if [[ "${NUM_ENOTE}" -eq 0 ]] ;then
+      cat "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc" >> \
+        "${TODO_DIR}/notes/archive/${PRE}-${ENOTE_FILE}.$(date +%s).enc"
+      echo "$(getPrefix): Archived enote:${ENOTE_FILE}"
+      ((RETURN+=1)) 
+      if [[ $? -eq 1 ]]; then
+        echo "      unable to create archive file"
+        localUsage
+        die
+      else
+        rm "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc"
+      fi
+    fi
+  done
+
+  [[ -f "${TODO_TMP_FILE}" ]] && rm -rf "${TODO_TMP_FILE}"
+
+  # if we have not archived anything, then report
+  if [[ -z "${RETURN}" ]]; then
+    echo "$(getPrefix): Nothing to archive"
+    exit 1
+  fi
+}
+
+_cat () {
+  localUsage () {
+    echo "    $(basename "$0") ${action} [ENOTESFILE]"
+    echo "      Show ENOTESFILE"
+  }
+
+  if [[ "${1}" =~ (usage|--help|help) ]]; then
+    localUsage
+    die
+  fi
+
+  if [[ $# -lt 1 ]]; then
+    echo "      No encrypted notes file"
+    localUsage
+    die
+  elif [[ -z "${GPG_USER}" ]]; then
+    echo "      Please set a variable GPG_USER in your todo.cfg"
+    localUsage
+    die
+  fi
+
+  # shellcheck disable=SC2001
+  ENOTE_FILE="${1/#enote:/}"; shift
+  PRE="$(basename "${TODO_FILE}")"; PRE=${PRE/%\.txt/}
+
+  if  [[ $(grep -c "${ENOTE_FILE}" "${TODO_FILE}") -lt 1 ]]; then
+    echo "      Encrypted notes file ${ENOTE_FILE} not in todo.txt file,"
+    echo "      use listenotes to find encrypted notes files"
+    localUsage
+    die
+  fi
+
+  if [ -e "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc" ]; then
+    if ! gpg -dq "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc"  2> /dev/null; then
+      echo "      Unable to decrypt ${PRE}-${ENOTE_FILE}.enc"
+      localUsage
+      die
+    fi
+  fi
+}
+
+_edit () {
+  localUsage () {
+    echo "    $(basename "$0") ${action} [ENOTESFILE]"
+    echo "      Edit encrypted ENOTESFILE in \$EDITOR"
+    echo "      Use listenotes to show all encrypted notesfiles"
+  }
+
+  if [[ "${1}" =~ (usage|--help|help) ]]; then
+    localUsage
+    die
+  fi
+  ENOTE_FILE="${1/#enote:/}"; shift
+  EDITOR=$(find_editor)
+
+  if [[ -z "${ENOTE_FILE}" ]]; then
+    echo "      No encryted notes file"
+    localUsage
+    die
+  elif  [[ $(grep -c "${ENOTE_FILE}" "${TODO_FILE}") -eq 0 ]]; then
+    echo "      Encrypted notes file $1 not in todo.txt file,"
+    echo "      use listenotes to find encrypted notes files"
+    localUsage
+    die
+  elif [[ -z "${GPG_USER}" ]]; then
+    echo "      Please set a variable GPG_USER in your todo.cfg"
+    localUsage
+    die
+  fi
+
+  todo_tmp
+
+  # If file exists edit it, else check listenotes for pointer then edit 
+  if [ -e "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc" ]; then
+    # Decrypt, move old aside, edit, encrypt and tidy up
+    if ! gpg -dq -o "${TODO_TMP_FILE}.encrypt" "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc" > /dev/null 2>&1; then 
+      echo "      Unable to decrypt ${PRE}-${ENOTE_FILE}.enc"
+      localUsage
+      die
+    fi
+    mv "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc" "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc.bak"
+    "${EDITOR}" "${TODO_TMP_FILE}.encrypt"
+    if ! gpg -eq --batch -r "${GPG_USER}" -o "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc" "${TODO_TMP_FILE}.encrypt"; then
+      echo "			Unable to encrypt ${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc"
+      [[ -f "${TODO_TMP_FILE}.encrypt" ]] && rm -rf "${TODO_TMP_FILE}.encrypt"
+      localUsage
+      die
+    fi
+    # shellcheck disable=SC2181
+    if [ "$?" -eq 0 ] ; then
+      rm -rf "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc.bak"
+    else
+      mv "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc.bak" "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc"
+    fi
+    [[ -f "${TODO_TMP_FILE}.encrypt" ]] && rm -rf "${TODO_TMP_FILE}.encrypt"
+  else
+    # If enote link in todo.txt exists then edit
+    # shellcheck disable=SC2046,SC2086
+    NUM_ENOTE=$(grep -c "[^ ]*enote:${ENOTE_FILE}[^ ]\+" "${TODO_TMP_FILE}")
+    if [ "${NUM_ENOTE}" -ge 1 ] ; then
+      # edit file, encrypt and tidy up
+      "${EDITOR}" "${TODO_TMP_FILE}.encrypt"
+      if ! gpg -eq --batch -r "${GPG_USER}" -o "${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc" "${TODO_TMP_FILE}.encrypt"; then
+        echo "			Unable to decrypt ${TODO_DIR}/notes/${PRE}-${ENOTE_FILE}.enc"
+        localUsge
+        die
+      fi
+      [[ -f "${TODO_TMP_FILE}.encrypt" ]] && rm -rf "${TODO_TMP_FILE}.encrypt"
+    fi
+  fi
+}
+
+_list () {
+  localUsage () {
+    echo "    $(basename "$0") ${action} [TERM]"
+    echo "      List encrypted notes"
+  }
+
+  if [[ "${1}" =~ (usage|--help|help) ]]; then
+    localUsage
+    die
+  fi
+
+  todo_tmp
+
+  if [[ $(grep -o '\benote\:[a-zA-Z0-9\._-]*' "${TODO_TMP_FILE}" | grep -c "$*") -gt 0 ]]; then
+    grep -o '\benote\:[a-zA-Z0-9\._-]*' "${TODO_TMP_FILE}" | grep "$*" | sort -u
+    [[ -f "${TODO_TMP_FILE}" ]] && rm -rf "${TODO_TMP_FILE}"
+  else
+    [[ -f "${TODO_TMP_FILE}" ]] && rm -rf "${TODO_TMP_FILE}"
+    echo "      No encrypted notes with the term \"$*\""
+    localUsage
+    die
+  fi
+}
+
+_listarchived () {
+  localUsage () {
+    echo "    $(basename "$0") ${action} [TERM]"
+    echo "      List archived encrypted notes"
+  }
+
+  if [[ "${1}" =~ (usage|--help|help) ]]; then
+    localUsage
+    die
+  fi
+
+  todo_tmp
+
+  # We only want archived files
+  cd archive || exit 1
+
+  # Find a list of files
+  find . -name "${PRE}-*enc" -printf '%P\n' | grep "^${PRE}-" | \
+    sed  -e "s/^${PRE}-//g" -e "s/^/enote:/g" -e "s/\.enc$//g" -e "s/\.[0-9]\{1,10\}$//g" | \
+    sort > "${TODO_TMP_FILE}"
+  if [[ $(grep -c "$*" "${TODO_TMP_FILE}") -gt 0 ]]; then
+    grep "$*" "${TODO_TMP_FILE}"
+    [[ -f "${TODO_TMP_FILE}" ]] && rm -rf "${TODO_TMP_FILE}"
+  else
+    [[ -f "${TODO_TMP_FILE}" ]] && rm -rf "${TODO_TMP_FILE}"
+    echo "      No encrypted notes with the term \"$*\""
+    localUsage
+    die
+  fi
+}
+
+_rename () {
+  localUsage () {
+    echo "    $(basename "$0") rename [ORIGINAL_ENOTESFILE] [NEW_ENOTESFILE]"
+    echo "      rename ORIGINAL_ENOTESFILE to NEW_ENOTESFILE"
+    echo "      renames in todo.txt and enotefile"
+    echo "      the enote: is not required, but added"
+  }
+  
+  if [[ "${1}" =~ (usage|--help|help) ]]; then
+    localUsage
+    die
+  fi
+
+  if [[ "$#" -ne 2 ]]; then
+    echo "    check number of options"
+    localUsage
+    die
+  fi
+
+  OLD_FILE=${1##enote:}
+  NEW_FILE=${2##enote:}
+  NOTES_DIR="${TODO_DIR}/notes"
+
+  # Move the enote
+  if [[ "$(grep -c "${OLD_FILE}" "${TODO_FILE}")" -ge 1 ]]; then
+    sed -i "s/enote:${OLD_FILE}\b/enote:${NEW_FILE}/g" "${TODO_FILE}"
+    echo "$(getPrefix): Changed enote:${OLD_FILE} to enote:${NEW_FILE} in todo.txt"
+    ((UPDATE+=1))
+  fi
+  if [[ "$(grep -c "${OLD_FILE}" "${DONE_FILE}")" -ge 1 ]]; then
+    sed -i "s/note:${OLD_FILE}\b/enote:${NEW_FILE}/g" "${DONE_FILE}"
+    echo "$(getPrefix): Changed enote:${OLD_FILE} to enote:${NEW_FILE} in done.txt"
+    ((UPDATE+=1))
+  fi
+  if [[ -z "${UPDATE}" ]]; then
+    echo "    ${OLD_FILE} is not a current enote, use listenotes to find enotes."
+    localUsage
+    die
+  fi
+
+  # Rename OLD_FILE
+  if [[ -f "${NOTES_DIR}/${PRE}-${OLD_FILE}.enc" ]]; then
+    mv "${NOTES_DIR}/${PRE}-${OLD_FILE}.enc" "${NOTES_DIR}/${PRE}-${NEW_FILE}.enc"
+  fi
+
+  # Test for OLD_FILE in 'tickled' files and rename
+  if [[ -n ${TICKLER_DIR} ]]; then
+    TICKLED="$(find "${TICKLER_DIR}" -mindepth 2 -type f -size 1 -exec grep -l "${OLD_FILE}" {} \;)"
+    for FILE in ${TICKLED}; do
+      sed -i "s/enote:${OLD_FILE}\b/enote:${NEW_FILE}" "${FILE}"
+      echo "$(getPrefix "${TODO_FILE}"): Changed enote:${OLD_FILE} to enote:${NEW_FILE} in tickled file"
+    done
+      mv "${NOTES_DIR}/${OLD_FILE}.enc" "${NOTES_DIR}/${NEW_FILE}.enc"
+  fi
+}
+
+_unarchive () {
+  localUsage() {
+    echo "    $(basename "$0") unarchive [ENOTESFILE]"
+    echo "      unarchive enotes files, this brings back the last"
+    echo "      version of the enotefile"
+  }
+
+  if [[ "${1}" =~ (usage|--help|help) ]]; then
+    localUsage
+    die
+  fi
+
+  # We are working with archive, lets cd there
+  cd archive || exit 1
+
+  todo_tmp
+
+  FILE=${1##enote:}; shift
+  DATE_FILE=$(find -- * -name "${PRE}-${FILE}.*.enc" -type f -printf "%T@ %p\n"  2> /dev/null | sort -n | cut -f 2 -d " "  | tail -n 1)
+  # ARC_FILE="${TODO_DIR}/notes/archive/${DATE_FILE}"
+  
+  # ENOTES_FILE="${TODO_DIR}/notes/${PRE}-${FILE}.enc"
+
+  if [[ -z "${DATE_FILE}" ]]; then
+    echo "      No archived enotes file named ${FILE}. Use listarchivedenotes to find them"
+    localUsage
+    die
+  fi
+  
+  todo_tmp
+
+  if [[ "$(grep -c "\benote:${FILE}\b" "${TODO_TMP_FILE}")" -eq 0 ]] ;then
+    echo "      Encrypted note file ${FILE} not mentioned in todo. Use listenotes to find them"
+    localUsage
+    die
+  fi
+  [[ -f "${TODO_TMP_FILE}" ]] && rm -rf "${TODO_TMP_FILE}"
+
+  cp "${NOTES_DIR}/archive/${DATE_FILE}" "${NOTES_DIR}/${PRE}-${FILE}.enc" 
+  if [[ "$?" -eq 1 ]]; then
+    echo "      Unable to move ${PRE}-${FILE}.enc to ${NO_DATE_FILE}.enc"
+    localUsage
+    die
+  else
+    echo "$(getPrefix): Encrypted notes file ${PRE}-${FILE}.enc restored from newest archive"
+  fi
+}
+
+case ${action} in
+  add)
+    _add $@
+  ;;
+  archive)
+    _archive $@
+  ;;
+  cat)
+    _cat $@
+  ;;
+  edit)
+    _edit $@
+  ;;
+  list)
+    _list $@
+  ;;
+  listarchived)
+    _listarchived $@
+  ;;
+  rename)
+    _rename $@
+  ;;
+  unarchive)
+    _unarchive $@
+  ;;
+  *)
+    usage
+  ;;
+esac
