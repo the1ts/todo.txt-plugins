@@ -28,20 +28,25 @@ die () {
 }
 
 # Usage for todo.sh help or remove action
-if [[ "${1}" = "usage" ]] || [[ "${2}" = "usage" ]]; then
+if [[ "${1}" =~ (usage|help|--help) ]] || [[ "${2}" =~ (usage|help|--help) ]]; then
   usage
 	exit
 elif [[ "${1}" = "$(basename "$0")" ]]; then
   shift
 fi
 
+## Variables
+# Stop Verbose lines, thanks to Mark Harrison
+export TODOTXT_VERBOSE=0
+# Stop filter now and run in a controlled manner after the _list function is run
+export TODOTXT_DISABLE_FILTER=1
 # Limit to show requested projects
 PROJECT_LIMIT=0
 # Check how we are being run
 HOWRUN=$(basename "$0")
 # If being run as simplepv then turn off all colours and
-# try to wrap at 40 characters
-# Useful for display outside of terminal for example in window manager
+# wrap at 40 characters
+# Useful for display outside of terminal
 if [[ "${HOWRUN}" = "simplepv" ]] ; then
 	export 	TODOTXT_PLAIN=1
 	export 	PRI_X=$NONE
@@ -50,6 +55,10 @@ if [[ "${HOWRUN}" = "simplepv" ]] ; then
 	export 	PRI_C=$NONE
 	export 	DEFAULT=$NONE
 	export 	COLOR_DONE=$NONE
+  export  COLOR_CONTEXT=$NONE
+  export  COLOR_PROJECT=$NONE
+  export  COLOR_NOTE=$NONE
+  export  TODO_TXT_FINAL_FILTER="cat"
 
   # Check if we want to wrap text or not
 	if [[ "$1" = "--nowrap" ]]; then
@@ -58,13 +67,10 @@ if [[ "${HOWRUN}" = "simplepv" ]] ; then
     if [[ -f /usr/bin/fmt ]] ; then
       TODOTXT_FINAL_FILTER="$TODOTXT_FINAL_FILTER | fmt -t -w 40"
     fi
-	fi
+  fi
 fi
 
-# Stop filter now and run in a controlled manner after the _list function is run
-export TODOTXT_DISABLE_FILTER=1
-
-# Eat the remaining arguments putting them into context or terms variables
+# Eat the remaining arguments putting them into project or terms variables
 while [[ $# -gt 0 ]]; do
   if [[ $(grep -c "+\w" <<< "$1") -eq 1 ]]; then
     PROJECTS="${1/#+/}"; shift
@@ -91,14 +97,9 @@ fi
 
 # If we have no valid terms in valid projects error out
 for project in ${PROJECTS}; do
-  # OLD_TODOTXT_VERBOSE=${TODOTXT_VERBOSE:-1}
-  # TODOTXT_VERBOSE=0 VALID_TERM=$(_list "${TODO_FILE}" "" "${TERMS}" | wc -l)
   VALID_TERM=$(grep "${project}" "${TODO_FILE}" | grep -c "${TERMS}")
-  # TODOTXT_VERBOSE=${OLD_TODOTXT_VERBOSE}
   if [[ "${VALID_TERM}" -eq 0 ]]; then
-    echo "      \"${TERMS}\" not found in project \"${project}\" in todo.txt"
-    usage
-    exit 1
+    die "      \"${TERMS}\" not found in project \"${project}\" in todo.txt"
   fi
 done
 
@@ -109,13 +110,15 @@ fi
 
 # Show projects in alphabetical order and todo items in priority order
 echo "=====  Projects  ====="
-echo ""
+  if [ "${HOWRUN}" != "simplepv" ] ; then
+    echo  ""
+  fi
 
 # For each project show header and the list of todo items
 for project in $PROJECTS ; do 
 	# Use core _list function, does numbering and colouring for us
-	  PROJECT_LIST=$(_list "${TODO_FILE}" "+${project}\b" "${TERMS}" \
-	 	| sed "s/\ \x1b\[[0-9;]*m+[a-zA-Z0-9._:\-]*\b//g")
+	PROJECT_LIST=$(_list "$TODO_FILE" "+${project}\b" "${TERMS}" \
+		| sed "s/\ \x1b\[[0-9;]*m+[a-zA-Z0-9._:\-]*\b//g")
 	if [[ -n "${PROJECT_LIST}" ]]; then
 		echo  "---  ${project}  ---"
 		echo  "${PROJECT_LIST}" | eval "${TODOTXT_FINAL_FILTER}"
