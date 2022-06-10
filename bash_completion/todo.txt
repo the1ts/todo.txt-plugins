@@ -32,9 +32,12 @@ function _todo.sh() {
 					;;
 					# Find all action include files
 					*)
-					for action in /usr/share/todo.txt/bash_completion.d/actions/*.sh; do
-							. ${action}
-					done
+          if [[ -z ${TODO_ACTIONS_COMP} ]]; then
+            TODO_ACTIONS_COMP="/usr/share/todo.txt/bash_completion.d/actions"
+          fi
+          for action in ${TODO_ACTIONS_COMP}/*.sh; do
+              . ${action}
+          done
 					;;
 			esac
 	fi
