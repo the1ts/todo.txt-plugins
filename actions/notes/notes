@@ -252,7 +252,7 @@ _grep () {
     die
   fi
 
-  ARCHIVED="$(find -- archive/* -name "${PRE}-*.txt" -printf "%p\n")"
+  ARCHIVED="$(find -- archive/* -name "${PRE}-*.txt" -printf "%p\n" | sort)"
   if [[ "$1" = "-a" ]]; then
     ARCHIVE=1; shift
   fi
@@ -277,7 +277,7 @@ _grep () {
     echo "Notes Files containing \"$*\""
     echo "-----------"
     # shellcheck disable=SC2086
-    grep -l "$*" ${NOTES} | sed "s/^.*${PRE}-/note:/g ; s/[.]txt$//g"
+    grep -l "$*" ${NOTES} | sed "s/^.*${PRE}-/note:/g ; s/[.]txt$//g" | sort
   else
     echo "No current Notes containing \"$*\""
     ((RETURN+=1))
@@ -289,7 +289,7 @@ _grep () {
       echo "--------------------"
       # shellcheck disable=SC2086
       grep -l "$*" ${ARCHIVED} | sed -e "s/^.*${PRE}-/note:/g" \
-      -e "s/[.]txt$//g" -e "s/\.[0-9]\{1,10\}$//g"
+      -e "s/[.]txt$//g" -e "s/\.[0-9]\{1,10\}$//g" | sort
     else
       echo "No archived Notes containing \"$*\""
       ((RETURN+=1))
