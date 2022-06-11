@@ -2,7 +2,7 @@
 
 test_description='enotes actions functionality
 '
-. ./test-lib.sh
+. ./test-lib.sh -i
 
 # Set our current actions directory
 export TODO_ACTIONS_DIR=$TEST_DIRECTORY/../actions/enotes
@@ -31,16 +31,16 @@ EOF
 
 test_todo_session 'enotesarchive usage' <<EOF
 >>> todo.sh enotesarchive usage
-    enotesarchive
-      archive encrypted notes files nolonger in todo file.
-=== 0
+    enotes archive
+      Archive ENOTESFILE not in todo.txt
+=== 1
 EOF
 
 test_todo_session 'enar usage' <<EOF
 >>> todo.sh enar usage
-    enotesarchive
-      archive encrypted notes files nolonger in todo file.
-=== 0
+    enotes archive
+      Archive ENOTESFILE not in todo.txt
+=== 1
 EOF
 
 # Create our note file not in todo.txt

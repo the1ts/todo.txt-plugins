@@ -2,7 +2,7 @@
 
 test_description='enotes actions functionality
 '
-. ./test-lib.sh
+. ./test-lib.sh -i
 
 export TODO_ACTIONS_DIR=$TEST_DIRECTORY/../actions/enotes
 
@@ -41,23 +41,23 @@ echo -e "test note first line\ntest note second line" | gpg -q --no-verbose -e -
 
 test_todo_session 'enotescat usage' <<EOF
 >>> todo.sh enotescat usage
-    enotescat [ENOTESFILE]
-      Cat encrypted notes file, use listenotes to get list of notes
-=== 0
+    enotes cat [ENOTESFILE]
+      Show ENOTESFILE
+=== 1
 EOF
 
 test_todo_session 'enc usage' <<EOF
 >>> todo.sh enotescat usage
-    enotescat [ENOTESFILE]
-      Cat encrypted notes file, use listenotes to get list of notes
-=== 0
+    enotes cat [ENOTESFILE]
+      Show ENOTESFILE
+=== 1
 EOF
 
 test_todo_session 'enotescat no enotes file' <<EOF
 >>> todo.sh enotescat
       No encrypted notes file
-    enotescat [ENOTESFILE]
-      Cat encrypted notes file, use listenotes to get list of notes
+    enotes cat [ENOTESFILE]
+      Show ENOTESFILE
 === 1
 EOF
 
@@ -72,8 +72,8 @@ test_todo_session 'enotescat show no such note' <<EOF
 >>> todo.sh enotescat note:notafile
       Encrypted notes file note:notafile not in todo.txt file,
       use listenotes to find encrypted notes files
-    enotescat [ENOTESFILE]
-      Cat encrypted notes file, use listenotes to get list of notes
+    enotes cat [ENOTESFILE]
+      Show ENOTESFILE
 === 1
 EOF
 
@@ -86,9 +86,9 @@ EOF
 
 test_todo_session 'enotescat unable to decrypt' <<EOF
 >>> todo.sh enotescat enote:badfile
-    Unable to decrypt todo-badfile.enc
-    enotescat [ENOTESFILE]
-      Cat encrypted notes file, use listenotes to get list of notes
+      Unable to decrypt todo-badfile.enc
+    enotes cat [ENOTESFILE]
+      Show ENOTESFILE
 === 1
 EOF
 
@@ -96,8 +96,8 @@ unset GPG_USER
 test_todo_session 'enotescat no GPG_USER variable' <<EOF
 >>> todo.sh enotescat note:notafile
       Please set a variable GPG_USER in your todo.cfg
-    enotescat [ENOTESFILE]
-      Cat encrypted notes file, use listenotes to get list of notes
+    enotes cat [ENOTESFILE]
+      Show ENOTESFILE
 === 1
 EOF
 

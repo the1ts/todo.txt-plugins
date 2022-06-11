@@ -2,7 +2,7 @@
 
 test_description='notes actions functionality
 '
-. ./test-lib.sh
+. ./test-lib.sh -i
 
 # Set our current actions directory
 export TODO_ACTIONS_DIR=$TEST_DIRECTORY/../actions/notes
@@ -35,16 +35,16 @@ EOF
 
 test_todo_session 'listarchivednotes usage' <<EOF
 >>> todo.sh listarchivednotes usage
-    listarchivednotes [TERM]
+    notes listarchived [TERM...]
       List archived notes
-=== 0
+=== 1
 EOF
 
 test_todo_session 'lsan usage' <<EOF
 >>> todo.sh lsan usage
-    listarchivednotes [TERM]
+    notes listarchived [TERM...]
       List archived notes
-=== 0
+=== 1
 EOF
 
 test_todo_session 'listarchivednotes all' <<EOF
@@ -62,7 +62,7 @@ EOF
 test_todo_session 'listarchivednotes unable to find term' <<EOF
 >>> todo.sh listarchivednotes foobar
       No notes with the term "foobar"
-    listarchivednotes [TERM]
+    notes listarchived [TERM...]
       List archived notes
 === 1
 EOF

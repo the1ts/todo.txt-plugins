@@ -2,7 +2,7 @@
 
 test_description='notes actions functionality
 '
-. ./test-lib.sh
+. ./test-lib.sh -i
 
 # Set our current actions directory
 export TODO_ACTIONS_DIR=$TEST_DIRECTORY/../actions/notes
@@ -35,16 +35,16 @@ EOF
 
 test_todo_session 'notesarchive usage' <<EOF
 >>> todo.sh notesarchive usage
-    notesarchive
-      archive notes files nolonger in todo file.
-=== 0
+    notes archive
+      Archive NOTESFILE not in todo.txt
+=== 1
 EOF
 
 test_todo_session 'nar usage' <<EOF
 >>> todo.sh nar usage
-    notesarchive
-      archive notes files nolonger in todo file.
-=== 0
+    notes archive
+      Archive NOTESFILE not in todo.txt
+=== 1
 EOF
 
 # Create our note file not in todo.txt

@@ -3,4 +3,4 @@
 # Remove action
 shift
 
-"$TODO_FULL_SH" listarchivednotes "$@"
+"$TODO_FULL_SH" notes listarchived "$@"

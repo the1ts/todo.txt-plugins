@@ -2,7 +2,7 @@
 
 test_description='notes actions functionality
 '
-. ./test-lib.sh
+. ./test-lib.sh -i
 
 # Set our current actions directory
 export TODO_ACTIONS_DIR=$TEST_DIRECTORY/../actions/enotes
@@ -43,26 +43,26 @@ EOF
 
 test_todo_session 'enotesedit usage' <<EOF
 >>> todo.sh enotesedit usage
-    enotesedit [ENOTESFILE]
-      Edit encrypted ENOTESFILE in \$EDITOR.
-      Use listenotes to show all encrypted notes files.
-=== 0
+    enotes edit [ENOTESFILE]
+      Edit encrypted ENOTESFILE in \$EDITOR
+      Use listenotes to show all encrypted notesfiles
+=== 1
 EOF
 
 test_todo_session 'ene usage' <<EOF
 >>> todo.sh ene usage
-    enotesedit [ENOTESFILE]
-      Edit encrypted ENOTESFILE in \$EDITOR.
-      Use listenotes to show all encrypted notes files.
-=== 0
+    enotes edit [ENOTESFILE]
+      Edit encrypted ENOTESFILE in \$EDITOR
+      Use listenotes to show all encrypted notesfiles
+=== 1
 EOF
 
 test_todo_session 'enotesedit no enotefile' <<EOF
 >>> todo.sh enotesedit
       No encryted notes file
-    enotesedit [ENOTESFILE]
-      Edit encrypted ENOTESFILE in \$EDITOR.
-      Use listenotes to show all encrypted notes files.
+    enotes edit [ENOTESFILE]
+      Edit encrypted ENOTESFILE in \$EDITOR
+      Use listenotes to show all encrypted notesfiles
 === 1
 EOF
 
@@ -70,9 +70,9 @@ test_todo_session 'enotesedit no such enotefile' <<EOF
 >>> todo.sh enotesedit note:notafile
       Encrypted notes file  not in todo.txt file,
       use listenotes to find encrypted notes files
-    enotesedit [ENOTESFILE]
-      Edit encrypted ENOTESFILE in \$EDITOR.
-      Use listenotes to show all encrypted notes files.
+    enotes edit [ENOTESFILE]
+      Edit encrypted ENOTESFILE in \$EDITOR
+      Use listenotes to show all encrypted notesfiles
 === 1
 EOF
 
@@ -95,9 +95,9 @@ EOF
 test_todo_session 'enotesedit fail to decrypt' <<EOF
 >>> todo.sh enotesedit enote:badfile
       Unable to decrypt todo-badfile.enc
-    enotesedit [ENOTESFILE]
-      Edit encrypted ENOTESFILE in \$EDITOR.
-      Use listenotes to show all encrypted notes files.
+    enotes edit [ENOTESFILE]
+      Edit encrypted ENOTESFILE in \$EDITOR
+      Use listenotes to show all encrypted notesfiles
 === 1
 EOF
 
@@ -107,9 +107,9 @@ unset GPG_USER
 test_todo_session 'enotesedit no GPG_USER' <<EOF
 >>> todo.sh enotesedit enote:test
       Please set a variable GPG_USER in your todo.cfg
-    enotesedit [ENOTESFILE]
-      Edit encrypted ENOTESFILE in \$EDITOR.
-      Use listenotes to show all encrypted notes files.
+    enotes edit [ENOTESFILE]
+      Edit encrypted ENOTESFILE in \$EDITOR
+      Use listenotes to show all encrypted notesfiles
 === 1
 EOF
 

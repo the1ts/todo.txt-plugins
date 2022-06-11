@@ -3,4 +3,4 @@
 # Remove action
 shift
 
-"$TODO_FULL_SH" enotescat "$@"
+"$TODO_FULL_SH" enotes cat "$@"
