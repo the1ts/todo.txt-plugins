@@ -166,8 +166,8 @@ _archive (){
 
 _cat (){
   localUsage () {
-    echo "    $(basename "$0") ${action}"
-    echo "      Archive NOTESFILE not in todo.txt"
+    echo "    $(basename "$0") ${action} [NOTESFILE]"
+    echo "      Show NOTESFILE"
   }
 
   if [[ "${1}" =~ (usage|--help|help) ]]; then
@@ -201,8 +201,8 @@ _cat (){
 
 _edit () {
   localUsage () {
-    echo "    $(basename "$0") ${action}"
-    echo "      Edit notes file, \$EDITOR."
+    echo "    $(basename "$0") ${action} [NOTESFILE]"
+    echo "      Edit notes file, in \$EDITOR."
     echo "      use listnotes to get list of notes files"
   }
 
@@ -409,6 +409,7 @@ _unarchive () {
   localUsage () {
     echo "    $(basename "$0") ${action} [NOTESFILE]"
     echo "      unarchive notes files, this brings back the last"
+    echo "      version of the notefile"
   }
 
   cd archive || exit 1

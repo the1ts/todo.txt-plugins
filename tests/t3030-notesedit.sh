@@ -2,7 +2,7 @@
 
 test_description='notes actions functionality
 '
-. ./test-lib.sh
+. ./test-lib.sh -i
 
 # Set our current actions directory
 export TODO_ACTIONS_DIR=$TEST_DIRECTORY/../actions/notes
@@ -25,24 +25,24 @@ EOF
 
 test_todo_session 'notesedit usage' <<EOF
 >>> todo.sh notesedit usage
-    notesedit [NOTESFILE]
+    notes edit [NOTESFILE]
       Edit notes file, in \$EDITOR.
       use listnotes to get list of notes files
-=== 0
+=== 1
 EOF
 
 test_todo_session 'ne usage' <<EOF
 >>> todo.sh ne usage
-    notesedit [NOTESFILE]
+    notes edit [NOTESFILE]
       Edit notes file, in \$EDITOR.
       use listnotes to get list of notes files
-=== 0
+=== 1
 EOF
 
 test_todo_session 'notesedit no notefile' <<EOF
 >>> todo.sh notesedit
       No notes file
-    notesedit [NOTESFILE]
+    notes edit [NOTESFILE]
       Edit notes file, in \$EDITOR.
       use listnotes to get list of notes files
 === 1
@@ -51,7 +51,7 @@ EOF
 test_todo_session 'notesedit no such notefile' <<EOF
 >>> todo.sh notesedit note:notafile
       No such notes file, use listnotes to find notes files
-    notesedit [NOTESFILE]
+    notes edit [NOTESFILE]
       Edit notes file, in \$EDITOR.
       use listnotes to get list of notes files
 === 1

@@ -3,4 +3,4 @@
 # remove action
 shift
 
-"$TODO_FULL_SH" listenotes "$@"
+"$TODO_FULL_SH" enotes list "$@"

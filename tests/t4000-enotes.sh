@@ -2,7 +2,7 @@
 
 test_description='notes actions functionality
 '
-. ./test-lib.sh
+. ./test-lib.sh -i
 
 export TODO_ACTIONS_DIR=$TEST_DIRECTORY/../actions/enotes
 

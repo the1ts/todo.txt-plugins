@@ -2,7 +2,7 @@
 
 test_description='notes actions functionality
 '
-. ./test-lib.sh
+. ./test-lib.sh -i
 
 export TODO_ACTIONS_DIR=$TEST_DIRECTORY/../actions/notes
 
@@ -14,16 +14,16 @@ EOF
 
 test_todo_session 'notesadd show usage' <<EOF
 >>> todo.sh notesadd usage
-    notesadd [ITEMS] [NOTESFILE]
-      add NOTESFILE in ITEMS
-=== 0
+    notes add [ITEMS] [NOTESFILE]
+      append NOTESFILE to ITEMS and edit NOTESFILE if new
+=== 1
 EOF
 
 test_todo_session 'na show usage' <<EOF
 >>> todo.sh na usage
-    notesadd [ITEMS] [NOTESFILE]
-      add NOTESFILE in ITEMS
-=== 0
+    notes add [ITEMS] [NOTESFILE]
+      append NOTESFILE to ITEMS and edit NOTESFILE if new
+=== 1
 EOF
 
 test_todo_session 'notesadd note to task' <<EOF
@@ -36,24 +36,24 @@ EOF
 test_todo_session 'notesadd item only no note' <<EOF
 >>> todo.sh notesadd 1
       No notesfile given
-    notesadd [ITEMS] [NOTESFILE]
-      add NOTESFILE in ITEMS
+    notes add [ITEMS] [NOTESFILE]
+      append NOTESFILE to ITEMS and edit NOTESFILE if new
 === 1
 EOF
 
 test_todo_session 'notesadd no item only note' <<EOF
 >>> todo.sh notesadd testing
       No item given
-    notesadd [ITEMS] [NOTESFILE]
-      add NOTESFILE in ITEMS
+    notes add [ITEMS] [NOTESFILE]
+      append NOTESFILE to ITEMS and edit NOTESFILE if new
 === 1
 EOF
 
 test_todo_session 'notesadd item nonexistant' <<EOF
 >>> todo.sh notesadd 100 testing
-      No item 100
-    notesadd [ITEMS] [NOTESFILE]
-      add NOTESFILE in ITEMS
+      ITEM 100 not in todo file
+    notes add [ITEMS] [NOTESFILE]
+      append NOTESFILE to ITEMS and edit NOTESFILE if new
 === 1
 EOF
 

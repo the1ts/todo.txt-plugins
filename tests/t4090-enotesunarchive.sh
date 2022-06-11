@@ -2,7 +2,7 @@
 
 test_description='enotes actions functionality
 '
-. ./test-lib.sh
+. ./test-lib.sh -i
 
 # Set our current actions directory
 export TODO_ACTIONS_DIR=$TEST_DIRECTORY/../actions/enotes
@@ -58,24 +58,24 @@ gpg -e -r user@tests.com > notes/archive/todo-testing.1020000.enc
 
 test_todo_session 'enotesunarchive usage' <<EOF
 >>> todo.sh enotesunarchive usage
-    enotesunarchive [ENOTESFILE]
+    enotes unarchive [ENOTESFILE]
       unarchive enotes files, this brings back the last
       version of the enotefile
-=== 0
+=== 1
 EOF
 
 test_todo_session 'enuar usage' <<EOF
 >>> todo.sh enuar usage
-    enotesunarchive [ENOTESFILE]
+    enotes unarchive [ENOTESFILE]
       unarchive enotes files, this brings back the last
       version of the enotefile
-=== 0
+=== 1
 EOF
 
 test_todo_session 'enotesunarchive for note never archived' <<EOF
 >>> todo.sh enotesunarchive foobar
       No archived enotes file named foobar. Use listarchivedenotes to find them
-    enotesunarchive [ENOTESFILE]
+    enotes unarchive [ENOTESFILE]
       unarchive enotes files, this brings back the last
       version of the enotefile
 === 1
@@ -98,7 +98,7 @@ EOF
 test_todo_session 'enotesunarchive notefile not in todo.txt' <<EOF
 >>> todo.sh enotesunarchive test_previous
       Encrypted note file test_previous not mentioned in todo. Use listenotes to find them
-    enotesunarchive [ENOTESFILE]
+    enotes unarchive [ENOTESFILE]
       unarchive enotes files, this brings back the last
       version of the enotefile
 === 1

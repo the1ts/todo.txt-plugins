@@ -18,4 +18,4 @@ To use, put the files for the actions you wish to use in your TODO_ACTION_DIR, e
 
 # Bash completion for actions
 
-I have bash [completion](README.bash_completion.md) for both todo.txt itself and my collection of actions in one file.
+I have bash [completion](README.bash_completion.md) for both todo.txt itself and my collection of actions in one file and snippets for the actions.

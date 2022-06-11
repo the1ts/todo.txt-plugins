@@ -2,7 +2,7 @@
 
 test_description='notes actions functionality
 '
-. ./test-lib.sh
+. ./test-lib.sh -i
 
 export TODO_ACTIONS_DIR=$TEST_DIRECTORY/../actions/notes
 
@@ -164,16 +164,16 @@ EOF
 
 test_todo_session 'notes cat subaction help' <<EOF
 >>> todo.sh notes cat help
-    notes cat
-      Archive NOTESFILE not in todo.txt
+    notes cat [NOTESFILE]
+      Show NOTESFILE
 === 1
 EOF
 
 test_todo_session 'notes cat no notes file' <<EOF
 >>> todo.sh notes cat
       No notes file
-    notes cat
-      Archive NOTESFILE not in todo.txt
+    notes cat [NOTESFILE]
+      Show NOTESFILE
 === 1
 EOF
 
@@ -195,8 +195,8 @@ test_todo_session 'notes cat show no such note' <<EOF
 >>> todo.sh notes cat note:notafile
       Notes file notafile not in todo.txt file,
       use listnotes to find notes files
-    notes cat
-      Archive NOTESFILE not in todo.txt
+    notes cat [NOTESFILE]
+      Show NOTESFILE
 === 1
 EOF
 
@@ -222,8 +222,8 @@ EOF
 
 test_todo_session 'notes edit subaction help' <<EOF
 >>> todo.sh notes edit help
-    notes edit
-      Edit notes file, \$EDITOR.
+    notes edit [NOTESFILE]
+      Edit notes file, in \$EDITOR.
       use listnotes to get list of notes files
 === 1
 EOF
@@ -231,8 +231,8 @@ EOF
 test_todo_session 'notes edit no notefile' <<EOF
 >>> todo.sh notes edit
       No notes file
-    notes edit
-      Edit notes file, \$EDITOR.
+    notes edit [NOTESFILE]
+      Edit notes file, in \$EDITOR.
       use listnotes to get list of notes files
 === 1
 EOF
@@ -240,8 +240,8 @@ EOF
 test_todo_session 'notes edit no such notefile' <<EOF
 >>> todo.sh notes edit note:notafile
       No such notes file, use listnotes to find notes files
-    notes edit
-      Edit notes file, \$EDITOR.
+    notes edit [NOTESFILE]
+      Edit notes file, in \$EDITOR.
       use listnotes to get list of notes files
 === 1
 EOF
@@ -608,6 +608,7 @@ test_todo_session 'notes unarchive subaction help' <<EOF
 >>> todo.sh notes unarchive help
     notes unarchive [NOTESFILE]
       unarchive notes files, this brings back the last
+      version of the notefile
 === 1
 EOF
 
@@ -616,6 +617,7 @@ test_todo_session 'notes unarchive for note never archived' <<EOF
       No archived notes file named foobar. Use notes listarchived to find them
     notes unarchive [NOTESFILE]
       unarchive notes files, this brings back the last
+      version of the notefile
 === 1
 EOF
 
@@ -634,6 +636,7 @@ test_todo_session 'notes unarchive notefile not in todo.txt' <<EOF
       use listnotes to find them
     notes unarchive [NOTESFILE]
       unarchive notes files, this brings back the last
+      version of the notefile
 === 1
 EOF
 

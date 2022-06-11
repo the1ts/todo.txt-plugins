@@ -1,49 +1,6 @@
 #!/usr/bin/env bash
-# shellcheck shell=bash
-#===============================================================================
-#
-#          FILE: notescat
-#
-#         USAGE: todo.sh notescat [NOTESFILE]
-#
-#        AUTHOR: Paul Mansfield (paul.mansfield@mansteck.co.uk), 
-#     COPYRIGHT: 2009-2021 Paul Mansfield
-#       LICENSE: GPL, http://www.gnu.org/copyleft/gpl.html
-#===============================================================================
 
-usage () {
-  echo "    $(basename "$0") [NOTESFILE]"
-  echo "      Cat notes file, use listnotes to get list of notes"
-}
+# Remove action
+shift
 
-die () {
-  if [[ -n $* ]]; then
-    echo -e "$*"
-  fi
-  usage
-	exit 1
-}
-
-# Usage for todo.sh help or remove action
-if [[ "${1}" = "usage" ]] || [[ "${2}" = "usage" ]]; then
-	usage
-	exit
-elif [[ "${1}" = "$(basename "$0")" ]]; then
-  shift
-fi
-
-if [[ $# -lt 1 ]]; then
-  die "      No notes file"
-fi
-
-NOTE_FILE="${1/#note:/}"; shift
-PRE="$(basename "${TODO_FILE}")"; PRE=${PRE/%\.txt/}
-
-if  [[ $(grep -c "${NOTE_FILE}" "${TODO_FILE}") -lt 1 ]]; then
-  die "      Notes file ${NOTE_FILE} not in todo.txt file,\n      use listnotes to find notes files"
-fi
-
-if [ -e "${TODO_DIR}/notes/${PRE}-${NOTE_FILE}.txt" ]; then
-  cat "${TODO_DIR}/notes/${PRE}-${NOTE_FILE}.txt" 2> /dev/null || \
-    die "    Unable to find or show ${PRE}-${NOTE_FILE}.txt"
-fi
+"$TODO_FULL_SH" notes cat "$@"
