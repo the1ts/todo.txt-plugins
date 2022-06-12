@@ -2,7 +2,7 @@
 
 test_description='enotes actions functionality
 '
-. ./test-lib.sh
+. ./test-lib.sh -i
 
 # Set our current actions directory
 export TODO_ACTIONS_DIR=$TEST_DIRECTORY/../actions/enotes
@@ -19,32 +19,32 @@ Ride bike enote:testing
 EOF
 
 # Create our notes file with some content
-cat > notes/todo-test.txt << EOF                                                         
+cat > notes/todo-test.enc << EOF                                                         
 test note first line
 test note second line
 EOF
-cat > ./notes/todo-testing.txt << EOF                                                         
+cat > ./notes/todo-testing.enc << EOF                                                         
 test note first line
 test note second line
 EOF
-cat > ./notes/archive/todo-test-previous.10100000.txt << EOF                                                         
+cat > ./notes/archive/todo-test-previous.10100000.enc << EOF                                                         
 test note first line
 test note second line
 test note third line
 EOF
 
 test_todo_session 'listenotes usage' <<EOF
->>> todo.sh listenotes usage
-    listenotes [TERM]
+>>> todo.sh enotes list usage
+    enotes list [TERM...]
       List encrypted notes
-=== 0
+=== 1
 EOF
 
 test_todo_session 'lsen usage' <<EOF
 >>> todo.sh lsen usage
-    listenotes [TERM]
+    enotes list [TERM...]
       List encrypted notes
-=== 0
+=== 1
 EOF
 
 test_todo_session 'listenotes all' <<EOF
@@ -63,7 +63,7 @@ EOF
 test_todo_session 'listenotes unable to find term' <<EOF
 >>> todo.sh listenotes foobar
       No encrypted notes with the term "foobar"
-    listenotes [TERM]
+    enotes list [TERM...]
       List encrypted notes
 === 1
 EOF

@@ -2,7 +2,7 @@
 
 test_description='enotes actions functionality
 '
-. ./test-lib.sh
+. ./test-lib.sh -i
 
 export TODO_ACTIONS_DIR=$TEST_DIRECTORY/../actions/enotes
 
@@ -14,16 +14,16 @@ EOF
 
 test_todo_session 'enotesadd show usage' <<EOF
 >>> todo.sh enotesadd usage
-    enotesadd [ITEM...] [ENOTESFILE]
-      add ENOTESFILE to ITEMS
-=== 0
+    enotes add [ITEMS] [ENOTESFILE]
+      append ENOTESFILE to ITEMS and edit ENOTESFILE if new
+=== 1
 EOF
 
 test_todo_session 'ena show usage' <<EOF
 >>> todo.sh ena usage
-    enotesadd [ITEM...] [ENOTESFILE]
-      add ENOTESFILE to ITEMS
-=== 0
+    enotes add [ITEMS] [ENOTESFILE]
+      append ENOTESFILE to ITEMS and edit ENOTESFILE if new
+=== 1
 EOF
 
 test_todo_session 'enotesadd enote to task' <<EOF
@@ -36,24 +36,24 @@ EOF
 test_todo_session 'enotesadd item only no note' <<EOF
 >>> todo.sh enotesadd 1
       No enotesfile given
-    enotesadd [ITEM...] [ENOTESFILE]
-      add ENOTESFILE to ITEMS
+    enotes add [ITEMS] [ENOTESFILE]
+      append ENOTESFILE to ITEMS and edit ENOTESFILE if new
 === 1
 EOF
 
 test_todo_session 'enotesadd no item only note' <<EOF
 >>> todo.sh enotesadd testing
       No item given
-    enotesadd [ITEM...] [ENOTESFILE]
-      add ENOTESFILE to ITEMS
+    enotes add [ITEMS] [ENOTESFILE]
+      append ENOTESFILE to ITEMS and edit ENOTESFILE if new
 === 1
 EOF
 
 test_todo_session 'enotesadd item nonexistant' <<EOF
 >>> todo.sh enotesadd 100 testing
-      No item 100
-    enotesadd [ITEM...] [ENOTESFILE]
-      add ENOTESFILE to ITEMS
+      ITEM 100 not in todo file
+    enotes add [ITEMS] [ENOTESFILE]
+      append ENOTESFILE to ITEMS and edit ENOTESFILE if new
 === 1
 EOF
 

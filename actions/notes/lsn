@@ -3,4 +3,4 @@
 # Remove action
 shift
 
-"$TODO_FULL_SH" listnotes "$@"
+"$TODO_FULL_SH" notes list "$@"

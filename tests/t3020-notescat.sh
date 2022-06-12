@@ -2,7 +2,7 @@
 
 test_description='notes actions functionality
 '
-. ./test-lib.sh
+. ./test-lib.sh -i
 
 export TODO_ACTIONS_DIR=$TEST_DIRECTORY/../actions/notes
 
@@ -23,23 +23,23 @@ EOF
 
 test_todo_session 'notescat usage' <<EOF
 >>> todo.sh notescat usage
-    notescat [NOTESFILE]
-      Cat notes file, use listnotes to get list of notes
-=== 0
+    notes cat [NOTESFILE]
+      Show NOTESFILE
+=== 1
 EOF
 
 test_todo_session 'nc usage' <<EOF
 >>> todo.sh notescat usage
-    notescat [NOTESFILE]
-      Cat notes file, use listnotes to get list of notes
-=== 0
+    notes cat [NOTESFILE]
+      Show NOTESFILE
+=== 1
 EOF
 
 test_todo_session 'notescat no notes file' <<EOF
 >>> todo.sh notescat
       No notes file
-    notescat [NOTESFILE]
-      Cat notes file, use listnotes to get list of notes
+    notes cat [NOTESFILE]
+      Show NOTESFILE
 === 1
 EOF
 
@@ -54,8 +54,8 @@ test_todo_session 'notescat show no such note' <<EOF
 >>> todo.sh notescat note:notafile
       Notes file notafile not in todo.txt file,
       use listnotes to find notes files
-    notescat [NOTESFILE]
-      Cat notes file, use listnotes to get list of notes
+    notes cat [NOTESFILE]
+      Show NOTESFILE
 === 1
 EOF
 

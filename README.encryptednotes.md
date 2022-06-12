@@ -1,8 +1,8 @@
 # README - Encrypted Notes and Archived Encrypted Notes
 
-## Encrpted Notes actions
+## Encrypted Notes actions
 
-These actions are to create an encrypted note taking ability to todo.txt shell script. It enables you to add encrypted notes files associated with one or many tasks in your todo file or files.
+The enotes action adds an encrypted note taking ability to todo.txt shell script. It enables you to add encrypted notes files associated with one or many tasks in your todo file or files.
 
 The syntax is enote:notesfile and this can be added to one or many todo items.
 
@@ -17,31 +17,31 @@ NB. make sure the enote name is a single word (no spaces, so use - or _ for mult
 
 Add an encrypted note to an item line or lines via enotesadd action.
 
-Usage: ```todo.sh enotesadd enote:test_enote 1```
+Usage: ```todo.sh enotes add enote:test_enote 1```
 
 ### Editing encrypted notes
 
 Encrypted notes can only be edited if the enote is in the todo.txt file.
 
-Usage: ```todo.sh enotesedit note_name```.
+Usage: ```todo.sh enotes edit note_name```.
 
 ### Listing encrypted notes
 
 To list active encrypted notes run listenotes, you will get a list of all active encrypted notes in your todo.txt file. It also takes an option which displays only those matching a grep of enotes file names.
 
-Usage: ```todo.sh listenotes``` or ```todo.sh listenotes testing```
+Usage: ```todo.sh enotes list``` or ```todo.sh enotes list testing```
 
 ### Showing encrypted notes
 
-To show enotes, there is a enotescat action.
+To show enotes, there is a enotes cat action.
 
-Usage: ```todo.sh enotescat notes_name```
+Usage: ```todo.sh enotes cat notes_name```
 
 ### Grep encrypted notes
 
 To find those encrypted notes that contain a word or phrase, they are listed in the enote:notename format for easy copy paste.
 
-Usage: ```todo.sh enotesgrep testing```
+Usage: ```todo.sh enotes grep testing```
 
 ## Archive encrypted notes
 
@@ -51,16 +51,16 @@ When you have done all tasks associated with an enotes file you can archive the 
 
 The enotesarchive action simply moves all enotesfiles nolonger in the todo.txt file.
 
-Usage: ```todo.sh enotesarchive```
+Usage: ```todo.sh enotes archive```
 
 ### Unarchive encrypted notes
 
 The enotesunarchive action can be used to copy the latest archived version of an enotesfile back to current.
 
-Usage: ```todo.sh enotesunarchive enote:test_note```
+Usage: ```todo.sh enotes unarchive enote:test_note```
 
 ### Listing archived encrypted notes
 
 To list archived notes run listarchivedenotes, you will get a list of all archived enotes in your todo directory. It also takes an option which displays only those matching a grep of enotes file names
 
-Usage: ```todo.sh listarchivedenotes test```
+Usage: ```todo.sh enotes listarchived test```

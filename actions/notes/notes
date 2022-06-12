@@ -35,7 +35,8 @@ find_editor () {
 }
 
 todo_tmp () {
-  # Create file from todo and 'tickled' files if required
+# Create file from todo and 'tickled' files if required
+  TODO_TMP_FILE="${TODO_TMP_FILE:-${TODO_DIR}/todo.tmp}"
   cat "${TODO_FILE}" > "${TODO_TMP_FILE}"
   if [ -n "${TICKLER_DIR}" ]; then
     find "${TICKLER_DIR}" -mindepth 2 -type f -size 1 -exec cat {} \; >>"${TODO_TMP_FILE}"
@@ -53,17 +54,17 @@ elif [[ "${1}" = "$(basename "$0")" ]]; then
   shift
 fi
 
+# If action isn't in list show usage
 if ! [[ "${action}" =~ (add|archive|cat|edit|grep|list|listarchived|rename|unarchive) ]]; then
   usage
 fi
 
 # Check notes and archive exist
+NOTES_DIR="${TODO_DIR}/notes"
 mkdir -p "${TODO_DIR}/notes/archive" || exit 1
 cd "${TODO_DIR}/notes" || exit 1
-
 PRE="$(basename "${TODO_FILE}")"; PRE=${PRE/%\.txt/}
 NOTES=$(find . -maxdepth 1 -name "${PRE}*txt" -printf '%P\n')
-TODO_TMP_FILE="${TODO_TMP_FILE:-${TODO_DIR}/todo.tmp}"
 
 _add () {
   localUsage () {
@@ -76,23 +77,23 @@ _add () {
     die
   fi
 
+  # Check enotes and item number exist
   if [[ "$#" -lt 2 ]]; then
-    if ! [[ "$1" =~ ^[0-9]+$ ]]; then
+    if [[ "${1}" =~ ^[0-9]+$ ]]; then
+      echo "      No notesfile given"
+      localUsage
+      die
+    elif ! [[ "$1" =~ ^[0-9]+$ ]]; then
       echo "      No item given"
       localUsage
       die
     fi
   fi
+
   # Set notes file from last argument and remove from arguments
   # this leaves only items which we test later
   NOTES_FILE=${!##note:}
   set -- "${@:1:$(($#-1))}"
-  # If our notes file is just numbers we didn't get given one
-  if [[ "${NOTES_FILE}" =~ ^[0-9]+$ ]]; then
-    echo "      No notesfile given"
-    localUsage
-    die
-  fi
 
   # Are items in the file?
   # shellcheck disable=SC2048
@@ -117,8 +118,8 @@ _add () {
   if [[ "${NOTE_ADD_EDIT}" = "OFF" ]] && \
     [[ $(grep -c "${NOTES_FILE}" "${TODO_FILE}") -eq 0 ]] && \
     ! [[ -f "${TODOTXT_DIR}/notes/${PRE}-${NOTES}.txt" ]] && \
-    [[ $(${TODO_FULL_SH} listaddons | grep -c ^notesedit$) -eq 1 ]]; then
-    "${TODO_FULL_SH}" notesedit "note:${NOTES_FILE}"
+    [[ $(${TODO_FULL_SH} listaddons | grep -c ^notes$) -eq 1 ]]; then
+    "${TODO_FULL_SH}" notes edit "note:${NOTES_FILE}"
   fi
 }
 
@@ -166,8 +167,8 @@ _archive (){
 
 _cat (){
   localUsage () {
-    echo "    $(basename "$0") ${action}"
-    echo "      Archive NOTESFILE not in todo.txt"
+    echo "    $(basename "$0") ${action} [NOTESFILE]"
+    echo "      Show NOTESFILE"
   }
 
   if [[ "${1}" =~ (usage|--help|help) ]]; then
@@ -201,8 +202,8 @@ _cat (){
 
 _edit () {
   localUsage () {
-    echo "    $(basename "$0") ${action}"
-    echo "      Edit notes file, \$EDITOR."
+    echo "    $(basename "$0") ${action} [NOTESFILE]"
+    echo "      Edit notes file, in \$EDITOR."
     echo "      use listnotes to get list of notes files"
   }
 
@@ -252,7 +253,8 @@ _grep () {
     die
   fi
 
-  ARCHIVED="$(find -- archive/* -name "${PRE}-*.txt" -printf "%p\n")"
+  ARCHIVED="$(find -- archive/* -name "${PRE}-*.txt" -printf "%p\n" | sort)"
+
   if [[ "$1" = "-a" ]]; then
     ARCHIVE=1; shift
   fi
@@ -277,7 +279,7 @@ _grep () {
     echo "Notes Files containing \"$*\""
     echo "-----------"
     # shellcheck disable=SC2086
-    grep -l "$*" ${NOTES} | sed "s/^.*${PRE}-/note:/g ; s/[.]txt$//g"
+    grep -l "$*" ${NOTES} | sed "s/^.*${PRE}-/note:/g ; s/[.]txt$//g" | sort
   else
     echo "No current Notes containing \"$*\""
     ((RETURN+=1))
@@ -289,7 +291,7 @@ _grep () {
       echo "--------------------"
       # shellcheck disable=SC2086
       grep -l "$*" ${ARCHIVED} | sed -e "s/^.*${PRE}-/note:/g" \
-      -e "s/[.]txt$//g" -e "s/\.[0-9]\{1,10\}$//g"
+      -e "s/[.]txt$//g" -e "s/\.[0-9]\{1,10\}$//g" | sort
     else
       echo "No archived Notes containing \"$*\""
       ((RETURN+=1))
@@ -302,9 +304,8 @@ _grep () {
 
 _list () {
   localUsage () {
-    echo "    $(basename "$0") ${action} -a [TERM...]"
+    echo "    $(basename "$0") ${action} [TERM...]"
     echo "      List notes"
-    echo "      -a show archived notes"
   }
 
   if [[ "${1}" =~ (usage|--help|help) ]]; then
@@ -318,6 +319,7 @@ _list () {
     grep -o '\bnote\:[a-zA-Z0-9\._-]*' "${TODO_TMP_FILE}" | grep "$*" | sort -u
     [[ -f "${TODO_TMP_FILE}" ]] && rm -rf "${TODO_TMP_FILE}"
   else
+    [[ -f "${TODO_TMP_FILE}" ]] && rm -rf "${TODO_TMP_FILE}"
     echo "      No notes with the term \"$*\""
     localUsage
     die
@@ -330,12 +332,14 @@ _listarchived () {
     echo "      List archived notes"
   }
 
-  cd archive || exit 1
-
   if [[ "${1}" =~ (usage|--help|help) ]]; then
     localUsage
     die
   fi
+
+  todo_tmp
+
+  cd archive || exit 1
 
   # Find a list of files
   find . -name "${PRE}-*txt" -printf '%P\n'  | grep "^${PRE}-" | \
@@ -345,6 +349,7 @@ _listarchived () {
     grep "$*" "${TODO_TMP_FILE}"
     [[ -f "${TODO_TMP_FILE}" ]] && rm -rf "${TODO_TMP_FILE}"
   else
+    [[ -f "${TODO_TMP_FILE}" ]] && rm -rf "${TODO_TMP_FILE}"
     echo "      No notes with the term \"$*\""
     localUsage
     die
@@ -355,6 +360,7 @@ _rename () {
   localUsage () {
     echo "    $(basename "$0") ${action} [ORIGINAL_NOTESFILE] [NEW_NOTESFILE]"
     echo "      rename ORIGINAL_NOTESFILE to NEW_NOTESFILE"
+    echo "      renames in todo.txt and notefile"
     echo "      the note: is not required, but added"
   }
 
@@ -402,6 +408,7 @@ _rename () {
       sed -i "s/note:${OLD_FILE}\b/note:${NEW_FILE}" "${FILE}"
       echo "$(getPrefix): Changed note:${OLD_FILE} to note:${NEW_FILE} in tickled file ${FILE}"
     done
+      mv "${NOTES_DIR}/${OLD_FILE}.txt" "${NOTES_DIR}/${NEW_FILE}.txt"
   fi
 }
 
@@ -409,6 +416,7 @@ _unarchive () {
   localUsage () {
     echo "    $(basename "$0") ${action} [NOTESFILE]"
     echo "      unarchive notes files, this brings back the last"
+    echo "      version of the notefile"
   }
 
   cd archive || exit 1
@@ -442,9 +450,8 @@ _unarchive () {
     die
   else
     echo "$(getPrefix): Notes file ${PRE}-${NOTES_FILE}.txt restored from newest archive"
+    exit 0
   fi
-
-  [[ -f "${TODO_TMP_FILE}" ]] && rm -rf "${TODO_TMP_FILE}"
 }
 
 # We actually want white space separated options so no quotes on our $@

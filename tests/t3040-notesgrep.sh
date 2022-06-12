@@ -2,7 +2,7 @@
 
 test_description='notes actions functionality
 '
-. ./test-lib.sh
+. ./test-lib.sh -i
 
 # Set our current actions directory
 export TODO_ACTIONS_DIR=$TEST_DIRECTORY/../actions/notes
@@ -35,24 +35,24 @@ EOF
 
 test_todo_session 'notesgrep usage' <<EOF
 >>> todo.sh notesgrep usage
-    notesgrep [-a] [TERM...]
+    notes grep -a [TERM...]
       List notes that contain a TERM within them
       -a show archived notes
-=== 0
+=== 1
 EOF
 
 test_todo_session 'ng usage' <<EOF
 >>> todo.sh ng usage
-    notesgrep [-a] [TERM...]
+    notes grep -a [TERM...]
       List notes that contain a TERM within them
       -a show archived notes
-=== 0
+=== 1
 EOF
 
 test_todo_session 'notesgrep no term' <<EOF
 >>> todo.sh notesgrep
     No TERM
-    notesgrep [-a] [TERM...]
+    notes grep -a [TERM...]
       List notes that contain a TERM within them
       -a show archived notes
 === 1

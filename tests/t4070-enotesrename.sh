@@ -2,7 +2,7 @@
 
 test_description='enotes actions functionality
 '
-. ./test-lib.sh
+. ./test-lib.sh -i
 
 # Set our current actions directory
 export TODO_ACTIONS_DIR=$TEST_DIRECTORY/../actions/enotes
@@ -35,26 +35,26 @@ EOF
 
 test_todo_session 'enotesrename usage' <<EOF
 >>> todo.sh enotesrename usage
-    enotesrename [ORIGINAL_ENOTESFILE] [NEW_ENOTESFILE]
+    enotes rename [ORIGINAL_ENOTESFILE] [NEW_ENOTESFILE]
       rename ORIGINAL_ENOTESFILE to NEW_ENOTESFILE
       renames in todo.txt and enotefile
       the enote: is not required, but added
-=== 0
+=== 1
 EOF
 
 test_todo_session 'enr usage' <<EOF
 >>> todo.sh enr usage
-    enotesrename [ORIGINAL_ENOTESFILE] [NEW_ENOTESFILE]
+    enotes rename [ORIGINAL_ENOTESFILE] [NEW_ENOTESFILE]
       rename ORIGINAL_ENOTESFILE to NEW_ENOTESFILE
       renames in todo.txt and enotefile
       the enote: is not required, but added
-=== 0
+=== 1
 EOF
 
 test_todo_session 'enotesrename not enough options' <<EOF
 >>> todo.sh enotesrename foobar
     check number of options
-    enotesrename [ORIGINAL_ENOTESFILE] [NEW_ENOTESFILE]
+    enotes rename [ORIGINAL_ENOTESFILE] [NEW_ENOTESFILE]
       rename ORIGINAL_ENOTESFILE to NEW_ENOTESFILE
       renames in todo.txt and enotefile
       the enote: is not required, but added
@@ -64,7 +64,7 @@ EOF
 test_todo_session 'enotesrename too many options' <<EOF
 >>> todo.sh enotesrename foo bar wibble
     check number of options
-    enotesrename [ORIGINAL_ENOTESFILE] [NEW_ENOTESFILE]
+    enotes rename [ORIGINAL_ENOTESFILE] [NEW_ENOTESFILE]
       rename ORIGINAL_ENOTESFILE to NEW_ENOTESFILE
       renames in todo.txt and enotefile
       the enote: is not required, but added
@@ -74,7 +74,7 @@ EOF
 test_todo_session 'enotesrename original enote not in todo.txt' <<EOF
 >>> todo.sh enotesrename foo bar
     foo is not a current enote, use listenotes to find enotes.
-    enotesrename [ORIGINAL_ENOTESFILE] [NEW_ENOTESFILE]
+    enotes rename [ORIGINAL_ENOTESFILE] [NEW_ENOTESFILE]
       rename ORIGINAL_ENOTESFILE to NEW_ENOTESFILE
       renames in todo.txt and enotefile
       the enote: is not required, but added

@@ -1,8 +1,10 @@
 #!/bin/bash
 
+# shellcheck disable=SC2034
 test_description='notes actions functionality
 '
-. ./test-lib.sh
+# shellcheck disable=SC2034,SC1091
+. ./test-lib.sh -i
 
 export TODO_ACTIONS_DIR=$TEST_DIRECTORY/../actions/notes
 
@@ -134,16 +136,29 @@ TODO: Archived note:archive_file
 === 0
 EOF
 
+# Create our note file again to see archiving of already archived notes works
+cat > ./notes/todo-archive_file.txt << EOF                                                         
+File to test archiving
+EOF
+mv ./notes/archive/todo-archive_file.1234500000.txt ./notes/archive/todo-archive_file.1234490000.txt
+
+test_todo_session 'notes archive run with already archived notefile' <<EOF
+>>> todo.sh notes archive; ls notes/archive/todo-archive*txt
+TODO: Archived note:archive_file
+notes/archive/todo-archive_file.1234490000.txt
+notes/archive/todo-archive_file.1234500000.txt
+=== 0
+EOF
+
 test_todo_session 'notes archive run, nothing to archive' <<EOF
 >>> todo.sh notes archive
 TODO: Nothing to archive
 === 1
 EOF
 
-# #
-# ## cat
-# #
-
+#
+## cat
+#
 
 # Create our notes and archive directories
 rm -rf notes/archive
@@ -164,16 +179,16 @@ EOF
 
 test_todo_session 'notes cat subaction help' <<EOF
 >>> todo.sh notes cat help
-    notes cat
-      Archive NOTESFILE not in todo.txt
+    notes cat [NOTESFILE]
+      Show NOTESFILE
 === 1
 EOF
 
 test_todo_session 'notes cat no notes file' <<EOF
 >>> todo.sh notes cat
       No notes file
-    notes cat
-      Archive NOTESFILE not in todo.txt
+    notes cat [NOTESFILE]
+      Show NOTESFILE
 === 1
 EOF
 
@@ -195,8 +210,8 @@ test_todo_session 'notes cat show no such note' <<EOF
 >>> todo.sh notes cat note:notafile
       Notes file notafile not in todo.txt file,
       use listnotes to find notes files
-    notes cat
-      Archive NOTESFILE not in todo.txt
+    notes cat [NOTESFILE]
+      Show NOTESFILE
 === 1
 EOF
 
@@ -222,8 +237,8 @@ EOF
 
 test_todo_session 'notes edit subaction help' <<EOF
 >>> todo.sh notes edit help
-    notes edit
-      Edit notes file, \$EDITOR.
+    notes edit [NOTESFILE]
+      Edit notes file, in \$EDITOR.
       use listnotes to get list of notes files
 === 1
 EOF
@@ -231,8 +246,8 @@ EOF
 test_todo_session 'notes edit no notefile' <<EOF
 >>> todo.sh notes edit
       No notes file
-    notes edit
-      Edit notes file, \$EDITOR.
+    notes edit [NOTESFILE]
+      Edit notes file, in \$EDITOR.
       use listnotes to get list of notes files
 === 1
 EOF
@@ -240,8 +255,8 @@ EOF
 test_todo_session 'notes edit no such notefile' <<EOF
 >>> todo.sh notes edit note:notafile
       No such notes file, use listnotes to find notes files
-    notes edit
-      Edit notes file, \$EDITOR.
+    notes edit [NOTESFILE]
+      Edit notes file, in \$EDITOR.
       use listnotes to get list of notes files
 === 1
 EOF
@@ -381,9 +396,8 @@ EOF
 
 test_todo_session 'notes list subaction help' <<EOF
 >>> todo.sh notes list help
-    notes list -a [TERM...]
+    notes list [TERM...]
       List notes
-      -a show archived notes
 === 1
 EOF
 
@@ -403,9 +417,8 @@ EOF
 test_todo_session 'notes list unable to find term' <<EOF
 >>> todo.sh notes list foobar
       No notes with the term "foobar"
-    notes list -a [TERM...]
+    notes list [TERM...]
       List notes
-      -a show archived notes
 === 1
 EOF
 
@@ -498,6 +511,7 @@ test_todo_session 'notes rename subaction help' <<EOF
 >>> todo.sh notes rename help
     notes rename [ORIGINAL_NOTESFILE] [NEW_NOTESFILE]
       rename ORIGINAL_NOTESFILE to NEW_NOTESFILE
+      renames in todo.txt and notefile
       the note: is not required, but added
 === 1
 EOF
@@ -507,6 +521,7 @@ test_todo_session 'notes rename not enough options' <<EOF
     check number of options
     notes rename [ORIGINAL_NOTESFILE] [NEW_NOTESFILE]
       rename ORIGINAL_NOTESFILE to NEW_NOTESFILE
+      renames in todo.txt and notefile
       the note: is not required, but added
 === 1
 EOF
@@ -516,6 +531,7 @@ test_todo_session 'notes rename too many options' <<EOF
     check number of options
     notes rename [ORIGINAL_NOTESFILE] [NEW_NOTESFILE]
       rename ORIGINAL_NOTESFILE to NEW_NOTESFILE
+      renames in todo.txt and notefile
       the note: is not required, but added
 === 1
 EOF
@@ -525,11 +541,12 @@ test_todo_session 'notes rename original note not in todo.txt' <<EOF
     foo is not a current note, use listnotes to find notes.
     notes rename [ORIGINAL_NOTESFILE] [NEW_NOTESFILE]
       rename ORIGINAL_NOTESFILE to NEW_NOTESFILE
+      renames in todo.txt and notefile
       the note: is not required, but added
 === 1
 EOF
 
-test_todo_session 'notes rename rename original note to new note todo.txt only' <<EOF
+test_todo_session 'notes rename original note to new note todo.txt only' <<EOF
 >>> todo.sh notes rename testing test1; cat todo.txt
 TODO: Changed note:testing to note:test1 in todo.txt
 Buy tools note:test
@@ -547,7 +564,7 @@ cat > todo.txt << EOF
 test new line note:test2
 EOF
 
-test_todo_session 'notes rename rename original note to new note todo.txt and done.txt' <<EOF
+test_todo_session 'notes rename original note to new note todo.txt and done.txt' <<EOF
 >>> todo.sh notes rename test2 test3; cat todo.txt done.txt
 TODO: Changed note:test2 to note:test3 in todo.txt
 TODO: Changed note:test2 to note:test3 in done.txt
@@ -557,7 +574,7 @@ test new line note:test3
 === 0
 EOF
 
-test_todo_session 'notes rename rename original note to new note done.txt only' <<EOF
+test_todo_session 'notes rename original note to new note done.txt only' <<EOF
 >>> todo.sh notes rename test4 test5; cat done.txt
 TODO: Changed note:test4 to note:test5 in done.txt
 2021-01-01 test line 1 note:test3
@@ -604,10 +621,11 @@ test note second line
 younger
 EOF
 
-test_todo_session 'notes unarchive subaction help' <<EOF
->>> todo.sh notes unarchive help
+test_todo_session 'notes unarchive usage' <<EOF
+>>> todo.sh notes unarchive usage
     notes unarchive [NOTESFILE]
       unarchive notes files, this brings back the last
+      version of the notefile
 === 1
 EOF
 
@@ -616,12 +634,21 @@ test_todo_session 'notes unarchive for note never archived' <<EOF
       No archived notes file named foobar. Use notes listarchived to find them
     notes unarchive [NOTESFILE]
       unarchive notes files, this brings back the last
+      version of the notefile
 === 1
 EOF
 
-test_todo_session 'notes unarchive unarchive file' <<EOF
+test_todo_session 'notes unarchive file' <<EOF
 >>> todo.sh notes unarchive testing; cat notes/todo-testing.txt
 TODO: Notes file todo-testing.txt restored from newest archive
+test note first line
+test note second line
+younger
+=== 0
+EOF
+
+test_todo_session 'notes unarchive test restored file is younger file' <<EOF
+>>> todo.sh notescat testing
 test note first line
 test note second line
 younger
@@ -634,6 +661,7 @@ test_todo_session 'notes unarchive notefile not in todo.txt' <<EOF
       use listnotes to find them
     notes unarchive [NOTESFILE]
       unarchive notes files, this brings back the last
+      version of the notefile
 === 1
 EOF
 

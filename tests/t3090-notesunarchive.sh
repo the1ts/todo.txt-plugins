@@ -2,7 +2,7 @@
 
 test_description='notes actions functionality
 '
-. ./test-lib.sh
+. ./test-lib.sh -i
 
 # Set our current actions directory
 export TODO_ACTIONS_DIR=$TEST_DIRECTORY/../actions/notes
@@ -45,24 +45,24 @@ EOF
 
 test_todo_session 'notesunarchive usage' <<EOF
 >>> todo.sh notesunarchive usage
-    notesunarchive [NOTESFILE]
+    notes unarchive [NOTESFILE]
       unarchive notes files, this brings back the last
       version of the notefile
-=== 0
+=== 1
 EOF
 
 test_todo_session 'nuar usage' <<EOF
 >>> todo.sh nuar usage
-    notesunarchive [NOTESFILE]
+    notes unarchive [NOTESFILE]
       unarchive notes files, this brings back the last
       version of the notefile
-=== 0
+=== 1
 EOF
 
 test_todo_session 'notesunarchive for note never archived' <<EOF
 >>> todo.sh notesunarchive foobar
-      No archived notes file named foobar. Use listarchivedenotes to find them
-    notesunarchive [NOTESFILE]
+      No archived notes file named foobar. Use notes listarchived to find them
+    notes unarchive [NOTESFILE]
       unarchive notes files, this brings back the last
       version of the notefile
 === 1
@@ -81,7 +81,7 @@ test_todo_session 'notesunarchive notefile not in todo.txt' <<EOF
 >>> todo.sh notesunarchive test_previous
       Note file test_previous not mentioned in todo
       use listnotes to find them
-    notesunarchive [NOTESFILE]
+    notes unarchive [NOTESFILE]
       unarchive notes files, this brings back the last
       version of the notefile
 === 1

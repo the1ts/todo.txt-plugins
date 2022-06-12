@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # edit
 if [[ ${COMP_WORDS[1]} = "edit" ]]; then
 	# shellcheck disable=SC2207,SC2086
