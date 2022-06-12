@@ -37,7 +37,7 @@ if [[ $(echo $@ | cut -f 1 -d " " | grep -c '[a-zA-Z]') -lt 1 ]]; then
   die "      No priority set"
 else
   # shellcheck disable=SC2068
-  PRI="$(echo $@ | cut -f 1 -d " " | tr [a-z] [A-Z])"
+  PRI="$(echo $@ | cut -f 1 -d " " | tr '[:lower:]' '[:upper:]')"
   # Test priority is correct
   if [[ $(echo "${PRI}" | grep -Ec '^[A-Z]{1}$') -lt 1 ]]; then
     die "      Priority must be a single letter A-Z"
