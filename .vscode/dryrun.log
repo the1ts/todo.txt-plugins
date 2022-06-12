@@ -2,8 +2,11 @@ make -f /net/nas1/volume1/scratcharea/paulbm/git/home/github/todo.txt-plugins/Ma
 make: Entering directory '/net/nas1/volume1/scratcharea/paulbm/git/home/github/todo.txt-plugins'
  
 <<<<<<< HEAD
+<<<<<<< HEAD
 VERSION=2.4.2.dirty
 
+=======
+>>>>>>> develop
 =======
 >>>>>>> develop
 make: 'VERSION-FILE' is up to date.
