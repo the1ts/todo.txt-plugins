@@ -398,7 +398,6 @@ test_todo_session 'notes list subaction help' <<EOF
 >>> todo.sh notes list help
     notes list [TERM...]
       List notes
-      -a show archived notes
 === 1
 EOF
 
@@ -420,7 +419,6 @@ test_todo_session 'notes list unable to find term' <<EOF
       No notes with the term "foobar"
     notes list [TERM...]
       List notes
-      -a show archived notes
 === 1
 EOF
 

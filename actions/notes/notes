@@ -306,7 +306,6 @@ _list () {
   localUsage () {
     echo "    $(basename "$0") ${action} [TERM...]"
     echo "      List notes"
-    echo "      -a show archived notes"
   }
 
   if [[ "${1}" =~ (usage|--help|help) ]]; then

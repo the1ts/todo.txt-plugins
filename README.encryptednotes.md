@@ -2,7 +2,7 @@
 
 ## Encrypted Notes actions
 
-The enotes adds an encrypted note taking ability to todo.txt shell script. It enables you to add encrypted notes files associated with one or many tasks in your todo file or files.
+The enotes action adds an encrypted note taking ability to todo.txt shell script. It enables you to add encrypted notes files associated with one or many tasks in your todo file or files.
 
 The syntax is enote:notesfile and this can be added to one or many todo items.
 

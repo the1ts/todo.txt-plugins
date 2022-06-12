@@ -35,14 +35,14 @@ EOF
 
 test_todo_session 'listenotes usage' <<EOF
 >>> todo.sh enotes list usage
-    enotes list [TERM]
+    enotes list [TERM...]
       List encrypted notes
 === 1
 EOF
 
 test_todo_session 'lsen usage' <<EOF
 >>> todo.sh lsen usage
-    enotes list [TERM]
+    enotes list [TERM...]
       List encrypted notes
 === 1
 EOF
@@ -63,7 +63,7 @@ EOF
 test_todo_session 'listenotes unable to find term' <<EOF
 >>> todo.sh listenotes foobar
       No encrypted notes with the term "foobar"
-    enotes list [TERM]
+    enotes list [TERM...]
       List encrypted notes
 === 1
 EOF
