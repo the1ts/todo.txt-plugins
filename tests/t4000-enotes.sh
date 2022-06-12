@@ -1,7 +1,9 @@
 #!/bin/bash
 
+# shellcheck disable=SC2034
 test_description='notes actions functionality
 '
+# shellcheck disable=SC2034,SC1091
 . ./test-lib.sh -i
 
 export TODO_ACTIONS_DIR=$TEST_DIRECTORY/../actions/enotes
@@ -14,10 +16,12 @@ export EDITOR="cat"
 
 USAGETEXT="    enotes [add|archive|cat|edit|list|listarchived|rename|unarchive]"
 
+# shellcheck disable=SC2155
 export GNUPGHOME="$(mktemp -d)" || { echo "Failed to create temp file"; exit 1; }
 export GPG_USER="user@tests.com"
 # Setup gpg and a key for our enotes testing
 gpg --list-keys --no-verbose -q 1>/dev/null
+# shellcheck disable=SC2086
 cat >${GNUPGHOME}/key <<EOF
     %echo Generating a basic OpenPGP key
     Key-Type: RSA
@@ -33,6 +37,7 @@ cat >${GNUPGHOME}/key <<EOF
     %commit
     %echo done
 EOF
+# shellcheck disable=SC2086
 gpg --batch --no-verbose -q --full-gen-key ${GNUPGHOME}/key
 
 # Create our notes file with some content
@@ -357,7 +362,7 @@ EOF
 
 test_todo_session 'enotes list usage' <<EOF
 >>> todo.sh enotes list usage
-    enotes list [TERM]
+    enotes list [TERM...]
       List encrypted notes
 === 1
 EOF
@@ -378,7 +383,7 @@ EOF
 test_todo_session 'enotes list unable to find term' <<EOF
 >>> todo.sh enotes list foobar
       No encrypted notes with the term "foobar"
-    enotes list [TERM]
+    enotes list [TERM...]
       List encrypted notes
 === 1
 EOF
@@ -588,7 +593,7 @@ EOF
 
 test_todo_session 'enotes unarchive for note never archived' <<EOF
 >>> todo.sh enotes unarchive foobar
-      No archived enotes file named foobar. Use listarchivedenotes to find them
+      No archived enotes file named foobar. Use enotes listarchived to find them
     enotes unarchive [ENOTESFILE]
       unarchive enotes files, this brings back the last
       version of the enotefile
@@ -611,7 +616,8 @@ EOF
 
 test_todo_session 'enotes unarchive notefile not in todo.txt' <<EOF
 >>> todo.sh enotes unarchive test_previous
-      Encrypted note file test_previous not mentioned in todo. Use listenotes to find them
+      Encrypted note file test_previous not mentioned in todo
+      use enotes listarchived to find them
     enotes unarchive [ENOTESFILE]
       unarchive enotes files, this brings back the last
       version of the enotefile

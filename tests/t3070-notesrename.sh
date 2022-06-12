@@ -37,6 +37,7 @@ test_todo_session 'notesrename usage' <<EOF
 >>> todo.sh notesrename usage
     notes rename [ORIGINAL_NOTESFILE] [NEW_NOTESFILE]
       rename ORIGINAL_NOTESFILE to NEW_NOTESFILE
+      renames in todo.txt and notefile
       the note: is not required, but added
 === 1
 EOF
@@ -45,6 +46,7 @@ test_todo_session 'nr usage' <<EOF
 >>> todo.sh nr usage
     notes rename [ORIGINAL_NOTESFILE] [NEW_NOTESFILE]
       rename ORIGINAL_NOTESFILE to NEW_NOTESFILE
+      renames in todo.txt and notefile
       the note: is not required, but added
 === 1
 EOF
@@ -54,6 +56,7 @@ test_todo_session 'notesrename not enough options' <<EOF
     check number of options
     notes rename [ORIGINAL_NOTESFILE] [NEW_NOTESFILE]
       rename ORIGINAL_NOTESFILE to NEW_NOTESFILE
+      renames in todo.txt and notefile
       the note: is not required, but added
 === 1
 EOF
@@ -63,6 +66,7 @@ test_todo_session 'notesrename too many options' <<EOF
     check number of options
     notes rename [ORIGINAL_NOTESFILE] [NEW_NOTESFILE]
       rename ORIGINAL_NOTESFILE to NEW_NOTESFILE
+      renames in todo.txt and notefile
       the note: is not required, but added
 === 1
 EOF
@@ -72,6 +76,7 @@ test_todo_session 'notesrename original note not in todo.txt' <<EOF
     foo is not a current note, use listnotes to find notes.
     notes rename [ORIGINAL_NOTESFILE] [NEW_NOTESFILE]
       rename ORIGINAL_NOTESFILE to NEW_NOTESFILE
+      renames in todo.txt and notefile
       the note: is not required, but added
 === 1
 EOF

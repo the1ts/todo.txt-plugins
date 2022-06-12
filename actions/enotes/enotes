@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck shell=bash
 #===============================================================================
 #
 #          FILE: enotes
@@ -10,9 +11,6 @@
 #       LICENSE: GPL, http://www.gnu.org/copyleft/gpl.html
 #===============================================================================
 
-# shellcheck shell=bash disable=SC2068
-# We actually want white space separated options so no quotes on our $@
-
 usage () {
 	echo "    $(basename "$0") [add|archive|cat|edit|list|listarchived|rename|unarchive]"
 }
@@ -22,10 +20,10 @@ die () {
 	exit 1
 }
 
+find_editor () {
 # Find editor to use, if EDITOR already set use.
 # Else use debian and derivatives editor (alternatives auto set by OS)
 # finally if neither EDITOR nor alternative set default to vi
-find_editor () {
   if [[ -n ${EDITOR} ]]; then
     true
 	elif [[ -L /usr/bin/editor ]]; then
@@ -36,8 +34,8 @@ find_editor () {
   echo "${EDITOR}"
 }
 
-# Create file from todo and 'tickled' files if required
 todo_tmp () {
+# Create file from todo and 'tickled' files if required
   TODO_TMP_FILE="${TODO_TMP_FILE:-${TODO_DIR}/todo.tmp}"
   cat "${TODO_FILE}" > "${TODO_TMP_FILE}"
   if [ -n "${TICKLER_DIR}" ]; then
@@ -56,6 +54,7 @@ elif [[ "${1}" = "$(basename "$0")" ]]; then
   shift
 fi
 
+# If action isn't in list show usage
 if ! [[ "${action}" =~ (add|archive|cat|edit|list|listarchived|rename|unarchive) ]]; then
   usage
 fi
@@ -96,13 +95,6 @@ _add () {
   ENOTES_FILE=${!##enote:};
   set -- "${@:1:$(($#-1))}"
 
-  # If our enotes file is just numbers we didn't get given one
-  if [[ "${ENOTES_FILE}" =~ ^[0-9]+$ ]]; then
-    echo "      No enotesfile given"
-    localUsage
-    die
-  fi
-
   # Are items in the file?
   # shellcheck disable=SC2048
   for item in $*; do
@@ -126,8 +118,8 @@ _add () {
   if [[ "${NOTE_ADD_EDIT}" = "OFF" ]] && \
     [[ $(grep -c "${ENOTES_FILE}" "${TODO_FILE}") -eq 0 ]] && \
     ! [[ -f "${TODOTXT_DIR}/notes/${PRE}-${ENOTES}.enc" ]] && \
-    [[ $(${TODO_FULL_SH} listaddons | grep -c ^notesedit$) -eq 1 ]]; then
-    "${TODO_FULL_SH}" notesedit "enote:${ENOTES_FILE}"
+    [[ $(${TODO_FULL_SH} listaddons | grep -c ^notes$) -eq 1 ]]; then
+    "${TODO_FULL_SH}" notes edit "enote:${ENOTES_FILE}"
   fi
 }
 
@@ -194,9 +186,7 @@ _cat () {
     die
   fi
 
-  # shellcheck disable=SC2001
   ENOTE_FILE="${1/#enote:/}"; shift
-  PRE="$(basename "${TODO_FILE}")"; PRE=${PRE/%\.txt/}
 
   if  [[ $(grep -c "${ENOTE_FILE}" "${TODO_FILE}") -lt 1 ]]; then
     echo "      Encrypted notes file ${ENOTE_FILE} not in todo.txt file,"
@@ -225,6 +215,7 @@ _edit () {
     localUsage
     die
   fi
+
   ENOTE_FILE="${1/#enote:/}"; shift
   EDITOR=$(find_editor)
 
@@ -287,7 +278,7 @@ _edit () {
 
 _list () {
   localUsage () {
-    echo "    $(basename "$0") ${action} [TERM]"
+    echo "    $(basename "$0") ${action} [TERM...]"
     echo "      List encrypted notes"
   }
 
@@ -322,7 +313,6 @@ _listarchived () {
 
   todo_tmp
 
-  # We only want archived files
   cd archive || exit 1
 
   # Find a list of files
@@ -361,7 +351,6 @@ _rename () {
 
   OLD_FILE=${1##enote:}
   NEW_FILE=${2##enote:}
-  NOTES_DIR="${TODO_DIR}/notes"
 
   # Move the enote
   if [[ "$(grep -c "${OLD_FILE}" "${TODO_FILE}")" -ge 1 ]]; then
@@ -369,6 +358,7 @@ _rename () {
     echo "$(getPrefix): Changed enote:${OLD_FILE} to enote:${NEW_FILE} in todo.txt"
     ((UPDATE+=1))
   fi
+  # shellcheck disable=SC2153
   if [[ "$(grep -c "${OLD_FILE}" "${DONE_FILE}")" -ge 1 ]]; then
     sed -i "s/note:${OLD_FILE}\b/enote:${NEW_FILE}/g" "${DONE_FILE}"
     echo "$(getPrefix): Changed enote:${OLD_FILE} to enote:${NEW_FILE} in done.txt"
@@ -403,70 +393,73 @@ _unarchive () {
     echo "      version of the enotefile"
   }
 
+  cd archive || exit 1
+
   if [[ "${1}" =~ (usage|--help|help) ]]; then
     localUsage
     die
   fi
 
-  # We are working with archive, lets cd there
-  cd archive || exit 1
-
-  todo_tmp
-
-  FILE=${1##enote:}; shift
-  DATE_FILE=$(find -- * -name "${PRE}-${FILE}.*.enc" -type f -printf "%T@ %p\n"  2> /dev/null | sort -n | cut -f 2 -d " "  | tail -n 1)
-  # ARC_FILE="${TODO_DIR}/notes/archive/${DATE_FILE}"
+  ENOTES_FILE=${1##enote:}; shift
+  DATE_FILE=$(find -- * -name "${PRE}-${ENOTES_FILE}.*.enc" -type f -printf "%T@ %p\n"  2> /dev/null | sort -n | cut -f 2 -d " "  | tail -n 1)
+  ARC_FILE="${TODO_DIR}/notes/archive/${DATE_FILE}"
   
-  # ENOTES_FILE="${TODO_DIR}/notes/${PRE}-${FILE}.enc"
+  todo_tmp
 
   if [[ -z "${DATE_FILE}" ]]; then
-    echo "      No archived enotes file named ${FILE}. Use listarchivedenotes to find them"
+    echo "      No archived enotes file named ${ENOTES_FILE}. Use enotes listarchived to find them"
     localUsage
     die
-  fi
-  
-  todo_tmp
-
-  if [[ "$(grep -c "\benote:${FILE}\b" "${TODO_TMP_FILE}")" -eq 0 ]] ;then
-    echo "      Encrypted note file ${FILE} not mentioned in todo. Use listenotes to find them"
+  elif [[ "$(grep -c "\benote:${ENOTES_FILE}\b" "${TODO_TMP_FILE}")" -eq 0 ]] ;then
+    echo "      Encrypted note file ${ENOTES_FILE} not mentioned in todo"
+    echo "      use enotes listarchived to find them"
     localUsage
     die
   fi
   [[ -f "${TODO_TMP_FILE}" ]] && rm -rf "${TODO_TMP_FILE}"
 
-  cp "${NOTES_DIR}/archive/${DATE_FILE}" "${NOTES_DIR}/${PRE}-${FILE}.enc" 
+  cp "${ARC_FILE}" "${NOTES_DIR}/${PRE}-${ENOTES_FILE}.enc" 
   if [[ "$?" -eq 1 ]]; then
-    echo "      Unable to move ${PRE}-${FILE}.enc to ${NO_DATE_FILE}.enc"
+    echo "      Unable to move ${PRE}-${ENOTES_FILE}.enc to ${NO_DATE_FILE}.enc"
     localUsage
     die
   else
-    echo "$(getPrefix): Encrypted notes file ${PRE}-${FILE}.enc restored from newest archive"
+    echo "$(getPrefix): Encrypted notes file ${PRE}-${ENOTES_FILE}.enc restored from newest archive"
+    exit 0
   fi
 }
 
 case ${action} in
   add)
+    # shellcheck disable=SC2068
     _add $@
   ;;
   archive)
+    # shellcheck disable=SC2068
     _archive $@
   ;;
   cat)
+    # shellcheck disable=SC2068
     _cat $@
   ;;
   edit)
+    # shellcheck disable=SC2068
     _edit $@
   ;;
   list)
+    # shellcheck disable=SC2068
     _list $@
   ;;
   listarchived)
+    # shellcheck disable=SC2068
     _listarchived $@
   ;;
   rename)
+    # shellcheck disable=SC2068
     _rename $@
   ;;
   unarchive)
+    # shellcheck disable=SC2068
     _unarchive $@
   ;;
   *)

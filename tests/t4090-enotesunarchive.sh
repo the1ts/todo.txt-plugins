@@ -74,7 +74,7 @@ EOF
 
 test_todo_session 'enotesunarchive for note never archived' <<EOF
 >>> todo.sh enotesunarchive foobar
-      No archived enotes file named foobar. Use listarchivedenotes to find them
+      No archived enotes file named foobar. Use enotes listarchived to find them
     enotes unarchive [ENOTESFILE]
       unarchive enotes files, this brings back the last
       version of the enotefile
@@ -97,7 +97,8 @@ EOF
 
 test_todo_session 'enotesunarchive notefile not in todo.txt' <<EOF
 >>> todo.sh enotesunarchive test_previous
-      Encrypted note file test_previous not mentioned in todo. Use listenotes to find them
+      Encrypted note file test_previous not mentioned in todo
+      use enotes listarchived to find them
     enotes unarchive [ENOTESFILE]
       unarchive enotes files, this brings back the last
       version of the enotefile

@@ -35,17 +35,15 @@ EOF
 
 test_todo_session 'listnotes usage' <<EOF
 >>> todo.sh listnotes usage
-    notes list -a [TERM...]
+    notes list [TERM...]
       List notes
-      -a show archived notes
 === 1
 EOF
 
 test_todo_session 'lsn usage' <<EOF
 >>> todo.sh lsn usage
-    notes list -a [TERM...]
+    notes list [TERM...]
       List notes
-      -a show archived notes
 === 1
 EOF
 
@@ -65,9 +63,8 @@ EOF
 test_todo_session 'listnotes unable to find term' <<EOF
 >>> todo.sh listnotes foobar
       No notes with the term "foobar"
-    notes list -a [TERM...]
+    notes list [TERM...]
       List notes
-      -a show archived notes
 === 1
 EOF
 
