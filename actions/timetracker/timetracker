@@ -26,7 +26,7 @@ ttprep() {
 }
 
 tttests () {
-	# If we are getting stats, allow blank project
+	# If we are getting stats, allow blank project, else error
 	if [[ -z "${1}" ]]; then
 		if [[ $(echo "${action}" | grep -c 'list\|stats') -eq 1 ]]; then
 			ALL=1
@@ -45,13 +45,13 @@ tttests () {
 _start () {
 	# if tt file doesn't exist start
 	if ! [[ -f "${TODO_DIR}/tt/${PRE}/${project}.tt" ]]; then
-		echo "$(date +"%s")" >> "${TODO_DIR}/tt/${PRE}/${project}.tt"
+		date +"%s" >> "${TODO_DIR}/tt/${PRE}/${project}.tt"
 		echo "${1}"
 		exit
 	fi
 	# If project file exists and if our last line has only two fields, then add time stamp
 	if [ "$(tail -1 "${TODO_DIR}/tt/${PRE}/${project}.tt" | grep -c :)" -eq 1 ] ; then
-		echo "$(date +"%s")" >> "${TODO_DIR}/tt/${PRE}/${project}.tt"
+		date +"%s" >> "${TODO_DIR}/tt/${PRE}/${project}.tt"
 		echo "${1}"
 		exit
 	# Else the timer is still active
@@ -63,7 +63,6 @@ _start () {
 }
 
 _stop () {
-	set +x
 	# Remove the state and set File location
 	STATE=$1; shift
 	if [[ "${STATE}" = "live" ]]; then
@@ -104,7 +103,11 @@ tttests "$@"
 CURRENT=$(find "${TODO_DIR}/tt/${PRE}/" -maxdepth 1 -name "*.tt" | awk -F / '{print $NF}' | sed 's/\.tt$//' | sort)
 ARCHIVED=$(find "${TODO_DIR}/tt/${PRE}/archive/" -maxdepth 1 -name "*.tt" | awk -F / '{print $NF}' | sed 's/\.tt$//' | sort)
 
-# Human style timings
+# Human style timings.
+# Find days, remove that from total,
+# find hours, remove that from total,
+# find minutes, remove that from total,
+# display seconds.
 tthuman () {
 	TOTAL=$1
 	RUNNING=$2
@@ -139,7 +142,7 @@ tthuman () {
 	fi
 }
 
-# Archive the project tt file
+# Archive the projecddt tt file
 ttarchive() {
 	project="${1/#+/}"
 	if [ -f "${TODO_DIR}/tt/${PRE}/${project}.tt" ]; then
@@ -213,12 +216,17 @@ tton() {
 		# if project tt file exists
 		if [[ -f "${TODO_DIR}/tt/${PRE}/${project}.tt" ]]; then
 			_start "Starting clock on ${project}"
-		# if project tt archivefile exists
+		# if project tt archivefile exists, ask to unarchive and then start
 		elif [[ -f "${TODO_DIR}/tt/${PRE}/archive/${project}.tt" ]]; then
 			echo "Project ${project} is archived, unarchive?"
 			read -r -n1 -p "(y/n)"
-			[[ $REPLY = [yY] ]] && mv "${TODO_DIR}/tt/${PRE}/archive/${project}.tt" "${TODO_DIR}/tt/${PRE}/${project}.tt" || { echo "Not unarchiving"; exit 1; }
-			_start "Unarchiving and starting clock on ${project}"
+			if [[ "${REPLY}" = [yY] ]]; then
+				mv "${TODO_DIR}/tt/${PRE}/archive/${project}.tt" "${TODO_DIR}/tt/${PRE}/${project}.tt" 
+				_start "Unarchiving and starting clock on ${project}"
+			else
+				echo "Not unarchiving"
+				die
+			fi
 		fi
 		# if no tt file exits, start one
 		_start "Starting clock on ${project}"
@@ -261,19 +269,22 @@ ttoff() {
 # Show the stats for the project
 ttstats() {
 	project="${1/#+/}"
+	# if we have a tt project file show it, else error out
 	if [ -f "${TODO_DIR}/tt/${PRE}/${project}.tt" ]; then
+		# Find total and show if still running or complete
 		if [ "$(tail -1 "${TODO_DIR}/tt/${PRE}/${project}.tt" | grep -c :)" -eq 0 ]; then
-			TOTAL=$(echo $(cat "${TODO_DIR}/tt/${PRE}/${project}.tt"):$(date +%s) |awk -F ':' '{print $2 - $1}' | awk '{ sum+=$1} END {print sum}')
+			TOTAL=$(echo "$(cat "${TODO_DIR}/tt/${PRE}/${project}.tt"):$(date +%s)" |awk -F ':' '{print $2 - $1}' | awk '{ sum+=$1} END {print sum}')
 			RUNNING=1
 		else
-			TOTAL=$(echo "$(cat "${TODO_DIR}/tt/${PRE}/${project}.tt")" |awk -F ':' '{print $2 - $1}' | awk '{ sum+=$1} END {print sum}')
+			TOTAL=$(awk -F ':' '{print $2 - $1}' "${TODO_DIR}/tt/${PRE}/${project}.tt" | awk '{ sum+=$1} END {print sum}')
 			RUNNING=0
 		fi
+		# Print out the stats
 		tthuman "${TOTAL}" "${RUNNING}"
 		echo "Stats for Project: ${project}"
-		CHAR=$(echo "Stats for Project: ${project}"| sed 's/./=/g')
-		echo "${CHAR}"
-		if [ ${RUNNING} -eq 1 ]; then
+		# Double underline title
+		echo "Stats for Project: ${project}"| sed 's/./=/g'
+		if [[ ${RUNNING} -eq 1 ]]; then
 			echo "Timer still running for ${project}"
 		fi
 		echo "${TEXTDAYS}${TEXTHOURS}${TEXTMINUTES}${TEXTSECONDS}"
@@ -286,25 +297,28 @@ ttstats() {
 
 ttarchivedstats () {
 	project="${1/#+/}"
+	# if we have an archived tt project file show it, else error out
 	if [ -f "${TODO_DIR}/tt/${PRE}/archive/${project}.tt" ]; then
+		# Find total and show if still running or complete
 		if [ "$(tail -1 "${TODO_DIR}/tt/${PRE}/archive/${project}.tt" | grep -c :)" -eq 0 ]; then
-			TOTAL=$(echo $(cat "${TODO_DIR}/tt/${PRE}/archive/${project}.tt"):$(date +%s) |awk -F ':' '{print $2 - $1}' | awk '{ sum+=$1} END {print sum}')
+			TOTAL=$(echo "$(cat "${TODO_DIR}/tt/${PRE}/archive/${project}.tt"):$(date +%s)" |awk -F ':' '{print $2 - $1}' | awk '{ sum+=$1} END {print sum}')
 			RUNNING=1
 		else
-			TOTAL=$(echo "$(cat "${TODO_DIR}/tt/${PRE}/archive/${project}.tt")" |awk -F ':' '{print $2 - $1}' | awk '{ sum+=$1} END {print sum}')
+			TOTAL=$(awk -F ':' '{print $2 - $1}' "${TODO_DIR}/tt/${PRE}/archive/${project}.tt" | awk '{ sum+=$1} END {print sum}')
 			RUNNING=0
 		fi
-			tthuman "${TOTAL}" "${RUNNING}"
+		# Print out the stats
+		tthuman "${TOTAL}" "${RUNNING}"
 		echo "Stats for archived Project: ${project}"
-		CHAR=$(echo "Stats for archived Project: ${project}"| sed 's/./=/g')
-		echo "${CHAR}"
-		if [ ${RUNNING} -eq 1 ]; then
+		# Double underline title
+		echo "Stats for archived Project: ${project}"| sed 's/./=/g'
+		if [[ ${RUNNING} -eq 1 ]]; then
 			echo "Timer still running for ${project}"
 		fi
 		echo "${TEXTDAYS}${TEXTHOURS}${TEXTMINUTES}${TEXTSECONDS}"
 	else
 		usage
-		echo "      No current timetracker projects"
+		echo "      No archived timetracker projects"
 		die
 	fi
 }
@@ -314,31 +328,39 @@ case "${action}" in
 	stats)
 		# If no project was set, show all projects stats
 		if [ ${ALL} -eq 1 ]; then
-			if [[ "$(find "${TODO_DIR}/tt/${PRE}/" -type f -name "*.tt" | wc -l)" -eq 0 ]]; then
+			if [[ -z "${CURRENT}" ]]; then
 				usage
 				echo "      No timetracker projects exist"
 				die
 			fi
+			# Find all current tt project files
 			cd "${TODO_DIR}/tt/${PRE}/" || exit 1
 			for project in *.tt; do
-				project="${project/#+/}"
-				ttstats "${@}"
+				# Remove .tt
+				project="${project/%???/}"
+				ttstats "${project}"
 			done
 		else
-			ttstats "${@}"
+			# Find all projects given on command line
+			# shellcheck disable=SC2068
+			for project in $@; do
+				# Remove .tt
+				project="${project/#+/}"
+				ttstats "${project}"
+			done
 		fi
 	;;
 	archivedstats)
 		# If no project was set, show all projects stats
 		if [ ${ALL} -eq 1 ]; then
-			if [[ "$(find "${TODO_DIR}/tt/${PRE}/archive/" -type f -name "*.tt" | wc -l)" -eq 0 ]]; then
+			if [[ -z "${ARCHIVED}" ]]; then
 				usage
 				echo "      No timetracker projects exist"
 				die
 			fi
 			cd "${TODO_DIR}/tt/${PRE}/archive" || exit 1
 			for project in *.tt; do
-				project="${project/#+/}"
+				project="${project/%???/}"
 				ttarchivedstats "${project}"
 			done
 		else
@@ -346,7 +368,7 @@ case "${action}" in
 		fi
 	;;
 	statsall)
-		# If we have not projects, error out
+		# If we have no projects, error out
 		if [[ -z "${CURRENT}" ]] && [[ -z "${ARCHIVED}" ]]; then
 			usage
 			echo "      No timetracker projects exist"

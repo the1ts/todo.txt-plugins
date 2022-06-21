@@ -64,6 +64,12 @@ Starting clock on testing
 === 0
 EOF
 
+rm -rf tt/todo/testing.tt
+test_todo_session 'timetracker on for +project in todo.txt file' <<EOF
+>>> todo.sh timetracker on +testing
+Starting clock on testing
+=== 0
+EOF
 
 test_todo_session 'timetracker on for project testing already started' <<EOF
 >>> todo.sh timetracker on testing
@@ -108,6 +114,16 @@ EOF
 
 test_todo_session 'timetracker off running project' <<EOF
 >>> todo.sh timetracker off testing
+Stopping clock on testing
+=== 0
+EOF
+
+cat > tt/todo/testing.tt <<EOF
+1329951682
+EOF
+
+test_todo_session 'timetracker off running +project' <<EOF
+>>> todo.sh timetracker off +testing
 Stopping clock on testing
 === 0
 EOF
@@ -216,11 +232,31 @@ Archived testing
 EOF
 
 cat > tt/todo/testing.tt <<EOF
+1329951682:15000000
+EOF
+
+test_todo_session 'timetracker archive finished +project' <<EOF
+>>> todo.sh timetracker archive testing
+Archived testing
+=== 0
+EOF
+
+cat > tt/todo/testing.tt <<EOF
 1329951682
 EOF
 
 test_todo_session 'timetracker archive started project' <<EOF
 >>> todo.sh timetracker archive testing
+Setting project testing as finished now and archiving
+=== 0
+EOF
+
+cat > tt/todo/testing.tt <<EOF
+1329951682
+EOF
+
+test_todo_session 'timetracker archive started +project' <<EOF
+>>> todo.sh timetracker archive +testing
 Setting project testing as finished now and archiving
 === 0
 EOF
@@ -248,6 +284,18 @@ Project testing unarchived
 === 0
 EOF
 
+# Create a started archived project
+rm -rf tt/todo/*.tt tt/todo/archive/*.tt
+cat > tt/todo/archive/testing.tt <<EOF
+1329951682
+EOF
+
+test_todo_session 'timetracker unarchive started +project' <<EOF
+>>> todo.sh timetracker unarchive +testing
+Project testing unarchived
+=== 0
+EOF
+
 # Create a completedarchived project
 rm -rf tt/todo/*.tt tt/todo/archive/*.tt
 cat > tt/todo/archive/testing.tt <<EOF
@@ -259,6 +307,19 @@ test_todo_session 'timetracker unarchive completed project' <<EOF
 Project testing unarchived
 === 0
 EOF
+
+# Create a completedarchived project
+rm -rf tt/todo/*.tt tt/todo/archive/*.tt
+cat > tt/todo/archive/testing.tt <<EOF
+1329951682:125321532
+EOF
+
+test_todo_session 'timetracker unarchive completed +project' <<EOF
+>>> todo.sh timetracker unarchive +testing
+Project testing unarchived
+=== 0
+EOF
+
 rm -rf tt/todo/*.tt tt/todo/archive/*.tt
 
 test_todo_session 'timetracker unarchive none timetracker project' <<EOF
@@ -291,6 +352,14 @@ Stats for Project: testing
 === 0
 EOF
 
+test_todo_session 'timetracker stats current +project' <<EOF
+>>> todo.sh timetracker stats +testing
+Stats for Project: testing
+==========================
+5 hours 33 minutes 20 seconds 
+=== 0
+EOF
+
 rm -rf tt/todo/testing.tt
 
 test_todo_session 'timetracker stats no current project' <<EOF
@@ -309,6 +378,33 @@ test_todo_session 'timetracker stats only archived project' <<EOF
 $USAGE
       No current timetracker projects
 === 1
+EOF
+
+test_todo_session 'timetracker stats only archived +project' <<EOF
+>>> todo.sh timetracker stats +testing
+$USAGE
+      No current timetracker projects
+=== 1
+EOF
+
+mkdir -p tt/todo/archive
+rm -rf tt/todo/testing.tt
+cat > tt/todo/complete.tt <<EOF
+1329951682
+EOF
+cat > tt/todo/testing.tt <<EOF
+1329951682:1329971682
+EOF
+
+test_todo_session 'timetracker stats current and completed project' <<EOF
+>>> todo.sh timetracker stats | sed '/^$/d'
+Stats for Project: complete
+===========================
+Timer still running for complete
+Stats for Project: testing
+==========================
+5 hours 33 minutes 20 seconds 
+=== 0
 EOF
 
 #
@@ -336,12 +432,20 @@ Stats for archived Project: testing
 === 0
 EOF
 
+test_todo_session 'timetracker archivedstats current +project' <<EOF
+>>> todo.sh timetracker archivedstats +testing
+Stats for archived Project: testing
+===================================
+5 hours 33 minutes 20 seconds 
+=== 0
+EOF
+
 rm -rf tt/todo/archive/testing.tt
 
 test_todo_session 'timetracker archivedstats no current project' <<EOF
 >>> todo.sh timetracker archivedstats testing
 $USAGE
-      No current timetracker projects
+      No archived timetracker projects
 === 1
 EOF
 
@@ -349,10 +453,10 @@ cat > tt/todo/testing.tt <<EOF
 1329951682:1329971682
 EOF
 
-test_todo_session 'timetracker stats only current project' <<EOF
+test_todo_session 'timetracker archivedstats only current project' <<EOF
 >>> todo.sh timetracker archivedstats testing
 $USAGE
-      No current timetracker projects
+      No archived timetracker projects
 === 1
 EOF
 
