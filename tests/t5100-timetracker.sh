@@ -114,7 +114,7 @@ export localUsage="    timetracker off [PROJECT]
 
 test_todo_session 'ttoff show usage' <<EOF
 >>> todo.sh ttoff usage
-$USAGE
+$localUsage
 === 1
 EOF
 
@@ -162,7 +162,7 @@ EOF
 test_todo_session 'timetracker off project - no such project in todo.txt or tt files' <<EOF
 >>> todo.sh timetracker off nosuch
 $localUsage
-      No sign of tt file for project nosuch
+      No tt file for project nosuch
 === 1
 EOF
 
@@ -201,7 +201,7 @@ EOF
 
 rm -rf "tt/todo/archive/foobararchive.tt"
 
-test_todo_session 'timetracker list Current and Archived' <<EOF
+test_todo_session 'timetracker list Current and Archived after removal' <<EOF
 >>> todo.sh timetracker list | sed '/^$/d'
 Projects being time tracked
 ===========================
