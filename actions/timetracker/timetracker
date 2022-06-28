@@ -5,6 +5,10 @@
 # (C) 2012 Paul Mansfield
 # License:  GPL, http://www.gnu.org/copyleft/gpl.html
 
+# ToDo: create simple list for not complete and current
+# ToDo: create simple list for not complete and archived.
+# ToDo: allow editing in a human readable style.
+
 # Show global usage and for each subaction
 usage() {
 	case "${1}" in
@@ -151,18 +155,18 @@ tthuman () {
 
 # List all current projects
 ttsimplelist () {
-    echo "${CURRENT}"
+	echo "${CURRENT}"
 }
 
 # List all archived projects
-ttsimplearchivedlist () {
-    echo "${ARCHIVED}"
+ttsimplelistarchived () {
+	echo "${ARCHIVED}"
 }
 
 # List all projects
 ttsimplelistall () {
-    echo "${CURRENT}"
-		echo "${ARCHIVED}"
+	echo "${CURRENT}"
+	echo "${ARCHIVED}"
 }
 
 #
@@ -483,10 +487,49 @@ ttstatsall () {
 	# If we have archived projects
 	if [[ -n "${ARCHIVED}" ]]; then
 		# shellcheck disable=SC2046
-		ttarchivedstats $(ttsimplearchivedlist)
+		ttarchivedstats $(ttsimplelistarchived)
 	fi
 }
 
+ttsimpleliststarted (){
+	for project in $(ttsimplelist | sort); do
+		if [[ $(tail -1 "${TODO_DIR}/tt/${PRE}/${project}.tt" | grep -c :) -eq 0 ]]; then
+			echo "+${project}"	
+		fi
+	done
+}
+
+ttsimplelistarchivedstarted (){
+	for project in $(ttsimplelistarchived | sort); do
+		if [[ $(tail -1 "${TODO_DIR}/tt/${PRE}/archive/${project}.tt" | grep -c :) -eq 0 ]]; then
+			echo "+${project}"	
+		fi
+	done
+}
+
+ttsimplelistallstarted (){
+	(ttsimpleliststarted ; ttsimplelistarchivedstarted) | sort -u
+}
+
+ttsimplelistcompleted (){
+	for project in $(ttsimplelist | sort); do
+		if [[ $(tail -1 "${TODO_DIR}/tt/${PRE}/${project}.tt" | grep -c :) -eq 1 ]]; then
+			echo "+${project}"	
+		fi
+	done
+}
+
+ttsimplelistarchivedcompleted (){
+	for project in $(ttsimplelistarchived | sort); do
+		if [[ $(tail -1 "${TODO_DIR}/tt/${PRE}/archive/${project}.tt" | grep -c :) -eq 1 ]]; then
+			echo "+${project}"	
+		fi
+	done
+}
+
+ttsimplelistallcompleted (){
+	(ttsimplelistcompleted ; ttsimplelistarchivedcompleted) | sort -u
+}
 # Main, find subaction and run the function
 case "${action}" in
 	stats)
@@ -516,11 +559,29 @@ case "${action}" in
 	simplelist)
 		ttsimplelist
 	;;
-	simplearchivedlist)
-		ttsimplearchivedlist
+	simplelistarchived)
+		ttsimplelistarchived
 	;;
 	simplelistall)
 		ttsimplelistall
+	;;
+	simpleliststarted)
+		ttsimpleliststarted
+	;;
+	simplelistarchivedstarted)
+		ttsimplelistarchivedstarted
+	;;
+	simplelistallstarted)
+		ttsimplelistallstarted
+	;;
+	simplelistcompleted)
+		ttsimplelistcompleted
+	;;
+	simplelistarchivedcompleted)
+		ttsimplelistarchivedcompleted
+	;;
+	simplelistallcompleted)
+		ttsimplelistallcompleted
 	;;
 	*)
 		usage
