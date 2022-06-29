@@ -19,3 +19,5 @@ To use, put the files for the actions you wish to use in your TODO_ACTION_DIR, e
 # Bash completion for actions
 
 I have bash [completion](README.bash_completion.md) for both todo.txt itself and my collection of actions in one file and snippets for the actions.
+
+N.B. notes, enotes and timetracker are now larger single actions with sub actions (todo.sh notes archive), the stub actions (todo.sh notesarchive) now point to this format, the stub actions will be deprecated in due course.
