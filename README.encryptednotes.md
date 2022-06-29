@@ -11,7 +11,7 @@ There are a couple directories used by these notes actions.
 1. TODO_DIR/notes directory for active notes files
 2. TODO_DIR/notes/archive used to hold archived notes with time stamps prepended
 
-NB. make sure the enote name is a single word (no spaces, so use - or _ for multiple words), this is the same restriction as projects and contexts. Encrypted notes actions also know about files created with the tickle action (43 folders). The enotes files are in the format prefix-notename.gpg so they can be found and opened by gpg or vim with gpg plugin.
+NB. make sure the enote name is a single word (no spaces, so use - or _ for multiple words), this is the same restriction as projects and contexts. Encrypted notes actions also know about files created with the tickle action (43 folders). The enotes files are in the format prefix-notename.gpg so they can be found and opened by gpg or vim with gpg plugin. Prefix being any extra added to the todo.txt file to separate different todo.sh instances. For example, personal_todo.txt, work_todo.txt or test_todo.txt.
 
 ### Add an encrypted note
 
@@ -64,3 +64,5 @@ Usage: ```todo.sh enotes unarchive enote:test_note```
 To list archived notes run listarchivedenotes, you will get a list of all archived enotes in your todo directory. It also takes an option which displays only those matching a grep of enotes file names
 
 Usage: ```todo.sh enotes listarchived test```
+
+N.B. enotes is now larger single actions with sub actions (todo.sh enotes archive), the stub actions (todo.sh enotesarchive) now point to this format, the stub actions will be deprecated in due course.

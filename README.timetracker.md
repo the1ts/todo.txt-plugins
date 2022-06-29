@@ -36,3 +36,5 @@ the time of archiving.
 You can list all the timetracker files currently in use and archived
 
 ```todo.txt.sh timetracker list```
+
+N.B. timetracker is now larger single actions with sub actions (todo.sh timetracker archive), the stub actions (todo.sh ttarchive) now point to this format, the stub actions will be deprecated in due course.
