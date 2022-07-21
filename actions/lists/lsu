@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# shellcheck shell=bash
+#===============================================================================
+#
+#          FILE: lsu
+#
+#         USAGE: todo.sh lsu
+#
+#  DESCRIPTION: list unsorted
+#
+#        AUTHOR: Paul Mansfield (paul.mansfield@mansteck.co.uk), 
+#     COPYRIGHT: 2022-2022 Paul Mansfield
+#       LICENSE: GPL, http://www.gnu.org/copyleft/gpl.html
+#===============================================================================
+
+## Functions
+usage() {
+  echo "    $(basename "$0")"
+  echo "      lists todo.txt file unsorted"
+}
+
+# check for usage and remove action
+if [[ $1 = "usage" ]] || [[ $2 = "usage" ]]; then
+	usage
+	exit
+elif [[ $1 = "$(basename "$0")" ]]; then
+	shift
+fi
+
+TODOTXT_SORT_COMMAND="cat" "${TODO_FULL_SH}" list
