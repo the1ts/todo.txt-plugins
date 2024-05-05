@@ -49,6 +49,7 @@ lsac
 lsp
 lsprj
 lsprjnopri
+lsu
 move
 mv
 p
