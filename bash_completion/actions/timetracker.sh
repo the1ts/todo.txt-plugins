@@ -2,7 +2,7 @@
 COMMANDS="archive archivedstats list off on stats statsall unarchive"
 cmd=${COMP_CWORD}
 our_cmd=${COMP_WORDS[0]}
-TODO_PROJ=$(${our_cmd} lsprj)
+TODO_PROJ=$(eval ${our_cmd} lsprj)
 # Only capture todo.sh notes
 if [[ ${COMP_WORDS[1]} =~ ^(timetracker|tt)$ ]]; then
 	# Give commands as first complete
@@ -51,7 +51,7 @@ fi
 if [ ${COMP_WORDS[1]} = "tton" ]; then
 	mapfile -t COMPREPLY < <(compgen -W "$( (
 		echo -e "$TODO_PROJ \n"
-		${our_cmd} timetracker simplelistcompleted
+		eval ${our_cmd} timetracker simplelistcompleted
 	) | sort -u)" -- "${word}")
 fi
 
@@ -81,4 +81,3 @@ fi
 if [ ${COMP_WORDS[1]} = "ttunarchive" ]; then
 	mapfile -t COMPREPLY < <(compgen -W "$(eval ${our_cmd} timetracker simplelistallcompleted)" -- "${word}")
 fi
-
