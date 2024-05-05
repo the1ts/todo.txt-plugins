@@ -1,45 +1,48 @@
 # todo.sh(1) completion
-# Copyright 2009 Paul Mansfield <paul.mansfield@mansteck.co.uk>
+# shellcheck shell=bash
+# Copyright 2009-2024 Paul Mansfield <paul.mansfield@mansteck.co.uk>
 # License: GNU GPL v2 or later
 
 function _todo.sh() {
 	our_cmd=${COMP_WORDS[0]}
 	cmd=${COMP_CWORD}
 	COMPREPLY=()
-	COMP_WORDBREAKS=${COMP_WORDBREAKS//:}
+	COMP_WORDBREAKS=${COMP_WORDBREAKS//:/}
 	word="${COMP_WORDS[COMP_CWORD]}"
-	END=$(TODOTXT_VERBOSE=0 eval ${our_cmd} list | wc -l | cut -d ' ' -f 1)
+	END=$(TODOTXT_VERBOSE=0 eval "${our_cmd}" list | wc -l | cut -d ' ' -f 1)
 	COMMANDS="\
 			add a addto addm append app archive command del  \
 			rm depri dp do help list ls listaddons listall lsa listcon  \
 			lsc listfile lf listpri lsp listproj lsprj move \
 			mv prepend prep pri p replace report shorthelp"
-	if ((cmd==1)); then
-			# Help me pick a todo.sh action
-			COMPREPLY=($(compgen -W "$(eval $our_cmd listaddons ; echo $COMMANDS)" -- "${word}"));
+	if ((cmd == 1)); then
+		# Help me pick a todo.sh action
+		mapfile -t COMPREPLY < <(compgen -W "$(eval "${our_cmd}" listaddons echo "${COMMANDS}")" -- "${word}")
 	else
-			case ${COMP_WORDS[1]} in
-					# help me pick a context or project or notes file
-					"a"|"add"|"addto"|"ls"|"list")
-							COMPREPLY=($(compgen -W "$(eval $our_cmd lsp | tr -d '\r' | sed 's/^/+/g') $(eval $our_cmd lsc | tr -d '\r') $(eval $our_cmd lsn | tr -d '\r')" -- "${word}"));
-					;;
-					# help me pick a line number then context, project or notes file if an item number is already set
-					"app"|"append"|"prep"|"prepend"|"replace")
-							COMPREPLY=($(compgen -o nosort -W "$(eval echo {1..$END})" -- "${word}"));
-							if [ `echo ${COMP_WORDS[2]} | grep -c "[0-9]"` = 1 ] ; then
-									COMPREPLY=($(compgen -W "$(eval $our_cmd lsp | tr -d '\r' | sed 's/^/+/g') $(eval $our_cmd lsc | tr -d '\r') $(eval $our_cmd lsn | tr -d '\r')" -- "${word}"));
-							fi
-					;;
-					# Find all action include files
-					*)
-          if [[ -z ${TODO_ACTIONS_COMP} ]]; then
-            TODO_ACTIONS_COMP="/usr/share/todo.txt/bash_completion.d/actions"
-          fi
-          for action in ${TODO_ACTIONS_COMP}/*.sh; do
-              . ${action}
-          done
-					;;
-			esac
+		case ${COMP_WORDS[1]} in
+		# help me pick a context or project or notes file
+		"a" | "add" | "addto" | "ls" | "list")
+			mapfile -t COMPREPLY < <(compgen -W "$(eval "${our_cmd}" lsprj) $(eval "${our_cmd}" lsc) $(eval "${our_cmd}" lsn)" -- "${word}")
+			;;
+		# help me pick a line number then context, project or notes file if an item number is already set
+		"app" | "append" | "prep" | "prepend" | "replace")
+			mapfile -t COMPREPLY < <(compgen -o nosort -W "$(eval echo "{1..${END}}")" -- "${word}")
+			if [ "$(echo "${COMP_WORDS[2]}" | grep -c "[0-9]")" = 1 ]; then
+				mapfile -t COMPREPLY < <(compgen -W "$(eval "${our_cmd}" lsprj) $(eval "${our_cmd}" lsc) $(eval "${our_cmd}" lsn)" -- "${word}")
+			fi
+			;;
+		# Find all action include files
+		*)
+			if [[ -z ${TODO_ACTIONS_COMP} ]]; then
+				TODO_ACTIONS_COMP="/usr/share/todo.txt/bash_completion.d/actions"
+			fi
+			for action in "${TODO_ACTIONS_COMP}"/*.sh; do
+				# shellcheck disable=SC1090
+				. "${action}"
+			done
+			;;
+		esac
 	fi
 }
 complete -F _todo.sh todo.sh
+# vim: set ft=sh
