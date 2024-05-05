@@ -2,7 +2,7 @@
 # Based on git's GIT-VERSION-GEN.
 
 VF=VERSION-FILE
-DEF_VER=v3.1.1
+DEF_VER=v3.2.0
 
 LF='
 '
@@ -14,18 +14,17 @@ if test -d .git -o -f .git &&
 	v[0-9]*)
 		git update-index -q --refresh
 		test -z "$(git diff-index --name-only HEAD --)" ||
-		VN="$VN-dirty" ;;
-	esac
-then
-	VN=$(echo "$VN" | sed -e 's/-/./g');
+			VN="$VN-dirty"
+		;;
+	esac then
+	VN=$(echo "$VN" | sed -e 's/-/./g')
 else
 	VN="$DEF_VER"
 fi
 
 VN=$(expr "$VN" : v*'\(.*\)')
 
-if test -r $VF
-then
+if test -r $VF; then
 	VC=$(sed -e 's/^VERSION=//' <$VF)
 else
 	VC=unset
@@ -34,5 +33,3 @@ test "$VN" = "$VC" || {
 	echo >&2 "VERSION=$VN"
 	echo "VERSION=$VN" >$VF
 }
-
-
