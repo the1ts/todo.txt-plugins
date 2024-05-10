@@ -7,7 +7,7 @@
 #         USAGE: todo.sh notes [add|archive|cat|edit|grep|list|listarchived|rename|unarchive]
 #
 #        AUTHOR: Paul Mansfield (paul.mansfield@mansteck.co.uk), 
-#     COPYRIGHT: 2009-2022 Paul Mansfield
+#     COPYRIGHT: 2009-2024 Paul Mansfield
 #       LICENSE: GPL, http://www.gnu.org/copyleft/gpl.html
 #===============================================================================
 
@@ -77,7 +77,7 @@ _add () {
     die
   fi
 
-  # Check enotes and item number exist
+  # Check notes and item number exist
   if [[ "$#" -lt 2 ]]; then
     if [[ "${1}" =~ ^[0-9]+$ ]]; then
       echo "      No notesfile given"
@@ -114,9 +114,9 @@ _add () {
 
   # Can we edit after addition?
   # Only set if file new to todo.txt and note doesn't exist
-  # Also check we have notesedit addon installed
+  # Also check we have notes addon installed
   if [[ "${NOTE_ADD_EDIT}" = "OFF" ]] && \
-    [[ $(grep -c "${NOTES_FILE}" "${TODO_FILE}") -eq 0 ]] && \
+    [[ $(grep -c "\bnote:${NOTES_FILE}\b" "${TODO_FILE}") -eq 0 ]] && \
     ! [[ -f "${TODOTXT_DIR}/notes/${PRE}-${NOTES}.txt" ]] && \
     [[ $(${TODO_FULL_SH} listaddons | grep -c ^notes$) -eq 1 ]]; then
     "${TODO_FULL_SH}" notes edit "note:${NOTES_FILE}"
@@ -219,7 +219,7 @@ _edit () {
     echo "      No notes file"
     localUsage
     die
-  elif [[ $(grep -c "note:${NOTES_FILE}" "${TODO_FILE}") -eq 0 ]]; then
+  elif [[ $(grep -c "\bnote:${NOTES_FILE}\b" "${TODO_FILE}") -eq 0 ]]; then
     echo "      No such notes file, use listnotes to find notes files"
     localUsage
     die
@@ -228,8 +228,8 @@ _edit () {
   todo_tmp
 
   # If file or note:file exists edit
-  NUM_ENOTE=$(grep -c "[^ ]*enote:${NOTES_FILE}[^ ]\+" "${TODO_TMP_FILE}")
-  if [[ -e "${PRE}-${NOTES_FILE}.txt" ]] || [[ "${NUM_ENOTE}" -ge 1 ]]; then
+  NUM_NOTE=$(grep -c "\bnote:${NOTES_FILE}\b" "${TODO_TMP_FILE}")
+  if [[ -e "${PRE}-${NOTES_FILE}.txt" ]] || [[ "${NUM_NOTE}" -ge 1 ]]; then
     "${EDITOR}" "${PRE}-${NOTES_FILE}.txt"
   fi
   [[ -f "${TODO_TMP_FILE}" ]] && rm -rf "${TODO_TMP_FILE}"
