@@ -1,6 +1,0 @@
-#!/usr/bin/env bash
-
-# Remove action
-shift
-
-"$TODO_FULL_SH" notes archive "$@"

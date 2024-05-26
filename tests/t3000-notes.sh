@@ -27,7 +27,7 @@ EOF
 #
 
 # Create our todo.txt
-cat > todo.txt <<EOF
+cat >todo.txt <<EOF
 Buy tools
 Fix bicycle
 Ride bike
@@ -96,30 +96,30 @@ rm -rf notes/archive
 mkdir -p notes/archive
 
 # Recreate our todo.txt file
-cat > todo.txt <<EOF
+cat >todo.txt <<EOF
 Buy tools note:test
 Fix bicycle note:testing
 Ride bike note:testing
 EOF
 # Create our first notes file with some content
-cat > notes/todo-test.txt << EOF                                                         
+cat >notes/todo-test.txt <<EOF
 test note first line
 test note second line
 EOF
 # Create our second notes file with some content
-cat > ./notes/todo-testing.txt << EOF                                                         
+cat >./notes/todo-testing.txt <<EOF
 test note first line
 test note second line
 EOF
 # Create our first archived notes file
-cat > ./notes/archive/todo-test-previous.10100000.txt << EOF                                                         
+cat >./notes/archive/todo-test-previous.10100000.txt <<EOF
 test note first line
 test note second line
 test note third line
 EOF
 
 # Create our note file not in todo.txt
-cat > ./notes/todo-archive_file.txt << EOF                                                         
+cat >./notes/todo-archive_file.txt <<EOF
 File to test archiving
 EOF
 
@@ -137,7 +137,7 @@ TODO: Archived note:archive_file
 EOF
 
 # Create our note file again to see archiving of already archived notes works
-cat > ./notes/todo-archive_file.txt << EOF                                                         
+cat >./notes/todo-archive_file.txt <<EOF
 File to test archiving
 EOF
 mv ./notes/archive/todo-archive_file.1234500000.txt ./notes/archive/todo-archive_file.1234490000.txt
@@ -165,14 +165,14 @@ rm -rf notes/archive
 mkdir -p notes/archive
 
 # Create our todo.txt file
-cat > todo.txt <<EOF
+cat >todo.txt <<EOF
 Buy tools note:test
 Fix bicycle note:testing
 Ride bike note:testing
 EOF
 
 # Create our notes file with some content
-cat > notes/todo-test.txt << EOF                                                         
+cat >notes/todo-test.txt <<EOF
 test note first line
 test note second line
 EOF
@@ -224,13 +224,13 @@ rm -rf notes/archive
 mkdir -p notes/archive
 
 # Create our todo.txt file
-cat > todo.txt <<EOF
+cat >todo.txt <<EOF
 Buy tools note:test
 Fix bicycle note:testing
 Ride bike note:testing
 EOF
 # Create our notes file with some content
-cat > notes/todo-test.txt << EOF                                                         
+cat >notes/todo-test.txt <<EOF
 test note first line
 test note second line
 EOF
@@ -283,22 +283,22 @@ EOF
 rm -rf notes/archive
 mkdir -p notes/archive
 # Create our todo.txt file
-cat > todo.txt <<EOF
+cat >todo.txt <<EOF
 Buy tools note:test
 Fix bicycle note:testing
 Ride bike note:testing
 EOF
 # Create our notes file with some content
-cat > notes/todo-test.txt << EOF                                                         
+cat >notes/todo-test.txt <<EOF
 test note first line
 test note second line
 EOF
 # Create our notes file with some content
-cat > ./notes/todo-testing.txt << EOF                                                         
+cat >./notes/todo-testing.txt <<EOF
 test note first line
 test note second line
 EOF
-cat > ./notes/archive/todo-test-previous.10100000.txt << EOF                                                         
+cat >./notes/archive/todo-test-previous.10100000.txt <<EOF
 test note first line
 test note second line
 test note third line
@@ -373,22 +373,22 @@ EOF
 rm -rf notes/archive
 mkdir -p notes/archive
 # Create our todo.txt file
-cat > todo.txt <<EOF
+cat >todo.txt <<EOF
 Buy tools note:test
 Fix bicycle note:testing
 Ride bike note:testing
 EOF
 # Create our notes file with some content
-cat > notes/todo-test.txt << EOF                                                         
+cat >notes/todo-test.txt <<EOF
 test note first line
 test note second line
 EOF
 # Create our notes file with some content
-cat > ./notes/todo-testing.txt << EOF                                                         
+cat >./notes/todo-testing.txt <<EOF
 test note first line
 test note second line
 EOF
-cat > ./notes/archive/todo-test-previous.10100000.txt << EOF                                                         
+cat >./notes/archive/todo-test-previous.10100000.txt <<EOF
 test note first line
 test note second line
 test note third line
@@ -430,22 +430,22 @@ EOF
 rm -rf notes/archive
 mkdir -p notes/archive
 # Create our todo.txt file
-cat > todo.txt <<EOF
+cat >todo.txt <<EOF
 Buy tools note:test
 Fix bicycle note:testing
 Ride bike note:testing
 EOF
 # Create our notes file with some content
-cat > notes/todo-test.txt << EOF                                                         
+cat >notes/todo-test.txt <<EOF
 test note first line
 test note second line
 EOF
 # Create our notes file with some content
-cat > ./notes/todo-testing.txt << EOF                                                         
+cat >./notes/todo-testing.txt <<EOF
 test note first line
 test note second line
 EOF
-cat > ./notes/archive/todo-test-previous.10100000.txt << EOF                                                         
+cat >./notes/archive/todo-test-previous.10100000.txt <<EOF
 test note first line
 test note second line
 test note third line
@@ -486,22 +486,22 @@ EOF
 rm -rf notes/archive
 mkdir -p notes/archive
 # Create our todo.txt file
-cat > todo.txt <<EOF
+cat >todo.txt <<EOF
 Buy tools note:test
 Fix bicycle note:testing
 Ride bike note:testing
 EOF
 # Create our notes file with some content
-cat > notes/todo-test.txt << EOF                                                         
+cat >notes/todo-test.txt <<EOF
 test note first line
 test note second line
 EOF
 # Create our notes file with some content
-cat > ./notes/todo-testing.txt << EOF                                                         
+cat >./notes/todo-testing.txt <<EOF
 test note first line
 test note second line
 EOF
-cat > ./notes/archive/todo-test-previous.10100000.txt << EOF                                                         
+cat >./notes/archive/todo-test-previous.10100000.txt <<EOF
 test note first line
 test note second line
 test note third line
@@ -555,12 +555,12 @@ Ride bike note:test1
 === 0
 EOF
 
-cat > done.txt << EOF                                                         
+cat >done.txt <<EOF
 2021-01-01 test line 1 note:test2
 2021-01-01 test line 2 note:test4
 EOF
 
-cat > todo.txt << EOF                                                         
+cat >todo.txt <<EOF
 test new line note:test2
 EOF
 
@@ -590,32 +590,32 @@ EOF
 rm -rf notes/archive
 mkdir -p notes/archive
 # Create our todo.txt file
-cat > todo.txt <<EOF
+cat >todo.txt <<EOF
 Buy tools note:test
 Fix bicycle note:testing
 Ride bike note:testing
 EOF
 # Create our notes file with some content
-cat > notes/todo-test.txt << EOF                                                         
+cat >notes/todo-test.txt <<EOF
 test note first line
 test note second line
 EOF
 # Create our notes file with some content
-cat > ./notes/todo-testing.txt << EOF                                                         
+cat >./notes/todo-testing.txt <<EOF
 test note first line
 test note second line
 EOF
-cat > ./notes/archive/todo-test_previous.10100000.txt << EOF                                                         
+cat >./notes/archive/todo-test_previous.10100000.txt <<EOF
 test note first line
 test note second line
 test note third line
 EOF
-cat > ./notes/archive/todo-testing.1010000.txt << EOF                                                         
+cat >./notes/archive/todo-testing.1010000.txt <<EOF
 test note first line
 test note second line
 older
 EOF
-cat > ./notes/archive/todo-testing.1020000.txt << EOF                                                         
+cat >./notes/archive/todo-testing.1020000.txt <<EOF
 test note first line
 test note second line
 younger
@@ -648,7 +648,7 @@ younger
 EOF
 
 test_todo_session 'notes unarchive test restored file is younger file' <<EOF
->>> todo.sh notescat testing
+>>> todo.sh notes cat testing
 test note first line
 test note second line
 younger

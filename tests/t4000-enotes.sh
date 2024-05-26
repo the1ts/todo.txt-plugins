@@ -17,7 +17,10 @@ export EDITOR="cat"
 USAGETEXT="    enotes [add|archive|cat|edit|list|listarchived|rename|unarchive]"
 
 # shellcheck disable=SC2155
-export GNUPGHOME="$(mktemp -d)" || { echo "Failed to create temp file"; exit 1; }
+export GNUPGHOME="$(mktemp -d)" || {
+	echo "Failed to create temp file"
+	exit 1
+}
 export GPG_USER="user@tests.com"
 # Setup gpg and a key for our enotes testing
 gpg --list-keys --no-verbose -q 1>/dev/null
@@ -41,7 +44,7 @@ EOF
 gpg --batch --no-verbose -q --full-gen-key ${GNUPGHOME}/key
 
 # Create our notes file with some content
-echo -e "test note first line\ntest note second line" | gpg -q --no-verbose -e -r user@tests.com > notes/todo-test.enc
+echo -e "test note first line\ntest note second line" | gpg -q --no-verbose -e -r user@tests.com >notes/todo-test.enc
 
 test_todo_session 'enotes show usage' <<EOF
 >>> todo.sh enotes usage
@@ -54,7 +57,7 @@ EOF
 #
 
 # Create our todo.txt
-cat > todo.txt <<EOF
+cat >todo.txt <<EOF
 Buy tools
 Fix bicycle
 Ride bike
@@ -123,30 +126,30 @@ rm -rf notes/archive
 mkdir -p notes/archive
 
 # Recreate our todo.txt file
-cat > todo.txt <<EOF
+cat >todo.txt <<EOF
 Buy tools enote:test
 Fix bicycle enote:testing
 Ride bike enote:testing
 EOF
 # Create our first notes file with some content
-cat > notes/todo-test.enc << EOF                                                         
+cat >notes/todo-test.enc <<EOF
 test note first line
 test note second line
 EOF
 # Create our second notes file with some content
-cat > ./notes/todo-testing.enc << EOF                                                         
+cat >./notes/todo-testing.enc <<EOF
 test note first line
 test note second line
 EOF
 # Create our first archived notes file
-cat > ./notes/archive/todo-test-previous.10100000.enc << EOF                                                         
+cat >./notes/archive/todo-test-previous.10100000.enc <<EOF
 test note first line
 test note second line
 test note third line
 EOF
 
 # Create our note file not in todo.txt
-cat > ./notes/todo-archive_file.enc << EOF                                                         
+cat >./notes/todo-archive_file.enc <<EOF
 File to test archiving
 EOF
 
@@ -164,7 +167,7 @@ TODO: Archived enote:archive_file
 EOF
 
 # Create our note file again to see archiving of already archived notes works
-cat > ./notes/todo-archive_file.enc << EOF                                                         
+cat >./notes/todo-archive_file.enc <<EOF
 File to test archiving
 EOF
 mv ./notes/archive/todo-archive_file.1234500000.enc ./notes/archive/todo-archive_file.1234490000.enc
@@ -187,20 +190,19 @@ EOF
 ## cat
 #
 
-
 # Create our notes and archive directories
 rm -rf notes/archive
 mkdir -p notes/archive
 
 # Create our todo.txt file
-cat > todo.txt <<EOF
+cat >todo.txt <<EOF
 Buy tools enote:test
 Fix bicycle enote:testing
 Ride bike enote:testing
 Tail a criminal enote:broken
 EOF
 # Create our notes file with some content
-echo -e "test note first line\ntest note second line" | gpg -q --no-verbose -e -r user@tests.com > notes/todo-test.enc
+echo -e "test note first line\ntest note second line" | gpg -q --no-verbose -e -r user@tests.com >notes/todo-test.enc
 
 test_todo_session 'enotes cat subaction help' <<EOF
 >>> todo.sh enotes cat help
@@ -241,7 +243,7 @@ test_todo_session 'enotes cat show no such enote' <<EOF
 EOF
 
 # Create our second notes file with some content
-cat > ./notes/todo-broken.enc << EOF                                                         
+cat >./notes/todo-broken.enc <<EOF
 test note first line
 test note second line
 EOF
@@ -259,7 +261,7 @@ EOF
 #
 
 # Create our todo.txt file
-cat > todo.txt <<EOF
+cat >todo.txt <<EOF
 Buy tools enote:test
 Fix bicycle enote:testing
 Ride bike enote:testing
@@ -301,10 +303,10 @@ test note second line
 EOF
 
 # Create a badfile (not encrypted) and put in todo.txt
-cat > notes/todo-badfile.enc <<EOF
+cat >notes/todo-badfile.enc <<EOF
 badfile contents
 EOF
-cat >> todo.txt <<EOF
+cat >>todo.txt <<EOF
 badfile line enote:badfile
 EOF
 
@@ -339,22 +341,22 @@ export GPG_USER="user@tests.com"
 rm -rf notes/archive
 mkdir -p notes/archive
 # Create our todo.txt file
-cat > todo.txt <<EOF
+cat >todo.txt <<EOF
 Buy tools enote:test
 Fix bicycle enote:testing
 Ride bike enote:testing
 EOF
 
 # Create our notes file with some content
-cat > notes/todo-test.txt << EOF                                                         
+cat >notes/todo-test.txt <<EOF
 test note first line
 test note second line
 EOF
-cat > ./notes/todo-testing.txt << EOF                                                         
+cat >./notes/todo-testing.txt <<EOF
 test note first line
 test note second line
 EOF
-cat > ./notes/archive/todo-test-previous.10100000.txt << EOF                                                         
+cat >./notes/archive/todo-test-previous.10100000.txt <<EOF
 test note first line
 test note second line
 test note third line
@@ -397,22 +399,22 @@ rm -rf notes/archive
 mkdir -p notes/archive
 
 # Create our todo.txt file
-cat > todo.txt <<EOF
+cat >todo.txt <<EOF
 Buy tools enote:test
 Fix bicycle enote:testing
 Ride bike enote:testing
 EOF
 # Create our notes file with some content
-cat > notes/todo-test.enc << EOF
+cat >notes/todo-test.enc <<EOF
 test note first line
 test note second line
 EOF
 # Create our notes file with some content
-cat > ./notes/archive/todo-testing.enc << EOF
+cat >./notes/archive/todo-testing.enc <<EOF
 test note first line
 test note second line
 EOF
-cat > ./notes/archive/todo-previous.10100000.enc << EOF
+cat >./notes/archive/todo-previous.10100000.enc <<EOF
 test note first line
 test note second line
 test note third line
@@ -455,22 +457,22 @@ rm -rf notes/archive
 mkdir -p notes/archive
 
 # Create our todo.txt file
-cat > todo.txt <<EOF
+cat >todo.txt <<EOF
 Buy tools enote:test
 Fix bicycle enote:testing
 Ride bike enote:testing
 EOF
 # Create our notes file with some content
-cat > notes/todo-test.txt << EOF                                                         
+cat >notes/todo-test.txt <<EOF
 test note first line
 test note second line
 EOF
 # Create our notes file with some content
-cat > ./notes/todo-testing.txt << EOF                                                         
+cat >./notes/todo-testing.txt <<EOF
 test note first line
 test note second line
 EOF
-cat > ./notes/archive/todo-test-previous.10100000.txt << EOF                                                         
+cat >./notes/archive/todo-test-previous.10100000.txt <<EOF
 test note first line
 test note second line
 test note third line
@@ -524,12 +526,12 @@ Ride bike enote:test1
 === 0
 EOF
 
-cat > done.txt << EOF                                                         
+cat >done.txt <<EOF
 2021-01-01 test line 1 enote:test2
 2021-01-01 test line 2 enote:test4
 EOF
 
-cat > todo.txt << EOF                                                         
+cat >todo.txt <<EOF
 test new line enote:test2
 EOF
 
@@ -544,7 +546,7 @@ test new line enote:test3
 EOF
 
 test_todo_session 'enotes rename original enote to new enote done.txt only' <<EOF
->>> todo.sh enotesrename test4 test5; cat done.txt
+>>> todo.sh enotes rename test4 test5; cat done.txt
 TODO: Changed enote:test4 to enote:test5 in done.txt
 2021-01-01 test line 1 eenote:test3
 2021-01-01 test line 2 eenote:test5
@@ -560,28 +562,28 @@ rm -rf notes/archive
 mkdir -p notes/archive
 
 # Create our todo.txt file
-cat > todo.txt <<EOF
+cat >todo.txt <<EOF
 Buy tools enote:test
 Fix bicycle enote:testing
 Ride bike enote:testing
 EOF
 
 # Create our notes file with some content
-echo -e "test note first line\ntest note second line" | gpg -e -r user@tests.com > notes/todo-test.enc
+echo -e "test note first line\ntest note second line" | gpg -e -r user@tests.com >notes/todo-test.enc
 # Create our todo.txt file
-cat > todo.txt <<EOF
+cat >todo.txt <<EOF
 Buy tools enote:test
 Fix bicycle enote:testing
 Ride bike enote:testing
 EOF
 # Create our notes file with some content
-cp  ./notes/todo-test.enc ./notes/todo-testing.enc 
-echo -e "test note first line\ntest note second line\ntest note third line" | \
-gpg -e -r user@tests.com > notes/archive/todo-test_previous.10100000.enc
-echo -e "test note first line\ntest note second line\nolder" | \
-gpg -e -r user@tests.com > notes/archive/todo-testing.1010000.enc
-echo -e "test note first line\ntest note second line\nyounger" | \
-gpg -e -r user@tests.com > notes/archive/todo-testing.1020000.enc
+cp ./notes/todo-test.enc ./notes/todo-testing.enc
+echo -e "test note first line\ntest note second line\ntest note third line" |
+	gpg -e -r user@tests.com >notes/archive/todo-test_previous.10100000.enc
+echo -e "test note first line\ntest note second line\nolder" |
+	gpg -e -r user@tests.com >notes/archive/todo-testing.1010000.enc
+echo -e "test note first line\ntest note second line\nyounger" |
+	gpg -e -r user@tests.com >notes/archive/todo-testing.1020000.enc
 
 test_todo_session 'enotes unarchive usage' <<EOF
 >>> todo.sh enotes unarchive usage
@@ -607,7 +609,7 @@ TODO: Encrypted notes file todo-testing.enc restored from newest archive
 EOF
 
 test_todo_session 'enotes unarchive test restored file is younger file' <<EOF
->>> todo.sh enotescat testing
+>>> todo.sh enotes cat testing
 test note first line
 test note second line
 younger

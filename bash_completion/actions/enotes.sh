@@ -16,14 +16,13 @@ if [[ ${COMP_WORDS[1]} = enotes ]]; then
 			# If add and number give list of notes
 			if [[ ${COMP_WORDS[3]} =~ .*[0-9] ]]; then
 				# shellcheck disable=SC2207,SC2086
-				mapfile -t COMPREPLY < <(compgen -W "$(eval ${our_cmd} lsen | tr -d '\r')" -- "${word}")
+				mapfile -t COMPREPLY < <(compgen -W "$(eval ${our_cmd} enotes list | tr -d '\r')" -- "${word}")
 			fi
 		fi
 		# If cat, edit, rename or unarchive give list of notes
 		if [[ ${COMP_WORDS[2]} =~ (cat|edit|rename|unarchive) ]]; then
 			# shellcheck disable=SC2207,SC2086
-			mapfile -t COMPREPLY < <(compgen -W "$(eval ${our_cmd} lsen | tr -d '\r')" -- "${word}")
+			mapfile -t COMPREPLY < <(compgen -W "$(eval ${our_cmd} enotes list | tr -d '\r')" -- "${word}")
 		fi
 	fi
 fi
-

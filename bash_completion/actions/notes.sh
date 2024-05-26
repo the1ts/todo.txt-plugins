@@ -19,14 +19,13 @@ if [[ ${COMP_WORDS[1]} = notes ]]; then
 			# If add and number give list of notes
 			if [[ ${COMP_WORDS[3]} =~ .*[0-9] ]]; then
 				# shellcheck disable=SC2207,SC2086
-				mapfile -t COMPREPLY < <(compgen -W "$(eval ${our_cmd} lsn)" -- "${word}")
+				mapfile -t COMPREPLY < <(compgen -W "$(eval ${our_cmd} notes list)" -- "${word}")
 			fi
 		fi
 		# If cat, edit, rename or unarchive give list of notes
 		if [[ ${COMP_WORDS[2]} =~ (cat|edit|rename|unarchive) ]]; then
 			# shellcheck disable=SC2207,SC2086
-			mapfile -t COMPREPLY < <(compgen -W "$(eval ${our_cmd} lsn)" -- "${word}")
+			mapfile -t COMPREPLY < <(compgen -W "$(eval ${our_cmd} notes list)" -- "${word}")
 		fi
 	fi
 fi
-
