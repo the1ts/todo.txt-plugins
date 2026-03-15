@@ -15,9 +15,10 @@ function _todo.sh() {
 			rm depri dp do help list ls listaddons listall lsa listcon  \
 			lsc listfile lf listpri lsp listproj lsprj move \
 			mv prepend prep pri p replace report shorthelp"
+  ADDONS=$(eval "${our_cmd}" listaddons | tr '\n' ' ')
   if ((cmd == 1)); then
     # Help me pick a todo.sh action
-    mapfile -t COMPREPLY < <(compgen -W "$(eval ${our_cmd} listaddons) $(echo ${COMMANDS})" -- "${word}")
+    mapfile -t COMPREPLY < <(compgen -W "$(eval echo "${COMMANDS} ${ADDONS}")" -- "${word}")
   else
     case ${COMP_WORDS[1]} in
     # help me pick a context or project or notes file
