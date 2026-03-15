@@ -32,6 +32,17 @@ function _todo.sh() {
         mapfile -t COMPREPLY < <(compgen -W "$(eval "${our_cmd}" listproj) $(eval "${our_cmd}" listcon) $(eval "${our_cmd}" notes list)" -- "${word}")
       fi
       ;;
+    # help me change priority on an item
+    "pri")
+      mapfile -t COMPREPLY < <(compgen -o nosort -W "$(eval echo "{1..${END}}")" -- "${word}")
+      if [ "$(echo "${COMP_WORDS[2]}" | grep -c "[0-9]")" = 1 ]; then
+        mapfile -t COMPREPLY < <(compgen -W "$(echo "A B C D E F")" -- "${word}")
+      fi
+      ;;
+    # help me change priority on an item
+    "done" | "depri" | "del" | "move")
+      mapfile -t COMPREPLY < <(compgen -o nosort -W "$(eval echo "{1..${END}}")" -- "${word}")
+      ;;
     # Find all action include files
     *)
       if [[ -z ${TODO_ACTIONS_COMP} ]]; then
