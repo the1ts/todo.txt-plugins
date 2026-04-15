@@ -4,6 +4,7 @@
 # License: GNU GPL v2 or later
 
 function _todo.sh() {
+  TODOTXT_PLAIN=1
   our_cmd=${COMP_WORDS[0]}
   cmd=${COMP_CWORD}
   COMPREPLY=()
@@ -23,13 +24,13 @@ function _todo.sh() {
     case ${COMP_WORDS[1]} in
     # help me pick a context or project or notes file
     "a" | "add" | "addto" | "ls" | "list")
-      mapfile -t COMPREPLY < <(compgen -W "$(eval "${our_cmd}" listproj) $(eval "${our_cmd}" listcon) $(eval "${our_cmd}" ls | grep -oE 'note:[^ ]+')" -- "${word}")
+      mapfile -t COMPREPLY < <(compgen -W "$(eval "${our_cmd}" listproj) $(eval "${our_cmd}" listcon) $(eval "${our_cmd}" -p ls | grep -oE 'note:[^ ]+')" -- "${word}")
       ;;
     # help me pick a line number then context, project or notes file if an item number is already set
     "app" | "append" | "prep" | "prepend" | "replace")
       mapfile -t COMPREPLY < <(compgen -o nosort -W "$(eval echo "{1..${END}}")" -- "${word}")
       if [ "$(echo "${COMP_WORDS[2]}" | grep -c "[0-9]")" = 1 ]; then
-        mapfile -t COMPREPLY < <(compgen -W "$(eval "${our_cmd}" listproj) $(eval "${our_cmd}" listcon) $(eval "${our_cmd}" ls | grep -oE 'note:[^ ]+')" -- "${word}")
+        mapfile -t COMPREPLY < <(compgen -W "$(eval "${our_cmd}" listproj) $(eval "${our_cmd}" listcon) $(eval "${our_cmd}" -p ls | sed 's/\x1b\[[0-9;]*m//g' | grep -oE 'note:[^ ]+')" -- "${word}")
       fi
       ;;
     # help me change priority on an item
