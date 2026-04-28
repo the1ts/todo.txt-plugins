@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# shellcheck shell=bash
+#===============================================================================
+#
+#          FILE: count
+#
+#         USAGE: todo.sh count
+#
+#        AUTHOR: Paul Mansfield (paul.mansfield@mansteck.co.uk),
+#     COPYRIGHT: 2009-2026 Paul Mansfield
+#       LICENSE: GPL, http://www.gnu.org/copyleft/gpl.html
+#===============================================================================
+
+## Functions
+usage() {
+  echo "    $(basename "$0")"
+  echo "      count how many lines in todo.txt file can take normal search items"
+}
+
+# check for usage and remove action
+if [[ $1 = "usage" ]] || [[ $2 = "usage" ]]; then
+  usage
+  exit
+elif [[ $1 = "$(basename "$0")" ]]; then
+  shift
+fi
+
+## list all with any search items then count
+# shellcheck disable=SC2209
+TODOTXT_VERBOSE=0 "${TODO_FULL_SH}" ls "${@}" | wc -l
+
