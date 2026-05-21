@@ -28,3 +28,4 @@ test_todo_session 'lsu show list' <<EOF
 TODO: 3 of 3 tasks shown
 === 0
 EOF
+test_done

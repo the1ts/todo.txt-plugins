@@ -24,3 +24,10 @@ test_todo_session 'count items' <<EOF
 3
 === 0
 EOF
+
+test_todo_session 'count items containing bike' <<EOF
+>>> todo.sh count bike
+1
+=== 0
+EOF
+test_done
