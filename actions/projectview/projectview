@@ -73,13 +73,23 @@ fi
 
 # Eat the remaining arguments putting them into project or terms variables
 while [[ $# -gt 0 ]]; do
-  if [[ $(grep -c "+\w" <<< "$1") -eq 1 ]]; then
-    PROJECTS="${1/#+/}"; shift
-		PROJECT_LIMIT=1
-	else
-    TERMS="$(echo "$1" | cut -d ' ' -f 1)"; shift
-	fi
+  if [[ $(grep -c "+\w" <<<"$1") -eq 1 ]]; then
+    PROJECTS="${PROJECTS} ${1/#+/}"
+    shift
+    PROJECT_LIMIT=1
+  else
+    TERMS="${TERMS} $(echo "$1" | cut -d ' ' -f 1)"
+    shift
+  fi
 done
+
+# If we have no projects or terms, set to all projects
+if [[ -z "${PROJECTS}" ]] && [[ -z "${TERMS}" ]]; then
+  PROJECTS=$("${TODO_FULL_SH}" listproj | sed 's/+//g')
+# if we have Terms use exclusively as they are more specific
+elif [[ -n "${TERMS}" ]]; then
+  PROJECTS=$(_list "${TODO_FILE}" "" "${TERMS}" | grep -oE '\+[[:alnum:]_:-]+' | sed 's/^+//')
+fi
 
 # If we have non-valid projects error out
 for project in ${PROJECTS}; do
@@ -98,19 +108,6 @@ if [[ "${VALID_TERM}" -eq 0 ]]; then
   die "      \"${TERMS}\" not found in todo.txt"
 fi
 
-# If we have no valid terms in valid projects error out
-for project in ${PROJECTS}; do
-  VALID_TERM=$(grep "${project}" "${TODO_FILE}" | grep -c "${TERMS}")
-  if [[ "${VALID_TERM}" -eq 0 ]]; then
-    die "      \"${TERMS}\" not found in project \"${project}\" in todo.txt"
-  fi
-done
-
-# If we have no projects or terms, set to all projects
-if [[ -z "${PROJECTS}" ]] && [[ -z "${TERMS}" ]]; then
-  PROJECTS=$("${TODO_FULL_SH}" listproj |sed 's/+//g')
-fi
-
 # Show projects in alphabetical order and todo items in priority order
 echo "=====  Projects  ====="
 if [ "${HOWRUN}" != "simplepv" ]; then
@@ -118,26 +115,27 @@ if [ "${HOWRUN}" != "simplepv" ]; then
 fi
 
 # For each project show header and the list of todo items
-for project in $PROJECTS ; do 
-	# Use core _list function, does numbering and colouring for us
-	PROJECT_LIST=$(_list "$TODO_FILE" "+${project}\b" "${TERMS}" \
-		| sed "s/\ \x1b\[[0-9;]*m+[a-zA-Z0-9._:\-]*\b//g")
-	if [[ -n "${PROJECT_LIST}" ]]; then
-		echo  "---  ${project}  ---"
-		echo  "${PROJECT_LIST}" | eval "${TODOTXT_FINAL_FILTER}"
-		# If run as simplepv don't add newlines
-		if [ "${HOWRUN}" != "simplepv" ] ; then
-			echo  ""
-		fi
-	fi
+for project in $PROJECTS; do
+  # Use core _list function, does numbering and colouring for us
+  PROJECT_LIST=$(_list "$TODO_FILE" "+${project}\b" "${TERMS}" |
+    sed "s/\ \x1b\[[0-9;]*m+[a-zA-Z0-9._:\-]*\b//g")
+  if [[ -n "${PROJECT_LIST}" ]]; then
+    echo "---  ${project}  ---"
+    echo "${PROJECT_LIST}" | eval "${TODOTXT_FINAL_FILTER}"
+    # If run as simplepv don't add newlines
+    if [ "${HOWRUN}" != "simplepv" ]; then
+      echo ""
+    fi
+  fi
 done
 
 # Show todo items not associated to a project and we haven't limited to certain
-# projects 
+# projects
 if [[ "${PROJECT_LIMIT}" -ne 1 ]]; then
-	PROJECT_LIST=$(_list "${TODO_FILE}" "-+[a-zA-Z0-9._:\-]*\b" "${TERMS}" )
-	if [[ -n "${PROJECT_LIST}" ]]; then
-		echo "--- Not in projects ---"
-		echo "${PROJECT_LIST}" | eval "${TODOTXT_FINAL_FILTER}"
-	fi
+  PROJECT_LIST=$(_list "${TODO_FILE}" "-+[a-zA-Z0-9._:\-]*\b" "${TERMS}")
+  if [[ -n "${PROJECT_LIST}" ]]; then
+    echo "--- Not in projects ---"
+    echo "${PROJECT_LIST}" | eval "${TODOTXT_FINAL_FILTER}"
+  fi
 fi
+
