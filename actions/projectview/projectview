@@ -74,11 +74,11 @@ fi
 # Eat the remaining arguments putting them into project or terms variables
 while [[ $# -gt 0 ]]; do
   if [[ $(grep -c "+\w" <<<"$1") -eq 1 ]]; then
-    PROJECTS="${PROJECTS} ${1/#+/}"
+    PROJECTS="${PROJECTS:+$PROJECTS }${1/#+/}"
     shift
     PROJECT_LIMIT=1
   else
-    TERMS="${TERMS} $(echo "$1" | cut -d ' ' -f 1)"
+    TERMS="${TERMS:+$TERMS }$(echo "$1" | cut -d ' ' -f 1)"
     shift
   fi
 done
@@ -138,4 +138,3 @@ if [[ "${PROJECT_LIMIT}" -ne 1 ]]; then
     echo "${PROJECT_LIST}" | eval "${TODOTXT_FINAL_FILTER}"
   fi
 fi
-

@@ -6,7 +6,7 @@ test_description='projectview action functionality
 
 export TODO_ACTIONS_DIR=$TEST_DIRECTORY/../actions/projectview
 
-cat > todo.txt <<EOF
+cat >todo.txt <<EOF
 Buy tools +purchase
 Fix bicycle +repair
 Ride bike
@@ -16,9 +16,10 @@ test_todo_session 'projectview show usage' <<EOF
 >>> todo.sh projectview usage
     projectview [TERM...]
       Show todo items containing TERM, grouped by project, and displayed
-      in priority order. If no TERM provided, displays entire todo.txt.
-      If any TERMs are a project it uses the non-project terms
-      to search within these projects
+      in priority order. If no TERM provided, displays entire todo.txt
+      in project sections.
+      If any TERMs are not a project it will override all that are a project
+      as they are more specific than projects
 === 0
 EOF
 
@@ -26,9 +27,10 @@ test_todo_session 'pv show usage' <<EOF
 >>> todo.sh pv usage
     projectview [TERM...]
       Show todo items containing TERM, grouped by project, and displayed
-      in priority order. If no TERM provided, displays entire todo.txt.
-      If any TERMs are a project it uses the non-project terms
-      to search within these projects
+      in priority order. If no TERM provided, displays entire todo.txt
+      in project sections.
+      If any TERMs are not a project it will override all that are a project
+      as they are more specific than projects
 === 0
 EOF
 
@@ -74,9 +76,10 @@ test_todo_session 'projectview with term not in todo.txt' <<EOF
       "foobar" not found in todo.txt
     projectview [TERM...]
       Show todo items containing TERM, grouped by project, and displayed
-      in priority order. If no TERM provided, displays entire todo.txt.
-      If any TERMs are a project it uses the non-project terms
-      to search within these projects
+      in priority order. If no TERM provided, displays entire todo.txt
+      in project sections.
+      If any TERMs are not a project it will override all that are a project
+      as they are more specific than projects
 === 1
 EOF
 
@@ -85,21 +88,19 @@ test_todo_session 'projectview with project not in todo.txt' <<EOF
       project "foobar" not found in todo.txt
     projectview [TERM...]
       Show todo items containing TERM, grouped by project, and displayed
-      in priority order. If no TERM provided, displays entire todo.txt.
-      If any TERMs are a project it uses the non-project terms
-      to search within these projects
+      in priority order. If no TERM provided, displays entire todo.txt
+      in project sections.
+      If any TERMs are not a project it will override all that are a project
+      as they are more specific than projects
 === 1
 EOF
 
-test_todo_session 'projectview with term not in project' <<EOF
->>> todo.sh projectview +purchase bike
-      "bike" not found in project "purchase" in todo.txt
-    projectview [TERM...]
-      Show todo items containing TERM, grouped by project, and displayed
-      in priority order. If no TERM provided, displays entire todo.txt.
-      If any TERMs are a project it uses the non-project terms
-      to search within these projects
-=== 1
+test_todo_session 'projectview with term and project, term overrides project as its more specific' <<EOF
+>>> todo.sh projectview +purchase bicycle | sed '/^$/d'
+=====  Projects  =====
+---  repair  ---
+2 Fix bicycle +repair
+=== 0
 EOF
 
 test_done
