@@ -6,15 +6,16 @@ To use, put the files for the actions you wish to use in your TODO_ACTION_DIR, e
 
 ## Available actions
 
-* [Notes](README.notes.md)
-* [Encrypted Notes](README.encryptednotes.md)
-* [Projectview](README.projects.md)
-* [Contextview](README.contexts.md)
-* [Project Rename](README.projects.md)
-* [Context Rename](README.contexts.md)
-* [Project Rename](README.projects.md)
-* [Timetracker](README.timetracker.md)
-* [Tickle](README.tickle.md) for [43 folders](https://www.43folders.com) usage
+- [Notes](README.notes.md)
+- [Encrypted Notes](README.encryptednotes.md)
+- [Count](/README.count.md)
+- [Projectview](README.projects.md)
+- [Contextview](README.contexts.md)
+- [Project Rename](README.projects.md)
+- [Context Rename](README.contexts.md)
+- [Project Rename](README.projects.md)
+- [Timetracker](README.timetracker.md)
+- [Tickle](README.tickle.md) for [43 folders](https://www.43folders.com) usage
 
 # Bash completion for actions
 
