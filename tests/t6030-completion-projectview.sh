@@ -23,9 +23,9 @@ notice the sunflowers +sunflowers @outside @garden +shared +landscape note:garde
 touch the grass +recover
 stop
 EOF
-test_todo_completion 'contextview complete projects and contexts' 'todo.sh contextview ' '+landscape +recover +roses +shared +sunflowers @garden @outdoor @outside'
-test_todo_completion 'contextview complete contexts' 'todo.sh contextview @' '@garden @outdoor @outside'
-test_todo_completion 'contextview complete projects' 'todo.sh contextview  +' '+landscape +recover +roses +shared +sunflowers'
+test_todo_completion 'projectview complete projects and contexts' 'todo.sh projectview ' '+landscape +recover +roses +shared +sunflowers @garden @outdoor @outside'
+test_todo_completion 'projectview complete contexts' 'todo.sh projectview @' '@garden @outdoor @outside'
+test_todo_completion 'projectview complete projects' 'todo.sh projectview +' '+landscape +recover +roses +shared +sunflowers'
 
 test_done
 
