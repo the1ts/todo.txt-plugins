@@ -20,21 +20,26 @@ usage() {
 
 # Find editor to use
 find_editor() {
-if [[ -n "${EDITOR}" ]]; then
-  true
-elif [[ -L /usr/bin/editor ]]; then
-  EDITOR="/usr/bin/editor"
-  # /usr/bin/editor is an alternative, see if its vim
-  if [[ "${EDITOR}" = "/usr/bin/editor" ]] && [[ -x "/usr/bin/update-alternatives" ]] ; then
-    if [[ "$(update-alternatives --query editor | grep ^Value: | grep -c vim)" -eq 1 ]]; then
+  # If we have EDITOR set at bash or todo.sh config, respect
+  if [[ -n "${EDITOR}" ]]; then
+    # If we are vim or nvim set variable so we can use line numbers
+    if [[ "${EDITOR}" =~ vim ]]; then
       VIM=1
     fi
+  # Fall back to editor alternative on debian
+  elif [[ -L /usr/bin/editor ]]; then
+    EDITOR="/usr/bin/editor"
+    # /usr/bin/editor is an alternative, see if its vim
+    if [[ "${EDITOR}" = "/usr/bin/editor" ]] && [[ -x "/usr/bin/update-alternatives" ]]; then
+      if [[ "$(update-alternatives --query editor | grep ^Value: | grep -c vim)" -eq 1 ]]; then
+        VIM=1
+      fi
+    fi
+  # Else set to vim
+  elif [[ -z "${EDITOR}" ]]; then
+    EDITOR="vim"
+    VIM=1
   fi
-elif [[ -z "${EDITOR}" ]]; then
-  EDITOR="vim"
-  VIM=1
-fi
-echo "${EDITOR}"
 }
 
 die() {
@@ -84,7 +89,7 @@ else
   LINE="+1"
 fi
 
-EDITOR=$(find_editor)
+find_editor
 
 # How to edit the file, vim allows +line_number as arg
 if [[ "${VIM}" -eq 1 ]]; then
