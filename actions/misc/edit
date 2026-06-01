@@ -51,11 +51,14 @@ elif [[ "${1}" = "$(basename "$0")" ]]; then
   shift
 fi
 # Test for line number
+# Number in $1 use and shift out
 if [[ "${1}" =~ ^[0-9]+$ ]]; then
   LINE="+${1}"
   shift
+# Number in $2 use and leave, only $1 used from here
 elif [[ "${2}" =~ ^[0-9]+$ ]]; then
   LINE="+${2}"
+# Number is default of +1
 else
   LINE="+1"
 fi
@@ -72,8 +75,8 @@ else
   exit 1
 fi
 
+## Main
 find_editor
-
 # How to edit the file, vim allows +line_number as arg
 if [[ "${VIM}" -eq 1 ]]; then
   "${EDITOR}" "$EDIT_FILE" "$LINE"
