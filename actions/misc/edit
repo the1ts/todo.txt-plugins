@@ -42,51 +42,34 @@ find_editor() {
   fi
 }
 
-die() {
-  if [[ -n $* ]]; then
-    echo -e "$*"
-  fi
-  usage
-  exit 1
-}
-
+## Variables and tests
 # Usage for todo.sh help or remove action
-if [[ "${1}" = "usage" ]] || [[ "${2}" = "usage" ]]; then
+if [[ "${*}" = "usage" ]]; then
   usage
   exit
 elif [[ "${1}" = "$(basename "$0")" ]]; then
   shift
 fi
-
-## Variables
-FILE=$1
-shift
-LINE=$1
-shift
-
-# Which file used. No file then todo.txt is default
-if [[ -z "${FILE}" ]] || [[ "${FILE}" =~ ^todo$ ]]; then
-  EDIT_FILE="$TODO_FILE"
-elif [[ "${FILE}" =~ ^done$ ]]; then
-  EDIT_FILE="$DONE_FILE"
-elif [ "$(echo "${FILE}" | grep -ic ^cfg$)" -eq 1 ]; then
-  EDIT_FILE="$TODOTXT_CFG_FILE"
-# Not blank, or a valid file so show usage
-else
-  die "      Not a valid file"
-fi
-
-# Test line number and set in format
-if [[ -n "${LINE}" ]]; then
-  if ! [[ "${LINE}" =~ ^[0-9]+$ ]]; then
-    echo "    Line number not a number"
-    usage
-    exit 1
-  else
-    LINE="+${LINE}"
-  fi
+# Test for line number
+if [[ "${1}" =~ ^[0-9]+$ ]]; then
+  LINE="+${1}"
+  shift
+elif [[ "${2}" =~ ^[0-9]+$ ]]; then
+  LINE="+${2}"
 else
   LINE="+1"
+fi
+# Which file. No file then todo.txt is default
+if [[ -z "${1}" ]] || [[ "${1}" =~ ^todo$ ]]; then
+  EDIT_FILE="${TODO_FILE}"
+elif [[ "${1}" =~ ^done$ ]]; then
+  EDIT_FILE="${DONE_FILE}"
+elif [[ "${1}" =~ ^cfg$ ]]; then
+  EDIT_FILE="${TODOTXT_CFG_FILE}"
+# Not blank, or a valid file so show usage
+else
+  usage
+  exit 1
 fi
 
 find_editor
@@ -97,4 +80,3 @@ if [[ "${VIM}" -eq 1 ]]; then
 else
   "${EDITOR}" "$EDIT_FILE"
 fi
-
