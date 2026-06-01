@@ -5,67 +5,75 @@
 #
 #         USAGE: todo.sh edit [todo|done|cfg] [line number]
 #
-#        AUTHOR: Paul Mansfield (paul.mansfield@mansteck.co.uk), 
+#        AUTHOR: Paul Mansfield (paul.mansfield@mansteck.co.uk),
 #     COPYRIGHT: 2019 Paul Mansfield
 #       LICENSE: GPL, http://www.gnu.org/copyleft/gpl.html
 #       CREATED: 19/09/09 10:52:44
 #===============================================================================
 
 usage() {
-	echo "    $(basename "$0") [todo|done|cfg] [line number]"
-	echo "      Allows editing of the todo.txt files."
-	echo "      todo.txt (todo), done.txt (done) or config (cfg)"
-	echo "      files in your default editor or vi"
+  echo "    $(basename "$0") [todo|done|cfg] [line number]"
+  echo "      Allows editing of the todo.txt files."
+  echo "      todo.txt (todo), done.txt (done) or config (cfg)"
+  echo "      files in your default editor or vi"
 }
 
 # Find editor to use
 find_editor() {
-if [[ -n "${EDITOR}" ]]; then
-  true
-elif [[ -L /usr/bin/editor ]]; then
-  EDITOR="/usr/bin/editor"
-  # /usr/bin/editor is an alternative, see if its vim
-  if [[ "${EDITOR}" = "/usr/bin/editor" ]] && [[ -x "/usr/bin/update-alternatives" ]] ; then
-    if [[ "$(update-alternatives --query editor | grep ^Value: | grep -c vim)" -eq 1 ]]; then
+  # If we have EDITOR set at bash or todo.sh config, respect
+  if [[ -n "${EDITOR}" ]]; then
+    # If we are vim or nvim set variable so we can use line numbers
+    if [[ "${EDITOR}" =~ vim ]]; then
       VIM=1
     fi
+  # Fall back to editor alternative on debian
+  elif [[ -L /usr/bin/editor ]]; then
+    EDITOR="/usr/bin/editor"
+    # /usr/bin/editor is an alternative, see if its vim
+    if [[ "${EDITOR}" = "/usr/bin/editor" ]] && [[ -x "/usr/bin/update-alternatives" ]]; then
+      if [[ "$(update-alternatives --query editor | grep ^Value: | grep -c vim)" -eq 1 ]]; then
+        VIM=1
+      fi
+    fi
+  # Else set to vim
+  elif [[ -z "${EDITOR}" ]]; then
+    EDITOR="vim"
+    VIM=1
   fi
-elif [[ -z "${EDITOR}" ]]; then
-  EDITOR="vim"
-  VIM=1
-fi
-echo "${EDITOR}"
 }
 
-die () {
-	if [[ -n $* ]]; then
-		echo -e "$*"
-	fi
-	usage
-	exit 1
+die() {
+  if [[ -n $* ]]; then
+    echo -e "$*"
+  fi
+  usage
+  exit 1
 }
 
 # Usage for todo.sh help or remove action
 if [[ "${1}" = "usage" ]] || [[ "${2}" = "usage" ]]; then
-	usage
-	exit
+  usage
+  exit
 elif [[ "${1}" = "$(basename "$0")" ]]; then
   shift
 fi
 
-FILE=$1; shift
-LINE=$1; shift
+## Variables
+FILE=$1
+shift
+LINE=$1
+shift
 
 # Which file used. No file then todo.txt is default
-if [[ -z "${FILE}" ]] || [[ "${FILE}" =~ ^todo$ ]] ; then
+if [[ -z "${FILE}" ]] || [[ "${FILE}" =~ ^todo$ ]]; then
   EDIT_FILE="$TODO_FILE"
-elif [[ "${FILE}" =~ ^done$ ]] ; then
+elif [[ "${FILE}" =~ ^done$ ]]; then
   EDIT_FILE="$DONE_FILE"
-elif [ "$(echo "${FILE}" | grep -ic ^cfg$)" -eq 1 ] ; then
+elif [ "$(echo "${FILE}" | grep -ic ^cfg$)" -eq 1 ]; then
   EDIT_FILE="$TODOTXT_CFG_FILE"
 # Not blank, or a valid file so show usage
 else
-	die "      Not a valid file"
+  die "      Not a valid file"
 fi
 
 # Test line number and set in format
@@ -74,18 +82,19 @@ if [[ -n "${LINE}" ]]; then
     echo "    Line number not a number"
     usage
     exit 1
-  else 
+  else
     LINE="+${LINE}"
   fi
 else
   LINE="+1"
 fi
 
-EDITOR=$(find_editor)
+find_editor
 
 # How to edit the file, vim allows +line_number as arg
 if [[ "${VIM}" -eq 1 ]]; then
-  "$EDITOR" "$EDIT_FILE" "$LINE"
-  else
-  "$EDITOR" "$EDIT_FILE"
+  "${EDITOR}" "$EDIT_FILE" "$LINE"
+else
+  "${EDITOR}" "$EDIT_FILE"
 fi
+
