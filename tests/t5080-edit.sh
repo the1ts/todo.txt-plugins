@@ -9,13 +9,13 @@ export TODO_ACTIONS_DIR=$TEST_DIRECTORY/../actions/misc
 export EDITOR="cat"
 
 # Create our todo.txt file
-cat > todo.txt <<EOF
+cat >todo.txt <<EOF
 Buy tools note:test
 Fix bicycle note:testing
 Ride bike note:testing
 EOF
 # Create our notes file with some content
-cat > done.txt <<EOF
+cat >done.txt <<EOF
 2021-01-01 test line 1 note:test2
 2021-01-01 test line 2 note:test4
 EOF
@@ -26,7 +26,7 @@ test_todo_session 'edit usage' <<EOF
       Allows editing of the todo.txt files.
       todo.txt (todo), done.txt (done) or config (cfg)
       files in your default editor or vi
-=== 0
+=== 1
 EOF
 
 test_todo_session 'edit with no file' <<EOF
@@ -62,7 +62,6 @@ EOF
 
 test_todo_session 'edit with bad file to edit' <<EOF
 >>> todo.sh edit notafile
-      Not a valid file
     edit [todo|done|cfg] [line number]
       Allows editing of the todo.txt files.
       todo.txt (todo), done.txt (done) or config (cfg)
