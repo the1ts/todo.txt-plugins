@@ -1,6 +1,6 @@
 #!/bin/bash
 
-test_description='Add task with priority
+test_description='Add priority to task
 '
 . ./test-lib.sh
 
@@ -9,7 +9,7 @@ export TODO_ACTIONS_DIR=$TEST_DIRECTORY/../actions/misc
 export EDITOR="cat"
 
 # Create our todo.txt file
-cat > todo.txt <<EOF
+cat >todo.txt <<EOF
 Fix bicycle note:testing
 EOF
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # shellcheck disable=SC2034
-test_description='notes actions functionality
+test_description='encrypted notes actions functionality
 '
 # shellcheck disable=SC2034,SC1091
 . ./test-lib.sh -i
@@ -18,8 +18,8 @@ USAGETEXT="    enotes [add|archive|cat|edit|list|listarchived|rename|unarchive]"
 
 # shellcheck disable=SC2155
 export GNUPGHOME="$(mktemp -d)" || {
-	echo "Failed to create temp file"
-	exit 1
+  echo "Failed to create temp file"
+  exit 1
 }
 export GPG_USER="user@tests.com"
 # Setup gpg and a key for our enotes testing
@@ -579,11 +579,11 @@ EOF
 # Create our notes file with some content
 cp ./notes/todo-test.enc ./notes/todo-testing.enc
 echo -e "test note first line\ntest note second line\ntest note third line" |
-	gpg -e -r user@tests.com >notes/archive/todo-test_previous.10100000.enc
+  gpg -e -r user@tests.com >notes/archive/todo-test_previous.10100000.enc
 echo -e "test note first line\ntest note second line\nolder" |
-	gpg -e -r user@tests.com >notes/archive/todo-testing.1010000.enc
+  gpg -e -r user@tests.com >notes/archive/todo-testing.1010000.enc
 echo -e "test note first line\ntest note second line\nyounger" |
-	gpg -e -r user@tests.com >notes/archive/todo-testing.1020000.enc
+  gpg -e -r user@tests.com >notes/archive/todo-testing.1020000.enc
 
 test_todo_session 'enotes unarchive usage' <<EOF
 >>> todo.sh enotes unarchive usage

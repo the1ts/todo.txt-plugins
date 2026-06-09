@@ -1,6 +1,6 @@
 #!/bin/bash
 
-test_description='rename actions functionality
+test_description='project rename actions functionality
 '
 . ./test-lib.sh
 
@@ -8,7 +8,7 @@ test_description='rename actions functionality
 export TODO_ACTIONS_DIR=$TEST_DIRECTORY/../actions/rename
 
 # Create our todo.txt file
-cat > todo.txt <<EOF
+cat >todo.txt <<EOF
 Buy tools +foo
 Fix bicycle +foo
 Ride bike +wibble
@@ -92,7 +92,7 @@ TODO: 2 updated project bar to foo.
 EOF
 
 # Create our todo.txt file
-cat >> todo.txt <<EOF
+cat >>todo.txt <<EOF
 Rent tools +foo
 EOF
 

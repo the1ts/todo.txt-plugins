@@ -1,6 +1,6 @@
 #!/bin/bash
 
-test_description='notes actions functionality
+test_description='priority downgrade actions functionality
 '
 . ./test-lib.sh
 
@@ -9,7 +9,7 @@ export TODO_ACTIONS_DIR=$TEST_DIRECTORY/../actions/misc
 export EDITOR="cat"
 
 # Create our todo.txt file
-cat > todo.txt <<EOF
+cat >todo.txt <<EOF
 (B) Buy tools note:test
 Fix bicycle note:testing
 (Z) Ride bike note:testing
@@ -64,7 +64,7 @@ TODO: 3 already prioritized (Z).
 EOF
 
 # Create our todo.txt file without priorities
-cat > todo.txt <<EOF
+cat >todo.txt <<EOF
 Buy tools note:test
 Fix bicycle note:testing
 Ride bike note:testing
@@ -81,7 +81,7 @@ test_todo_session 'pridowngrade with no priorities in todo.txt' <<EOF
 EOF
 
 # Create our todo.txt file without priorities
-cat > todo.txt <<EOF
+cat >todo.txt <<EOF
 Buy tools note:test
 Fix bicycle note:testing
 (A) Ride bike note:testing
@@ -98,7 +98,7 @@ test_todo_session 'pridowngrade with no priorities in our search of todo.txt' <<
 EOF
 
 # Create our todo.txt file without priorities
-cat > todo.txt <<EOF
+cat >todo.txt <<EOF
 Buy tools note:test
 Fix bicycle note:testing
 x (A) Ride bike note:testing

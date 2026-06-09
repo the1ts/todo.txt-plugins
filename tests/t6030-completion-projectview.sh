@@ -4,13 +4,13 @@
 # shellcheck disable=SC2034
 test_description='Bash context completion functionality
 
-This test checks todo_completion of contextview
+This test checks todo_completion of projectview
 '
 # shellcheck disable=SC1091
 . ./test-lib.sh -i
 
 # Set our current actions directory
-export TODO_ACTIONS_DIR=$TEST_DIRECTORY/../actions/contextview
+export TODO_ACTIONS_DIR=$TEST_DIRECTORY/../actions/projectview
 # Set editor to cat so it tests nicely.
 export EDITOR="cat"
 export TODO_ACTIONS_COMP=$TEST_DIRECTORY/../bash_completion/actions
@@ -28,4 +28,3 @@ test_todo_completion 'projectview complete contexts' 'todo.sh projectview @' '@g
 test_todo_completion 'projectview complete projects' 'todo.sh projectview +' '+landscape +recover +roses +shared +sunflowers'
 
 test_done
-

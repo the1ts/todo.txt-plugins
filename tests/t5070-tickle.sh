@@ -1,6 +1,6 @@
 #!/bin/bash
 
-test_description='notes actions functionality
+test_description='tickle actions functionality
 '
 . ./test-lib.sh
 
@@ -12,7 +12,7 @@ mkdir -p "${TICKLER_DIR}/days/{01..31}/"
 mkdir -p "${TICKLER_DIR}/months/{01..12}/"
 
 # Create our notes file with some content
-cat > todo.txt << EOF                                                         
+cat >todo.txt <<EOF
 tickle for day 5
 tickle for month 3
 EOF

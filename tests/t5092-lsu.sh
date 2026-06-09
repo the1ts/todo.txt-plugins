@@ -1,6 +1,6 @@
 #!/bin/bash
 
-test_description='notes actions functionality
+test_description='list unsorted actions functionality
 '
 . ./test-lib.sh
 
@@ -9,7 +9,7 @@ export TODO_ACTIONS_DIR=$TEST_DIRECTORY/../actions/lists
 export EDITOR="cat"
 
 # Create our todo.txt file
-cat > todo.txt <<EOF
+cat >todo.txt <<EOF
 Fix bicycle note:testing
 Another line
 EOF
@@ -32,3 +32,4 @@ TODO: 2 of 2 tasks shown
 EOF
 
 test_done
+

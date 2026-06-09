@@ -1,6 +1,6 @@
 #!/bin/bash
 
-test_description='notes actions functionality
+test_description='edit actions functionality
 '
 . ./test-lib.sh
 

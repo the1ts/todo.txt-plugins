@@ -1,6 +1,6 @@
 #!/bin/bash
 
-test_description='notes actions functionality
+test_description='add item already completed action functionality
 '
 . ./test-lib.sh
 
@@ -9,7 +9,7 @@ export TODO_ACTIONS_DIR=$TEST_DIRECTORY/../actions/misc
 export EDITOR="cat"
 
 # Create our todo.txt file
-cat > todo.txt <<EOF
+cat >todo.txt <<EOF
 Fix bicycle note:testing
 EOF
 

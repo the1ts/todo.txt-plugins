@@ -4,10 +4,10 @@
 # shellcheck disable=SC2034
 test_description='Bash context completion functionality
 
-This test checks todo_completion of enotes
+This test checks todo_completion of timetracker
 '
 # shellcheck disable=SC1091
-. ./test-lib.sh -i 
+. ./test-lib.sh -i
 
 # Set our current actions directory
 export TODO_ACTIONS_DIR=$TEST_DIRECTORY/../actions/timetracker
@@ -20,18 +20,18 @@ complete -r todo.sh
 source "${TEST_DIRECTORY}/../bash_completion/todo.txt"
 
 mkdir -p tt/todo/archive
-cat > todo.txt <<EOF
+cat >todo.txt <<EOF
 (B) smell the +roses @outside @outdoor +shared enote:roses
 notice the sunflowers +sunflowers @outside @garden +shared +landscape enote:garden
 stop
 EOF
-cat > tt/todo/foobar.tt <<EOF
+cat >tt/todo/foobar.tt <<EOF
 1329951682
 EOF
-cat > tt/todo/finish.tt <<EOF
+cat >tt/todo/finish.tt <<EOF
 1329951682:1330051682
 EOF
-cat > tt/todo/archive/standard.tt <<EOF
+cat >tt/todo/archive/standard.tt <<EOF
 1329951682
 EOF
 
@@ -43,7 +43,7 @@ test_todo_completion 'tt on show projects' 'todo.sh tt on ' '+finish +landscape 
 test_todo_completion 'timetracker off show started projects only non-archived' 'todo.sh timetracker off ' '+foobar +standard'
 test_todo_completion 'ttoff show started projects only non-archived' 'todo.sh ttoff ' '+foobar +standard'
 test_todo_completion 'tt off show started projects only non-archived' 'todo.sh tt off ' '+foobar +standard'
-cat > tt/todo/archive/was.tt <<EOF
+cat >tt/todo/archive/was.tt <<EOF
 1329951682
 EOF
 test_todo_completion 'timetracker off show started projects archived and non-archived' 'todo.sh timetracker off ' '+foobar +standard +was'
@@ -52,7 +52,7 @@ test_todo_completion 'ttoff show started projects archived and non-archived' 'to
 test_todo_completion 'timetracker archive show projects completed and started' 'todo.sh timetracker archive ' '+foobar +standard +was'
 test_todo_completion 'ttarchive show projects completed and started' 'todo.sh ttarchive ' '+foobar +standard +was'
 test_todo_completion 'tt archive show projects completed and started' 'todo.sh tt archive ' '+foobar +standard +was'
-cat > tt/todo/start.tt <<EOF
+cat >tt/todo/start.tt <<EOF
 1329951682:1359951682
 EOF
 test_todo_completion 'timetracker unarchive show projects archived' 'todo.sh timetracker unarchive ' '+finish +start'
@@ -64,3 +64,4 @@ test_todo_completion 'tt stats show current projects' 'todo.sh tt stats ' '+fini
 test_todo_completion 'timetracker stats show archived projects' 'todo.sh timetracker archivedstats ' '+standard +was'
 
 test_done
+

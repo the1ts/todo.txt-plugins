@@ -1,12 +1,12 @@
 #!/bin/bash
 
-test_description='projectview action functionality
+test_description='list projects with no priorities set action functionality
 '
 . ./test-lib.sh
 
 export TODO_ACTIONS_DIR=$TEST_DIRECTORY/../actions/lists
 
-cat > todo.txt <<EOF
+cat >todo.txt <<EOF
 (A) Buy tools +purchase
 Fix bicycle +repair
 Ride bike +fix
@@ -32,7 +32,7 @@ No priority set in repair
 === 0
 EOF
 
-cat > todo.txt <<EOF
+cat >todo.txt <<EOF
 (A) Buy tools +purchase
 (C) Fix bicycle +repair
 (B) Ride bike +fix
@@ -44,7 +44,7 @@ test_todo_session 'lsprjnopri all projects have priority' <<EOF
 === 0
 EOF
 
-cat > todo.txt <<EOF
+cat >todo.txt <<EOF
 Buy tools
 Fix bicycle
 Ride bike
